@@ -2076,7 +2076,7 @@ RYD_CFF_TGT =
 			}
 		foreach _nearImp;
 
-		if (_CL in RydHQ_AllLeaders) then {_HQFactor = 20};
+		if (_CL in RydxHQ_AllLeaders) then {_HQFactor = 20};
 
 			{
 			_temptation = _temptation + (250 + (rating _x));

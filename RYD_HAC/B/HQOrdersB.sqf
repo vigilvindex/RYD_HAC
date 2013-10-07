@@ -50,7 +50,7 @@ _onlyL = RydHQB_LArmorG - RydHQB_MArmorG;
 
 	{
 	_unitvar = str _x;
-	if (RydHQB_Orderfirst) then {_x setVariable ["Nominal" + _unitvar,(count (units _x)),true]};
+	if (RydHQB_Orderfirst) then {_x setVariable ["Nominal" + _unitvar,(count (units _x))]};
 	_busy = false;
 	_busy = _x getvariable ("Busy" + _unitvar);
 	if (isNil ("_busy")) then {_busy = false};
@@ -66,7 +66,7 @@ _onlyL = RydHQB_LArmorG - RydHQB_MArmorG;
 		if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
 		}
 	foreach (units _x);
-	_nominal = _x getVariable ("Nominal" + (str _x));
+	_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
 	_current = count (units _x);
 	_Gdamage = _Gdamage + (_nominal - _current);
 
@@ -114,7 +114,7 @@ if (isNil ("RydHQB_AttackReserve")) then {RydHQB_AttackReserve = (0.5 * (0.5 + (
 
 	{
 	_unitvar = str _x;
-	if (RydHQB_Orderfirst) then {_x setVariable [("Nominal" + _unitvar),(count (units _x)),true]};
+	if (RydHQB_Orderfirst) then {_x setVariable [("Nominal" + _unitvar),(count (units _x))]};
 	_busy = false;
 	_busy = _x getvariable ("Busy" + _unitvar);
 	if (isNil ("_busy")) then {_busy = false};
@@ -129,7 +129,7 @@ if (isNil ("RydHQB_AttackReserve")) then {RydHQB_AttackReserve = (0.5 * (0.5 + (
 		if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
 		}
 	foreach (units _x);
-	_nominal = _x getVariable ("Nominal" + (str _x));
+	_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
 	_current = count (units _x);
 	_Gdamage = _Gdamage + (_nominal - _current);
 	if (((_Gdamage/(_current + 0.1)) > (0.4*((RydHQB_Recklessness/1.2) + 1))) or not (_effective) or not (_ammo)) then {_solready = false};

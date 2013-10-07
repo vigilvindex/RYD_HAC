@@ -7,7 +7,7 @@ sleep RydHQ_Wait;
 
 waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
-leaderHQ sidechat "HAC 1.44 is here";
+leaderHQ sidechat "HAC 1.45 is here";
 
 if (isMultiplayer) then
 	{
@@ -23,13 +23,13 @@ if (isMultiplayer) then
 		}
 	};
 
+call compile preprocessfile "RYD_HAC\VarInit.sqf";
+call compile preprocessfile "RYD_HAC\RHQLibrary.sqf";
+call compile preprocessfile "RYD_HAC\HAC_fnc.sqf";
+
 RydHQ_Fronts = false;
 [] execVM "RYD_HAC\Front.sqf";
 waituntil {(RydHQ_Fronts)};
-
-call compile preprocessfile "RYD_HAC\RHQLibrary.sqf";
-call compile preprocessfile "RYD_HAC\VarInit.sqf";
-call compile preprocessfile "RYD_HAC\HAC_fnc.sqf";
 
 if (RydHQ_TimeM) then 
 	{
@@ -58,20 +58,20 @@ if (((RydHQ_Debug) or (RydHQB_Debug) or (RydHQC_Debug) or (RydHQD_Debug) or (Ryd
 
 RydxHQ_AllLeaders = [];
 
-if not (isNil ("leaderHQ")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQ]};
-if not (isNil ("leaderHQB")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQB]};
-if not (isNil ("leaderHQC")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQC]};
-if not (isNil ("leaderHQD")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQD]};
-if not (isNil ("leaderHQE")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQE]};
-if not (isNil ("leaderHQF")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQF]};
-if not (isNil ("leaderHQG")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQG]};
-if not (isNil ("leaderHQH")) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQH]};
+if not (isNull leaderHQ) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQ]};
+if not (isNull leaderHQB) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQB]};
+if not (isNull leaderHQC) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQC]};
+if not (isNull leaderHQD) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQD]};
+if not (isNull leaderHQE) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQE]};
+if not (isNull leaderHQF) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQF]};
+if not (isNull leaderHQG) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQG]};
+if not (isNull leaderHQH) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQH]};
 
-if not (isNil ("leaderHQ")) then {[] spawn A_HQSitRep; sleep 5};
-if not (isNil ("leaderHQB")) then {[] spawn B_HQSitRep; sleep 5};
-if not (isNil ("leaderHQC")) then {[] spawn C_HQSitRep; sleep 5};
-if not (isNil ("leaderHQD")) then {[] spawn D_HQSitRep; sleep 5};
-if not (isNil ("leaderHQE")) then {[] spawn E_HQSitRep; sleep 5};
-if not (isNil ("leaderHQF")) then {[] spawn F_HQSitRep; sleep 5};
-if not (isNil ("leaderHQG")) then {[] spawn G_HQSitRep; sleep 5};
-if not (isNil ("leaderHQH")) then {[] spawn H_HQSitRep};
+if not (isNull leaderHQ) then {[] spawn A_HQSitRep; sleep 5};
+if not (isNull leaderHQB) then {[] spawn B_HQSitRep; sleep 5};
+if not (isNull leaderHQC) then {[] spawn C_HQSitRep; sleep 5};
+if not (isNull leaderHQD) then {[] spawn D_HQSitRep; sleep 5};
+if not (isNull leaderHQE) then {[] spawn E_HQSitRep; sleep 5};
+if not (isNull leaderHQF) then {[] spawn F_HQSitRep; sleep 5};
+if not (isNull leaderHQG) then {[] spawn G_HQSitRep; sleep 5};
+if not (isNull leaderHQH) then {[] spawn H_HQSitRep};

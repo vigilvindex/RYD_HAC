@@ -20,7 +20,7 @@ RYD_BBArrRefresh =
 		RydHQ_EValue
 		];
 
-	if not (isNil "leaderHQB") then 
+	if not (isNull leaderHQB) then 
 		{
 		RydBB_arrB = [
 			RydHQB_Friends,
@@ -43,7 +43,7 @@ RYD_BBArrRefresh =
 			]
 		};
 
-	if not (isNil "leaderHQC") then 
+	if not (isNull leaderHQC) then 
 		{
 		RydBB_arrC = [
 			RydHQC_Friends,
@@ -66,7 +66,7 @@ RYD_BBArrRefresh =
 			]
 		};
 
-	if not (isNil "leaderHQD") then 
+	if not (isNull leaderHQD) then 
 		{
 		RydBB_arrD = [
 			RydHQD_Friends,
@@ -89,7 +89,7 @@ RYD_BBArrRefresh =
 			]
 		};
 
-	if not (isNil "leaderHQE") then 
+	if not (isNull leaderHQE) then 
 		{
 		RydBB_arrE = [
 			RydHQE_Friends,
@@ -112,7 +112,7 @@ RYD_BBArrRefresh =
 			]
 		};
 
-	if not (isNil "leaderHQF") then 
+	if not (isNull leaderHQF) then 
 		{
 		RydBB_arrF = [
 			RydHQF_Friends,
@@ -135,7 +135,7 @@ RYD_BBArrRefresh =
 			]
 		};
 
-	if not (isNil "leaderHQG") then 
+	if not (isNull leaderHQG) then 
 		{
 		RydBB_arrG = [
 			RydHQG_Friends,
@@ -158,7 +158,7 @@ RYD_BBArrRefresh =
 			]
 		};
 
-	if not (isNil "leaderHQH") then 
+	if not (isNull leaderHQH) then 
 		{
 		RydBB_arrH = [
 			RydHQH_Friends,
@@ -2111,7 +2111,8 @@ RYD_BBSimpleD =
 				};
 
 			_lPos = (group _x) getVariable "LastCenter";
-			_frCenter = _lPos;
+			_frCenter = getPosATL (vehicle _x);
+			if not (isNil "_lPos") then {_frCenter = _lPos};
 
 			_midX = 0;
 			_midY = 0;

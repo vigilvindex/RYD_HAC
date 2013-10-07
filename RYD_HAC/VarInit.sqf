@@ -1136,6 +1136,15 @@ if not (isNil ("leaderHQH")) then
 	if (isNil ("RydHQH_Obj3")) then {RydHQH_Obj3 = RydHQH_Obj2};
 	if (isNil ("RydHQH_Obj4")) then {RydHQH_Obj4 = RydHQH_Obj3};
 	};
+	
+if (isNil ("leaderHQ")) then {leaderHQ = objNull};
+if (isNil ("leaderHQB")) then {leaderHQB = objNull};
+if (isNil ("leaderHQC")) then {leaderHQC = objNull};
+if (isNil ("leaderHQD")) then {leaderHQD = objNull};
+if (isNil ("leaderHQE")) then {leaderHQE = objNull};
+if (isNil ("leaderHQF")) then {leaderHQF = objNull};
+if (isNil ("leaderHQG")) then {leaderHQG = objNull};
+if (isNil ("leaderHQH")) then {leaderHQH = objNull};
 
 RydxHQ_Done = true;
 RydxHQB_Done = true;

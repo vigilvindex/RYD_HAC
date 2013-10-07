@@ -183,8 +183,8 @@ while {not (isNull RydHQB)} do
 			if (not (isNull _x) and ((count (units _x)) >= 1)) then 
 				{
 				_unitvar = str _x;
-				_nominal = _x getVariable ("Nominal" + (str _x));
-				if (isNil ("_nominal")) then {_x setVariable [("Nominal" + _unitvar),(count (units _x)),true];_nominal = _x getVariable ("Nominal" + (str _x))};
+				_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
+				if (isNil ("_nominal")) then {_x setVariable [("Nominal" + _unitvar),(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
 				_current = count (units _x);
 				if (((_nominal/(_current + 0.1)) > 2) and (isNull (assignedVehicle (leader _x)))) then 
 					{

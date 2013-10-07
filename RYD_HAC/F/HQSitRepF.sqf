@@ -923,7 +923,7 @@ while {not ((isNull RydHQF) or (RydHQF_Surrender))} do
 			}
 		};
 
-	if (((count RydHQF_KnEnemies) > 0) and ((count RydHQF_ArtG) > 0)) then {[RydHQF_ArtG,RydHQF_KnEnemies,(RydHQF_EnHArmor + RydHQF_EnMArmor + RydHQF_EnLArmor),RydHQF_Friends,RydHQF_Debug,leaderHQF] call RYD_CFF};
+	if (((count RydHQF_KnEnemies) > 0) and ((count RydHQF_ArtG) > 0) and (RydHQF_ArtyShells > 0)) then {[RydHQF_ArtG,RydHQF_KnEnemies,(RydHQF_EnHArmor + RydHQF_EnMArmor + RydHQF_EnLArmor),RydHQF_Friends,RydHQF_Debug,leaderHQF] call RYD_CFF};
 
 	if (isNil ("RydHQF_Order")) then {RydHQF_Order = "ATTACK"};
 	_gauss100 = (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10);

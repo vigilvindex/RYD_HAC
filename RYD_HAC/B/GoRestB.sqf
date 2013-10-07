@@ -221,31 +221,51 @@ _UL = leader _unitG;if not (isPlayer _UL) then {if (_timer <= 60) then {if ((ran
 waituntil 
 	{
 	sleep 60;
+	
 	_vehready = true;
 	_solready = true;
 	_effective = true;
 	_ammo = true;
 	_Gdamage = 0;
+	_alive = true;
+	
+	if not (isNull _unitG) then
 		{
-		_Gdamage = _Gdamage + (damage _x);
-		if ((count (magazines _x)) == 0) exitWith {_ammo = false};
-		if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
+		if (({alive _x} count (units _unitG)) > 0) then
+			{
+	
+				{
+				_Gdamage = _Gdamage + (damage _x);
+				if ((count (magazines _x)) == 0) exitWith {_ammo = false};
+				if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
+				}
+			foreach (units _unitG);
+
+			_nominal = _unitG getVariable [("Nominal" + (str _unitG)),count (units _unitG)];
+			_current = count (units _unitG);
+			_Gdamage = _Gdamage + (_nominal - _current);
+			if (((_Gdamage/(_current + 0.1)) > (0.4*((RydHQB_Recklessness/1.2) + 1))) or not (_effective) or not (_ammo)) then {_solready = false};
+
+				{
+				_veh = assignedvehicle _x;
+				if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in ((RydHQB_AirG - RydHQB_NCAirG) + (RydHQB_HArmorG + RydHQB_LArmorG + (RydHQB_CarsG - (RydHQB_NCCargoG + RydHQB_SupportG))))) and ((count (magazines _veh)) == 0)) and not ((group _x) in RydHQB_RAirG))) exitwith {_vehready = false};
+				}
+			foreach (units _unitG);
+			}
+		else
+			{
+			_alive = false
+			}
 		}
-	foreach (units _unitG);
-
-	_nominal = _unitG getVariable ("Nominal" + (str _unitG));
-	_current = count (units _unitG);
-	_Gdamage = _Gdamage + (_nominal - _current);
-	if (((_Gdamage/(_current + 0.1)) > (0.4*((RydHQB_Recklessness/1.2) + 1))) or not (_effective) or not (_ammo)) then {_solready = false};
-
+	else
 		{
-		_veh = assignedvehicle _x;
-		if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in ((RydHQB_AirG - RydHQB_NCAirG) + (RydHQB_HArmorG + RydHQB_LArmorG + (RydHQB_CarsG - (RydHQB_NCCargoG + RydHQB_SupportG))))) and ((count (magazines _veh)) == 0)) and not ((group _x) in RydHQB_RAirG))) exitwith {_vehready = false};
-		}
-	foreach (units _unitG);
-	((_vehready) and (_solready))
+		_alive = false
+		};
+		
+	(((_vehready) and (_solready)) or not (_alive))
 	};
 
+if not (_alive) exitWith {if ((RydHQB_Debug) or (isPlayer (leader _unitG))) then {deleteMarker ("markRest" + str (_unitG))};RydHQB_Exhausted = RydHQB_Exhausted - [_unitG]};
 if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) removeSimpleTask _task};
 
 if ((RydHQB_Debug) or (isPlayer (leader _unitG))) then {deleteMarker ("markRest" + str (_unitG))};
