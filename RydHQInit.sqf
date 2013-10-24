@@ -7,7 +7,7 @@ sleep RydHQ_Wait;
 
 waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
-leaderHQ sidechat "HAC 1.45 is here";
+leaderHQ sidechat "HAC 1.46 is here";
 
 if (isMultiplayer) then
 	{
@@ -24,7 +24,6 @@ if (isMultiplayer) then
 	};
 
 call compile preprocessfile "RYD_HAC\VarInit.sqf";
-call compile preprocessfile "RYD_HAC\RHQLibrary.sqf";
 call compile preprocessfile "RYD_HAC\HAC_fnc.sqf";
 
 RydHQ_Fronts = false;

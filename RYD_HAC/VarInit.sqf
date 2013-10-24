@@ -103,6 +103,8 @@ if (isNil ("RydHQ_ACRLib")) then {RydHQ_ACRLib = false};
 if (isNil ("RydHQ_BAFLib")) then {RydHQ_BAFLib = false};
 if (isNil ("RydHQ_PMCLib")) then {RydHQ_PMCLib = false};
 
+call compile preprocessfile "RYD_HAC\RHQLibrary.sqf";
+
 if (isNil "RydxHQ_AIChatDensity") then {RydxHQ_AIChatDensity = 10};
 if (isNil "RydxHQ_NEAware") then {RydxHQ_NEAware = 0};
 if (isNil "RydxHQ_MARatio") then {RydxHQ_MARatio = [-1,-1,-1,-1]};

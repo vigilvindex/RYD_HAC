@@ -2089,7 +2089,6 @@ RYD_CFF_TGT =
 	foreach _targets;
 
 	_ValMax = 0;
-	_target = _targets select 0;
 
 		{
 		_trgValS = _x getVariable ["CFF_Temptation",0];
@@ -3568,7 +3567,13 @@ RYD_SizeOrd =
 		_ix = _highest select 1;
 		_highest = _highest select 0;
 		
-		_final set [(count _final),_highest];
+		if not (isNil "_highest") then 
+			{
+			if not (isNull _highest) then
+				{
+				_final set [(count _final),_highest];
+				}
+			};
 
 		_array set [_ix,"Delete"];
 		_array = _array - ["Delete"]
@@ -3590,7 +3595,14 @@ RYD_RandomOrd =
 		_select = floor (random (count _array));
 		_random = _array select _select;
 		
-		_final set [(count _final),_random];
+		if not (isNil "_random") then 
+			{
+			if not (isNull _random) then
+				{
+				_final set [(count _final),_random];
+				}
+			};
+			
 		_array = _array - [_random];
 
 		//_array set [_select,"Delete"];

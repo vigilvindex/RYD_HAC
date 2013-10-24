@@ -49,46 +49,49 @@ RydHQD_ReconAv = [];
 _onlyL = RydHQD_LArmorG - RydHQD_MArmorG;
 
 	{
-	_unitvar = str _x;
-	if (RydHQD_Orderfirst) then {_x setVariable ["Nominal" + _unitvar,(count (units _x))]};
-	_busy = false;
-	_busy = _x getvariable ("Busy" + _unitvar);
-	if (isNil ("_busy")) then {_busy = false};
-	_vehready = true;
-	_solready = true;
-	_effective = true;
-	_ammo = true;
-	_Gdamage = 0;
+	if not (isNull _x) then
 		{
-		_Gdamage = _Gdamage + (damage _x);
-		 if ((count (magazines _x)) == 0) exitWith {_ammo = false};
-		//_ammo = _ammo + (count (magazines _x));
-		if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
-		}
-	foreach (units _x);
-	_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
-	_current = count (units _x);
-	_Gdamage = _Gdamage + (_nominal - _current);
-
-	if (((_Gdamage/(_current + 0.1)) > (0.4*((RydHQD_Recklessness/1.2) + 1))) or not (_effective) or not (_ammo)) then 
-		{
-		_solready = false;
-		if not (_ammo) then
+		_unitvar = str _x;
+		if (RydHQD_Orderfirst) then {_x setVariable ["Nominal" + _unitvar,(count (units _x))]};
+		_busy = false;
+		_busy = _x getvariable ("Busy" + _unitvar);
+		if (isNil ("_busy")) then {_busy = false};
+		_vehready = true;
+		_solready = true;
+		_effective = true;
+		_ammo = true;
+		_Gdamage = 0;
 			{
-			_x setVariable ["LackAmmo",true]
+			_Gdamage = _Gdamage + (damage _x);
+			 if ((count (magazines _x)) == 0) exitWith {_ammo = false};
+			//_ammo = _ammo + (count (magazines _x));
+			if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
 			}
-		};
+		foreach (units _x);
+		_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
+		_current = count (units _x);
+		_Gdamage = _Gdamage + (_nominal - _current);
 
-	_ammo = 0;
-	_veh = ObjNull;
+		if (((_Gdamage/(_current + 0.1)) > (0.4*((RydHQD_Recklessness/1.2) + 1))) or not (_effective) or not (_ammo)) then 
+			{
+			_solready = false;
+			if not (_ammo) then
+				{
+				_x setVariable ["LackAmmo",true]
+				}
+			};
 
-		{
-		_veh = assignedvehicle _x;
-		if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in ((RydHQD_AirG - (RydHQD_NCAirG + RydHQD_RAirG)) + (RydHQD_HArmorG + RydHQD_LArmorG + (RydHQD_CarsG - (RydHQD_NCCargoG + RydHQD_SupportG))))) and ((count (magazines _veh)) == 0)))) exitwith {_vehready = false};
+		_ammo = 0;
+		_veh = ObjNull;
+
+			{
+			_veh = assignedvehicle _x;
+			if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in ((RydHQD_AirG - (RydHQD_NCAirG + RydHQD_RAirG)) + (RydHQD_HArmorG + RydHQD_LArmorG + (RydHQD_CarsG - (RydHQD_NCCargoG + RydHQD_SupportG))))) and ((count (magazines _veh)) == 0)))) exitwith {_vehready = false};
+			}
+		foreach (units _x);
+
+		if (not (_x in (RydHQD_ReconAv + RydHQD_SpecForG)) and not (_busy) and (_vehready) and ((_solready) or (_x in RydHQD_RAirG))) then {RydHQD_ReconAv set [(count RydHQD_ReconAv),_x]};
 		}
-	foreach (units _x);
-
-	if (not (_x in (RydHQD_ReconAv + RydHQD_SpecForG)) and not (_busy) and (_vehready) and ((_solready) or (_x in RydHQD_RAirG))) then {RydHQD_ReconAv set [(count RydHQD_ReconAv),_x]};
 	}
 foreach ((RydHQD_RAirG + RydHQD_ReconG + RydHQD_FOG + RydHQD_SnipersG + RydHQD_NCrewInfG - (RydHQD_SupportG + RydHQD_NCCargoG) + _onlyL) - (RydHQD_AOnly + RydHQD_CargoOnly));
 
@@ -113,43 +116,46 @@ if (isNil ("RydHQD_Exhausted")) then {RydHQD_Exhausted = []};
 if (isNil ("RydHQD_AttackReserve")) then {RydHQD_AttackReserve = (0.5 * (0.5 + (RydHQD_Circumspection/1.5)))};
 
 	{
-	_unitvar = str _x;
-	if (RydHQD_Orderfirst) then {_x setVariable [("Nominal" + _unitvar),(count (units _x))]};
-	_busy = false;
-	_busy = _x getvariable ("Busy" + _unitvar);
-	if (isNil ("_busy")) then {_busy = false};
-	_vehready = true;
-	_solready = true;
-	_effective = true;
-	_ammo = true;
-	_Gdamage = 0;
+	if not (isNull _x) then
 		{
-		_Gdamage = _Gdamage + (damage _x);
-		if ((count (magazines _x)) == 0) exitWith {_ammo = false};
-		if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
-		}
-	foreach (units _x);
-	_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
-	_current = count (units _x);
-	_Gdamage = _Gdamage + (_nominal - _current);
-	if (((_Gdamage/(_current + 0.1)) > (0.4*((RydHQD_Recklessness/1.2) + 1))) or not (_effective) or not (_ammo)) then {_solready = false};
-	_ammo = 0;
+		_unitvar = str _x;
+		if (RydHQD_Orderfirst) then {_x setVariable [("Nominal" + _unitvar),(count (units _x))]};
+		_busy = false;
+		_busy = _x getvariable ("Busy" + _unitvar);
+		if (isNil ("_busy")) then {_busy = false};
+		_vehready = true;
+		_solready = true;
+		_effective = true;
+		_ammo = true;
+		_Gdamage = 0;
+			{
+			_Gdamage = _Gdamage + (damage _x);
+			if ((count (magazines _x)) == 0) exitWith {_ammo = false};
+			if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
+			}
+		foreach (units _x);
+		_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
+		_current = count (units _x);
+		_Gdamage = _Gdamage + (_nominal - _current);
+		if (((_Gdamage/(_current + 0.1)) > (0.4*((RydHQD_Recklessness/1.2) + 1))) or not (_effective) or not (_ammo)) then {_solready = false};
+		_ammo = 0;
 
-		{
-		_veh = assignedvehicle _x;
-		if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in ((RydHQD_AirG - RydHQD_NCAirG) + (RydHQD_HArmorG + RydHQD_LArmorG + (RydHQD_CarsG - (RydHQD_NCCargoG + RydHQD_SupportG))))) and ((count (magazines _veh)) == 0)))) exitwith {_vehready = false};
+			{
+			_veh = assignedvehicle _x;
+			if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in ((RydHQD_AirG - RydHQD_NCAirG) + (RydHQD_HArmorG + RydHQD_LArmorG + (RydHQD_CarsG - (RydHQD_NCCargoG + RydHQD_SupportG))))) and ((count (magazines _veh)) == 0)))) exitwith {_vehready = false};
+			}
+		foreach (units _x);
+		
+		if (not (_x in RydHQD_AttackAv) and not (_busy) and not (_x in RydHQD_FlankAv) and (_vehready) and (_solready) and not (_x in (RydHQD_StaticG + RydHQD_ArtG + RydHQD_NavalG + RydHQD_SpecForG + RydHQD_CargoOnly))) then {RydHQD_AttackAv set [(count RydHQD_AttackAv),_x]};
+		if (not (_x in RydHQD_Exhausted) and (not (_vehready) or not (_solready))) then {RydHQD_Exhausted = RydHQD_Exhausted + [_x]};
+	 
+		if ((RydHQD_Withdraw > 0) and not (_x in (RydHQD_SpecForG + RydHQD_SnipersG))) then
+			{
+			_inD = _x getVariable "NearE";
+			if (isNil "_inD") then {_inD = 0};
+			if (not (_x in RydHQD_Exhausted) and ((random (2 + RydHQD_Recklessness)) < (_inD * RydHQD_Withdraw))) then {RydHQD_Exhausted set [(count RydHQD_Exhausted),_x]}; 
+			};
 		}
-	foreach (units _x);
-	
-	if (not (_x in RydHQD_AttackAv) and not (_busy) and not (_x in RydHQD_FlankAv) and (_vehready) and (_solready) and not (_x in (RydHQD_StaticG + RydHQD_ArtG + RydHQD_NavalG + RydHQD_SpecForG + RydHQD_CargoOnly))) then {RydHQD_AttackAv set [(count RydHQD_AttackAv),_x]};
-	if (not (_x in RydHQD_Exhausted) and (not (_vehready) or not (_solready))) then {RydHQD_Exhausted = RydHQD_Exhausted + [_x]};
- 
-	if ((RydHQD_Withdraw > 0) and not (_x in (RydHQD_SpecForG + RydHQD_SnipersG))) then
-		{
-		_inD = _x getVariable "NearE";
-		if (isNil "_inD") then {_inD = 0};
-		if (not (_x in RydHQD_Exhausted) and ((random (2 + RydHQD_Recklessness)) < (_inD * RydHQD_Withdraw))) then {RydHQD_Exhausted set [(count RydHQD_Exhausted),_x]}; 
-		};
 	}
 foreach ((RydHQD_Friends - (RydHQD_reconG + RydHQD_FOG + (RydHQD_NCCargoG - RydHQD_NCrewInfG) + RydHQD_SupportG)) - RydHQD_ROnly);
 RydHQD_AttackAv = [RydHQD_AttackAv] call RYD_RandomOrd;
