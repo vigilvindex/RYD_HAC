@@ -5,7 +5,7 @@ if (isNil ("RydHQF_SRep")) then {RydHQF_SRep = true};
 if (isNil ("RydHQF_ExRepair")) then {RydHQF_ExRepair = []};
 if (isNil ("RydHQF_RepPoints")) then {RydHQF_RepPoints = []};
 
-_rep = RHQ_Rep + ["T810Repair_Des_ACR","T810Repair_ACR","UralRepair_TK_EP1","MtvrRepair_DES_EP1","V3S_Repair_TK_GUE_EP1","UralRepair_INS","KamazRepair","UralRepair_CDF","MtvrRepair"] - RHQs_Rep;
+_rep = RHQ_Rep + ["I_Truck_02_box_F","O_Truck_02_box_F","B_APC_Tracked_01_CRV_F","B_Truck_01_Repair_F"] - RHQs_Rep;
 _noenemy = true;
 sleep 5;
 while {not (isNull RydHQF)} do

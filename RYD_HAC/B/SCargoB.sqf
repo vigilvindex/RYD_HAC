@@ -99,7 +99,7 @@ if not (_emptyV) then
 
 	_task2 = [(leader _unitG),["Wait and get into vehicle.", "GET IN", ""],(position (leader _unitG))] call RYD_AddTask;
 
-	_wp = [_GD,_Lpos,"MOVE","CARELESS","YELLOW","FULL",["true","deletewaypoint [(group this), 0]"]] call RYD_WPadd;
+	_wp = [_GD,_Lpos,"MOVE","CARELESS","YELLOW","FULL",["true","{(vehicle _x) land 'GET IN'} foreach (units (group this));deletewaypoint [(group this), 0]"]] call RYD_WPadd;
 
 	if (_ChosenOne isKindOf "Air") then 
 		{

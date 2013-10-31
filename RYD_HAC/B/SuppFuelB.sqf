@@ -5,7 +5,7 @@ if (isNil ("RydHQB_SFuel")) then {RydHQB_SFuel = true};
 if (isNil ("RydHQB_ExRefuel")) then {RydHQB_ExRefuel = []};
 if (isNil ("RydHQB_FuelPoints")) then {RydHQB_FuelPoints = []};
 
-_fuel = RHQ_Fuel + ["T810Refuel_Des_ACR","T810Refuel_ACR","UralRefuel_TK_EP1","MtvrRefuel_DES_EP1","V3S_Refuel_TK_GUE_EP1","UralRefuel_INS","KamazRefuel","UralRefuel_CDF","MtvrRefuel"] - RHQs_Fuel;
+_fuel = RHQ_Fuel + ["I_Truck_02_fuel_F","O_Truck_02_fuel_F","B_G_Van_01_fuel_F","B_APC_Tracked_01_CRV_F","B_Truck_01_fuel_F"] - RHQs_Fuel;
 _noenemy = true;
 sleep 3;
 while {not (isNull RydHQB)} do

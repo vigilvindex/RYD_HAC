@@ -84,7 +84,7 @@ if (isPlayer _UL) then {[_UL,leaderHQH] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQH_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [[_posX,_posY],_unitG,"markRecon","ColorRed","ICON","DOT","Rec H"," - NON-COMBAT RECON"] call RYD_Mark;
+	_i = [[_posX,_posY],_unitG,"markRecon","ColorRed","ICON","mil_dot","Rec H"," - NON-COMBAT RECON"] call RYD_Mark;
 	};
 
 _AV = assignedVehicle _UL;
@@ -251,8 +251,8 @@ while {(_nothing)} do
 				}
 			else
 				{
-				[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_End] call RE;
-				[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return.", "Move", ""]] call RE
+				[_task,(leader _unitG),["Return.", "Move", ""],_End,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+				 
 				}
 			};
 

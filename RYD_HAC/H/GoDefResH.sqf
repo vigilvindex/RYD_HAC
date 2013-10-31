@@ -97,7 +97,7 @@ if (isPlayer _UL) then {[_UL,leaderHQH] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQH_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [_DefPos,_unitG,"markDef","ColorRedAlpha","ICON","DOT","DRes H"," - DEFEND POSITION"] call RYD_Mark
+	_i = [_DefPos,_unitG,"markDef","ColorWhite","ICON","mil_dot","DRes H"," - DEFEND POSITION"] call RYD_Mark
 	};
 
 _AV = assignedVehicle _UL;
@@ -138,7 +138,7 @@ _TED = [_posX,_posY];
 
 if ((RydHQH_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [_TED,_unitG,"markWatch","ColorGreenAlpha","ICON","DOT","H","H",[0.2,0.2]] call RYD_Mark
+	_i = [_TED,_unitG,"markWatch","Default","ICON","mil_dot","H","H",[0.2,0.2]] call RYD_Mark
 	};
 
 _dir = [(getPosATL (vehicle (leader _unitG))),_TED,10] call RYD_AngTowards;
@@ -305,8 +305,8 @@ waituntil
 				}
 			else
 				{
-				[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_RnfP] call RE;
-				[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Reinforce defense of designated position.", "Move", ""]] call RE
+				[_task,(leader _unitG),["Reinforce defense of designated position.", "Move", ""],_RnfP,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+				 
 				}
 			};
 
@@ -319,7 +319,7 @@ waituntil
 
 		if ((RydHQH_Debug) or (isPlayer (leader _unitG))) then 
 			{
-			_i = [_RnfP,_unitG,"markReinf","ColorRedAlpha","ICON","DOT","Reinf H"," - REINFORCE POSITION",[0.3,0.3]] call RYD_Mark
+			_i = [_RnfP,_unitG,"markReinf","ColorWhite","ICON","mil_dot","Reinf H"," - REINFORCE POSITION",[0.3,0.3]] call RYD_Mark
 			}
 		};
 

@@ -1,6 +1,6 @@
 //MapCenter.sqf script code by Kempco
 
-disableSerialization;
+/*disableSerialization;
 
 openMap [true, false];
 
@@ -19,8 +19,4 @@ _y_max = _limit select 1;
 
 _map_center = [0.5*(_limit select 0),0.5*(_limit select 1)]; 
 
-openMap [false, false];
-
-RydBB_MapC = _map_center;
-RydBB_MapXMax = _x_max;
-RydBB_MapYMax = _y_max;
+openMap [false, false];*/

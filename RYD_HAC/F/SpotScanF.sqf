@@ -106,7 +106,7 @@ for [{_steepnessInitial = 1},{(_steepnessInitial >= 1) and not (_isdone)},{_stee
 					_goodmark setMarkerColor "ColorBlack";
 					_goodmark setMarkerShape "ICON";
 					_goodmark setMarkerSize [0.2,0.2];
-					((str _X)+(str _Y)) setMarkerType "DOT"
+					((str _X)+(str _Y)) setMarkerType "mil_dot"
 					}
 				};
 			if ((count RydHQF_GoodSpots) >= _Spotsneeded) exitwith {_isdone = true}

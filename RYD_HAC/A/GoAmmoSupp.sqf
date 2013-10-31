@@ -48,7 +48,7 @@ if (isPlayer _UL) then {[_UL,leaderHQ] spawn VoiceComm;sleep 3;waituntil {sleep 
 _alive = false;
 if ((RydHQ_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [[_posX,_posY],_unitG,"markAmmoSupp","ColorKhaki","ICON","End"," Reammo A"," - AMMO SUPPORT",[0.6,0.6],270] call RYD_Mark
+	_i = [[_posX,_posY],_unitG,"markAmmoSupp","ColorKhaki","ICON","mil_end"," Reammo A"," - AMMO SUPPORT",[0.6,0.6],270] call RYD_Mark
 	};
 
 _task = [(leader _unitG),["Deliver ammunition.", "Support", ""],(position _Trg)] call RYD_AddTask;
@@ -158,7 +158,7 @@ else
 					}
 				else
 					{
-					[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posX,_posY]] call RE;
+					[_task,(leader _unitG),["Provide support to nearby units. Stay in this area.", "Support", ""],[_posX,_posY],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;;
 					}
 				}
 			};
@@ -204,8 +204,8 @@ if (_drop) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_pos] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return.", "Move", ""]] call RE
+			[_task,(leader _unitG),["Return.", "Move", ""],_pos,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		}
 	};

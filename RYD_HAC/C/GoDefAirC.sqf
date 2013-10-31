@@ -40,7 +40,7 @@ while {not (_endThis)} do
 	_DefPos = [((position _Spot) select 0) + (random 1000) - 500,((position _Spot) select 1) + (random 1000) - 500];
 	if ((RydHQC_Debug) or (isPlayer (leader _unitG))) then 
 		{
-		_i = [_DefPos,_unitG,"markDef","ColorBrown","ICON","DOT","Air C"," - DEFEND AREA"] call RYD_Mark
+		_i = [_DefPos,_unitG,"markDef","ColorBrown","ICON","mil_dot","Air C"," - DEFEND AREA"] call RYD_Mark
 		};
 
 	_task = [(leader _unitG),["Provide air cover.", "S&D", ""],_DefPos] call RYD_AddTask;

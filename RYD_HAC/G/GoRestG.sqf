@@ -195,7 +195,7 @@ if (isPlayer _UL) then {[_UL,leaderHQG] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQG_Debug) or (isPlayer (leader _unitG))) then
 	{
-	_i = [[_posX,_posY],_unitG,"markRest","ColorGreenAlpha","ICON","mil_triangle","G"," - REST & REGROUP",[0.5,0.5]] call RYD_Mark
+	_i = [[_posX,_posY],_unitG,"markRest","Default","ICON","mil_triangle","G"," - REST & REGROUP",[0.5,0.5]] call RYD_Mark
 	};
 
 _task = [(leader _unitG),["Take a rest, take care of wounded, replenish ammo and wait for orders.", "Move", ""],[_posX,_posY]] call RYD_AddTask;

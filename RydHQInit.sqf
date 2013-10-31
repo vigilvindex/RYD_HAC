@@ -7,24 +7,16 @@ sleep RydHQ_Wait;
 
 waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
-leaderHQ sidechat "HAC 1.46 is here";
+_hi = "HAL 1.0 is here";
 
-if (isMultiplayer) then
-	{
-	_ModSideHQ = createCenter sideLogic;
+if ((random 100) < 1) then {_hi = "Good Morning, Dave."};
 
-	_gpL = creategroup sideLogic;
-	BIS_missionScope = _gpL createUnit ["Logic", [1000,1000], [], 0, "NONE"];
-	publicVariable "BIS_missionScope";
-
-	waitUntil
-		{
-		not (isNil "BIS_MPF_InitDone")
-		}
-	};
+leaderHQ sidechat _hi;
 
 call compile preprocessfile "RYD_HAC\VarInit.sqf";
 call compile preprocessfile "RYD_HAC\HAC_fnc.sqf";
+
+publicVariable "RYD_MP_Sidechat";
 
 RydHQ_Fronts = false;
 [] execVM "RYD_HAC\Front.sqf";

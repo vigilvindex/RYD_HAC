@@ -15,7 +15,7 @@ private
 	"_nilStance","_stance","_inert","_knEnemy","_ownVal","_perDirPos","_dpX","_dpY","_dirAdd","_angle","_perPos","_perX","_perY","_BBalive","_HQ","_BBUnit","_leftFlankName",
 	"_rightFlankName","_leftName","_rightName","_frontName","_isLeftName","_isFlankName","_isRearName","_centerFrontName","_xPr","_yPr","_objCount","_QH","_initD","_aliveHQ","_objRad",
 	"_goingReserve0","_lastGLeft","_lastGRight","_lastGAhead","_aliveHQ","_newL","_lastGLeftN","_lastGRightN","_lastGAheadN","_fixedInitStatus","_pos","_enAr","_eA","_eP","_eT","_sA","_sP",
-	"_strArea0","_k","_j","_flankOne","_goingOne","_flankTwo","_goingTwo","_resCand","_ctVal"
+	"_strArea0","_k","_j","_flankOne","_goingOne","_flankTwo","_goingTwo","_resCand","_ctVal","_mapSize"
 	];
 
 _BBHQs = (_this select 0) select 0;
@@ -74,9 +74,13 @@ if (_BBSide == "A") then
 		}
 	else
 		{
-		[] spawn MapCenter;
-
-		waitUntil {not (isNil "RydBB_MapC")};
+		//[] spawn MapCenter;
+		_mapSize = getNumber (configFile >> "CfgWorlds" >> worldName >> "mapSize");
+		
+		RydBB_MapXMax = _mapSize;
+		RydBB_MapYMax = RydBB_MapXMax;
+		RydBB_MapC = [_mapSize/2,_mapSize/2];
+		//waitUntil {not (isNil "RydBB_MapC")};
 		_cntr = RydBB_MapC
 		};
 
@@ -109,16 +113,17 @@ if (_BBSide == "A") then
 
 	RydBB_Sectors = ([_cntr,_lng,0,_nmbr] call RYD_Sectorize) select 0;
 /*
-	_markers = [];
+	//_markers = [];
 	
 		{
-		_mark = "sector" + str (random 1000);
-		_mark = [_mark,position _x,"ColorBlue","RECTANGLE",size _x,direction _x,1,"Border",""] call RYD_Marker;
-		_markers set [(count _markers),_mark];
-		_x setVariable ["Over_Mark",_mark];
+		diag_log format ["Sector: %1",_x];
+		//_mark = "sector" + str (random 1000);
+		//_mark = [_mark,position _x,"ColorBlue","RECTANGLE",size _x,direction _x,1,"Border",""] call RYD_Marker;
+		//_markers set [(count _markers),_mark];
+		//_x setVariable ["Over_Mark",_mark];
 		}
-	foreach RydBB_Sectors;
-*/	
+	foreach RydBB_Sectors;*/
+	
 
 	_nbr = 0;
 
@@ -638,7 +643,7 @@ if ((true) and (true)) then
 				_alpha = 0.1;
 				if ((_taken) and (_BBSide == "A")) then {_color = "ColorBlue";_alpha = 0.5};
 				if ((_taken) and (_BBSide == "B")) then {_color = "ColorRed";_alpha = 0.5};
-				_mark = [_mark,_posStr,_color,"ICON",[_valStr/2,_valStr/2],0,_alpha,"DOT",(str _valStr)] call RYD_Marker;
+				_mark = [_mark,_posStr,_color,"ICON",[_valStr/2,_valStr/2],0,_alpha,"mil_dot",(str _valStr)] call RYD_Marker;
 
 				[_x,_mark,_BBSide] spawn RYD_ObjMark
 				}

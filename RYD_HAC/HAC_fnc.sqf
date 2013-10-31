@@ -567,7 +567,7 @@ RYD_WPadd =
 						{
 						_wpn = 0;
 							{
-							//if (RydBB_Debug) then {_j = [_x,_gp,(str (random 1000)),"ColorPink","ICON","DOT",(str _wpn),"",[0.25,0.25]] call RYD_Mark};
+							//if (RydBB_Debug) then {_j = [_x,_gp,(str (random 1000)),"ColorPink","ICON","mil_dot",(str _wpn),"",[0.25,0.25]] call RYD_Mark};
 							_wpn = _wpn + 1;
 							_wp = _gp addWaypoint [_x, 0];
 							_wp setWaypointType "MOVE";
@@ -1551,90 +1551,63 @@ RYD_Wait =
 
 RYD_Smoke = 
 	{
-	private ["_gp","_UL","_lastV","_Scount"];	
+	private ["_gp","_lastV","_Scount","_unit","_muzzles","_mags","_sMuzzle","_mag"];	
 
 	_gp = _this select 0;
 
-	_UL = leader _gp;
-
 	_lastV = objNull;
-
 	_Scount = 0;
+	
 		{
-		if (((vehicle _x) == _x) and not (isPlayer _x)) then 
+		_unit = _x;
+		if (((vehicle _unit) == _unit) and not (isPlayer _unit)) then 
 			{
-			if (("SmokeShell" in (magazines _x)) or 
-				("SmokeShellYellow" in (magazines _x)) or 
-					("SmokeShellRed" in (magazines _x)) or 
-						("SmokeShellBlue" in (magazines _x)) or
-							("SmokeShellPurple" in (magazines _x)) or
-								("SmokeShellOrange" in (magazines _x)) or
-									("SmokeShellGreen" in (magazines _x))) then 
+			_muzzles = getArray (configFile >> "CfgWeapons" >> (primaryWeapon _unit) >> "muzzles");
+			_muzzles = _muzzles + (getArray (configFile >> "CfgWeapons" >> "Throw" >> "muzzles"));
+			_mags = magazines _unit;
+			
+			_sMuzzle = "";
+			_mag = "";
+			
 				{
-				_x selectWeapon "SmokeShellMuzzle";_x fire "SmokeShellMuzzle";_Scount = _Scount + 1
-				}
-			else
-				{
-				if ("1Rnd_Smoke_M203" in (magazines _x)) then 
+				if ((_x select 0) in _muzzles) then
 					{
-					_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","1Rnd_Smoke_M203"];_Scount = _Scount + 1
-					} 
-				else
+					_sMuzzle = _x select 0;
+					};
+					
+				if not (_sMuzzle in [""]) then
 					{
-					if ("1Rnd_SmokeRed_M203" in (magazines _x)) then
 						{
-						_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","1Rnd_SmokeRed_M203"];_Scount = _Scount + 1
-						} 
-					else
-						{
-						if ("1Rnd_SmokeGreen_M203" in (magazines _x)) then
+						if (_x in _mags) exitWith 
 							{
-							_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","1Rnd_SmokeGreen_M203"];_Scount = _Scount + 1
-							} 
-						else
-							{
-							if ("1Rnd_SmokeYellow_M203" in (magazines _x)) then 
-								{
-								_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","1Rnd_SmokeYellow_M203"];_Scount = _Scount + 1
-								}
-							else
-								{
-								if ("1Rnd_SMOKE_GP25" in (magazines _x)) then
-									{
-									_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","1Rnd_SMOKE_GP25"];_Scount = _Scount + 1
-									}
-								else
-									{
-									if ("1Rnd_SMOKERED_GP25" in (magazines _x)) then
-										{
-										_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","1Rnd_SMOKERED_GP25"];_Scount = _Scount + 1
-										}
-									else
-										{
-										if ("1Rnd_SMOKEGREEN_GP25" in (magazines _x)) then
-											{
-											_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","1Rnd_SMOKEGREEN_GP25"];_Scount = _Scount + 1
-											}
-										else
-											{
-											if ("1Rnd_SMOKEYELLOW_GP25" in (magazines _x)) then
-												{
-												_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","1Rnd_SMOKEYELLOW_GP25"];_Scount = _Scount + 1
-												}
-											}
-										}
-									}
-								}
+							_mag = _x
 							}
 						}
+					foreach (_x select 1)
+					};
+					
+				if not ("" in [_sMuzzle,_mag]) exitWith
+					{
+					_unit selectWeapon _sMuzzle;
+					if (_sMuzzle in ["EGLM","GL_3GL_F"]) then
+						{
+						_unit fire [_sMuzzle,_sMuzzle,_mag]
+						}
+					else
+						{
+						_unit fire _sMuzzle
+						};
+						
+					_Scount = _Scount + 1
 					}
 				}
+			foreach RydxHQ_SmokeMuzzles;
 			};
-
+			
 		if not (((vehicle _x) == _x) and not (_lastV == (vehicle _x))) then {_lastV = vehicle _x;_lastV selectWeapon "SmokeLauncher";_lastV fire "SmokeLauncher";_Scount = _Scount + 1};
-		if (_Scount >= 3) exitwith {};
+		if (_Scount > 2) exitwith {};
 		}
-	foreach (units _gp)
+	foreach (units _gp)	
 	};
 
 RYD_isNight = 
@@ -1701,70 +1674,49 @@ RYD_Flares =
 									}
 								};
 
-							if (not (_CFF) and not (isPlayer _UL)) then
+							if (not (_CFF) and not (isPlayer _UL) and (false)) then//manual flare turned off - fire command bad behavior - firing at own feet
 								{
 
 								_Scount = 0;
-
+								
 									{
-									if (((vehicle _x) == _x) and not (isPlayer _x)) then 
+									_unit = _x;
+									if (((vehicle _unit) == _unit) and not (isPlayer _unit)) then 
 										{
-										if ("FlareWhite_M203" in (magazines _x)) then 
+										_muzzles = getArray (configFile >> "CfgWeapons" >> (primaryWeapon _unit) >> "muzzles");
+										_mags = magazines _unit;
+										
+										_sMuzzle = "";
+										_mag = "";
+										
 											{
-											_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","FlareWhite_M203"];_Scount = _Scount + 1
-											} 
-										else
-											{
-											if ("FlareGreen_M203" in (magazines _x)) then
+											if ((_x select 0) in _muzzles) then
 												{
-												_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","FlareGreen_M203"];_Scount = _Scount + 1
-												} 
-											else
+												_sMuzzle = _x select 0;
+												};
+												
+											if not (_sMuzzle in [""]) then
 												{
-												if ("FlareRed_M203" in (magazines _x)) then
 													{
-													_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","FlareRed_M203"];_Scount = _Scount + 1
-													} 
-												else
-													{
-													if ("FlareYellow_M203" in (magazines _x)) then 
+													if (_x in _mags) exitWith 
 														{
-														_x selectWeapon "M203Muzzle";_x fire ["M203Muzzle","M203Muzzle","FlareYellow_M203"];_Scount = _Scount + 1
-														}
-													else 
-														{
-														if ("FlareWhite_GP25" in (magazines _x)) then 
-															{
-															_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","FlareWhite_GP25"];_Scount = _Scount + 1
-															}
-														else
-															{
-															if ("FlareGreen_GP25" in (magazines _x)) then
-																{
-																_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","FlareGreen_GP25"];_Scount = _Scount + 1
-																}
-															else
-																{
-																if ("FlareRed_GP25" in (magazines _x)) then
-																	{
-																	_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","FlareRed_GP25"];_Scount = _Scount + 1
-																	}
-																else
-																	{
-																	if ("FlareYellow_GP25" in (magazines _x)) then
-																		{
-																		_x selectWeapon "GP25Muzzle";_x fire ["GP25Muzzle","GP25Muzzle","FlareYellow_GP25"];_Scount = _Scount + 1
-																		}
-																	}
-																}
-															}
+														_mag = _x
 														}
 													}
+												foreach (_x select 1)
+												};
+												
+											if not ("" in [_sMuzzle,_mag]) exitWith
+												{
+												_unit selectWeapon _sMuzzle;
+												_unit fire [_sMuzzle,_sMuzzle,_mag];
+												_Scount = _Scount + 1
 												}
 											}
+										foreach RydxHQ_FlareMuzzles;
 										};
-					
-									if (_Scount >= 1) exitwith {};
+
+									if (_Scount > 0) exitwith {};
 									}
 								foreach (units _gp)
 								}
@@ -1782,207 +1734,41 @@ RYD_Flares =
 
 RYD_ArtyPrep = 
 	{
-	private ["_arty","_ModSideHQ","_so","_gp","_artymod","_magAdded","_vh","_SMOKEM119","_SMOKED30","_ILLUMM252","_ILLUMM119","_ILLUMD30","_ILLUMPODNOS","_amount",
-	"_BL","_mdls","_isSync","_magAdded","_SADARMM119","_SADARMD30","_HEM119","_HED30","_HEPODNOS","_HEMLRS","_HEGRAD","_WPM252","_hAmmo","_typeVh","_WPM119",
-	"_WPD30","_WPPODNOS","_HEM252","_WPM119","_WPD30","_WPPODNOS"];	
+	private ["_arty","_amount","_vh","_handled","_magTypes","_mags","_tp","_cnt"];	
 
 	_arty = _this select 0;
 	_amount = _this select 1;
+	
+	_amount = ceil _amount;
+	//if (_amount < 2) exitWith {};
 
-	_ModSideHQ = createCenter sideLogic;
-
-		{
-		_BL = leader _x;	
-
-		_so = synchronizedObjects _BL;
-		_mdls = [10,10,0] nearEntities [["BIS_ARTY_Logic"], 10];
-		_isSync = false;
-
+		{		
 			{
-			if (_BL in (synchronizedObjects _x)) exitWith {_isSync = true};
-			}
-		foreach _mdls;
-
-		if ((({(typeOf _x) in ["BIS_ARTY_Logic"]} count _so) == 0) and not (_isSync)) then 
-			{
-			_gp = creategroup sideLogic;
-			_artymod = _gp createUnit ["BIS_ARTY_Logic", [10,10], [], 0, "NONE"];
-			_artymod synchronizeObjectsAdd [(leader _x)];
-			};
-
-		_hAmmo = _x getVariable "HEAmmo";
-
-		if (isNil "_hAmmo") then 
-			{
-			_vh = assignedvehicle (leader _x);
-			_typeVh = typeOf _vh;
-
-			_x setVariable ["HEAmmo",_amount];
-			if (_typeVh in (RydHQ_Howitzer + RydHQ_Mortar)) then {_x setVariable ["IllumAmmo",_amount]};
-			if (_typeVh in (RydHQ_Howitzer + RydHQ_Mortar)) then {_x setVariable ["WPAmmo",_amount]};
-			if (_typeVh in RydHQ_Howitzer) then {_x setVariable ["SmokeAmmo",_amount]};
-			if (_typeVh in RydHQ_Howitzer) then {_x setVariable ["SADARMAmmo",ceil (_amount/10)]};
-
-			_magAdded = [];
-
+			_vh = vehicle _x;
+			_handled = _vh getVariable ["RydHQArtyAmmoHandled",false];
+			
+			if not (_handled) then
 				{
-				_vh = vehicle _x;
-				if not (_vh in _magAdded) then
+				_vh setVariable ["RydHQArtyAmmoHandled",true];
+				
+				_vh addEventHandler ["Fired",
 					{
-					_magAdded set [(count _magAdded),_vh];
-					//{_vh removemagazine _x} foreach (magazines _vh);
-					_SMOKEM119 = "ARTY_30Rnd_105mmSMOKE_M119";
-					_SMOKED30 = "ARTY_30Rnd_122mmSMOKE_D30";
-
-					_SADARMM119 = "ARTY_30Rnd_105mmSADARM_M119";
-					_SADARMD30 = "ARTY_30Rnd_122mmSADARM_D30";
-
-					_ILLUMM252 = "ARTY_8Rnd_81mmILLUM_M252";
-					_ILLUMM119 = "ARTY_30Rnd_105mmILLUM_M119";
-					_ILLUMD30 = "ARTY_30Rnd_122mmILLUM_D30";
-					_ILLUMPODNOS = "ARTY_8Rnd_82mmILLUM_2B14";
-
-					_HEM252 = "ARTY_8Rnd_81mmHE_M252";
-					_HEM119 = "ARTY_30Rnd_105mmHE_M119";
-					_HED30 = "ARTY_30Rnd_122mmHE_D30";
-					_HEPODNOS = "ARTY_8Rnd_82mmHE_2B14";
-					_HEMLRS = "ARTY_12Rnd_227mmHE_M270";
-					_HEGRAD = "ARTY_40Rnd_120mmHE_BM21";
-
-					_WPM252 = "ARTY_8Rnd_81mmWP_M252";
-					_WPM119 = "ARTY_30Rnd_105mmWP_M119";
-					_WPD30 = "ARTY_30Rnd_122mmWP_D30";
-					_WPPODNOS = "ARTY_8Rnd_82mmWP_2B14";
-
-					switch (typeOf _vh) do
-						{
-						case	"M119" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKEM119;
-							_vh addMagazine _ILLUMM119;
-							_vh addMagazine _HEM119;
-							_vh addMagazine _WPM119;
-							_vh addMagazine _SADARMM119;
-							}};
-
-						case	"M119_US_EP1" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKEM119;
-							_vh addMagazine _ILLUMM119;
-							_vh addMagazine _HEM119;
-							_vh addMagazine _WPM119;
-							_vh addMagazine _SADARMM119;
-							}};
-
-						case	"D30_RU" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKED30;
-							_vh addMagazine _ILLUMD30;
-							_vh addMagazine _HED30;
-							_vh addMagazine _WPD30;
-							_vh addMagazine _SADARMD30;
-							}};
-
-						case	"D30_INS" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKED30;
-							_vh addMagazine _ILLUMD30;
-							_vh addMagazine _HED30;
-							_vh addMagazine _WPD30;
-							_vh addMagazine _SADARMD30;
-							}};
-
-						case	"D30_CDF" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKED30;
-							_vh addMagazine _ILLUMD30;
-							_vh addMagazine _HED30;
-							_vh addMagazine _WPD30;
-							_vh addMagazine _SADARMD30;
-							}};
-
-						case	"D30_TK_EP1" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKED30;
-							_vh addMagazine _ILLUMD30;
-							_vh addMagazine _HED30;
-							_vh addMagazine _WPD30;
-							_vh addMagazine _SADARMD30;
-							}};
-
-						case	"D30_TK_GUE_EP1" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKED30;
-							_vh addMagazine _ILLUMD30;
-							_vh addMagazine _HED30;
-							_vh addMagazine _WPD30;
-							_vh addMagazine _SADARMD30;
-							}};
-
-						case	"D30_TK_INS_EP1" : {for "_i" from 1 to (ceil (_amount/30)) do 
-							{
-							_vh addMagazine _SMOKED30;
-							_vh addMagazine _ILLUMD30;
-							_vh addMagazine _HED30;
-							_vh addMagazine _WPD30;
-							_vh addMagazine _SADARMD30;
-							}};
-
-						case	"MLRS" : {for "_i" from 1 to (ceil (_amount/12)) do 
-							{
-							_vh addMagazine _HEMLRS;
-							}};
-
-						case	"MLRS_DES_EP1" : {for "_i" from 1 to (ceil (_amount/12)) do 
-							{
-							_vh addMagazine _HEMLRS;
-							}};
-
-						case	"GRAD_CDF" : {for "_i" from 1 to (ceil (_amount/40)) do 
-							{
-							_vh addMagazine _HEGRAD;
-							}};
-
-						case	"GRAD_INS" : {for "_i" from 1 to (ceil (_amount/40)) do 
-							{
-							_vh addMagazine _HEGRAD;
-							}};
-
-						case	"GRAD_RU" : {for "_i" from 1 to (ceil (_amount/40)) do 
-							{
-							_vh addMagazine _HEGRAD;
-							}};
-
-						case	"GRAD_TK_EP1" : {for "_i" from 1 to (ceil (_amount/40)) do 
-							{
-							_vh addMagazine _HEGRAD;
-							}};
-
-						case	"M252" : {for "_i" from 1 to (ceil (_amount/8)) do 
-							{
-							_vh addMagazine _ILLUMM252;
-							_vh addMagazine _HEM252;
-							_vh addMagazine _WPM252;
-							}};
-
-						case	"M252_US_EP1" : {for "_i" from 1 to (ceil (_amount/8)) do 
-							{
-							_vh addMagazine _ILLUMM252;
-							_vh addMagazine _HEM252;
-							_vh addMagazine _WPM252;
-							}};
-
-						default {for "_i" from 1 to (ceil (_amount/8)) do 
-							{
-							_vh addMagazine _ILLUMPODNOS;
-							_vh addMagazine _HEPODNOS;
-							_vh addMagazine _WPPODNOS;
-							}};
-						}
+					(_this select 0) setVariable ["RydHQ_ShotFired",true];
+					(_this select 0) setVariable ["RydHQ_ShotFired2",((_this select 0) getVariable ["RydHQ_ShotFired2",0]) + 1];
+					}];
+				
+				_magTypes = getArtilleryAmmo [_vh];
+				_mags = magazines _vh;
+				
+					{
+					_tp = _x;
+					_cnt = {_x in [_tp]} count _mags;
+					_vh addMagazines [_tp, _cnt * (_amount - 1)];
 					}
+				foreach _magTypes
 				}
-			foreach (units _x)
 			}
+		foreach (units _x)
 		}
 	foreach _arty;
 	};
@@ -2003,7 +1789,7 @@ RYD_CFF_TGT =
 		_potential = _x;
 		
 		_potL = vehicle (leader _potential);
-		_taken = (leader _potential) getVariable [("CFF_Taken" + str (leader _potential)),false];
+		_taken = (group _potential) getVariable ["CFF_Taken",false];
 
 		if not (isNull _potential) then
 			{
@@ -2054,7 +1840,7 @@ RYD_CFF_TGT =
 		if not ((vehicle _CL) == _CL) then 
 			{
 			_veh = vehicle _CL;
-			if (typeOf _veh in (RydHQ_Howitzer + RydHQ_Mortar + RydHQ_Rocket)) then {_artFactor = 10} else {_vehFactor = 500 + (rating _veh)};
+			if (typeOf _veh in (RydHQ_Howitzer + RydHQ_Mortar + RydHQ_Rocket + RydHQ_Mortar_A3 + RydHQ_SPMortar_A3 + RydHQ_Rocket_A3)) then {_artFactor = 10} else {_vehFactor = 500 + (rating _veh)};
 			};
 
 		_nearImp = (getPosATL _CL) nearEntities [["CAManBase","AllVehicles","Strategic","WarfareBBaseStructure","Fortress"],100];
@@ -2067,7 +1853,7 @@ RYD_CFF_TGT =
 				if not (_x == _vh) then 
 					{
 					_crowdFactor = _crowdFactor + 0.2;
-					if (typeOf _vh in (RydHQ_Howitzer + RydHQ_Mortar + RydHQ_Rocket)) then 
+					if (typeOf _vh in (RydHQ_Howitzer + RydHQ_Mortar + RydHQ_Rocket + RydHQ_Mortar_A3 + RydHQ_SPMortar_A3 + RydHQ_Rocket_A3)) then 
 						{
 						_crowdFactor = _crowdFactor + 0.2
 						}
@@ -2110,76 +1896,156 @@ RYD_CFF_TGT =
 
 	_target
 	};
-
-RYD_ArtyMission = 
-	{//_bArr = [_tgtPos,RydHQ_ArtG,"SADARM",6,leaderHQ] call RYD_ArtyMission;
-	private ["_pos","_artyAv","_vh","_hasAmmo","_minRange","_maxRange","_rangeNeeded","_battery","_artyGp","_template","_ammoCount","_pX","_pY","_pZ","_arty","_ammo","_amount","_ammocheck",
-	"_possible","_typeVh","_FO","_batLead","_agp","_batReady"];
-
-	_pos = _this select 0;
-	_arty = _this select 1;
+	
+RYD_CFF_Fire = 
+	{
+	private ["_battery","_pos","_ammo","_amount","_guns","_vh","_mags","_amount0","_eta","_alive","_available","_perGun","_rest","_aGuns","_perGun1","_shots","_check","_toFire","_rest0","_bad","_ammoC"];
+	
+	_battery = _this select 0;
+	_pos = _this select 1;
 	_ammo = _this select 2;
 	_amount = _this select 3;
-	_FO = _this select 4;
-
-	_possible = false;
-	_battery = ObjNull;
-	_agp = objNull;
-
-	_ammocheck = "SmokeAmmo";
 	
-	switch (_ammo) do
-		{
-		case ("ILLUM") : {_ammocheck = "IllumAmmo"};
-		case ("HE") : {_ammocheck = "HEAmmo"};
-		case ("WP") : {_ammocheck = "WPAmmo"};
-		case ("SADARM") : {_ammocheck = "SADARMAmmo"};
-		default {};
-		};
-
-	_artyAv = [];
-
+	_eta = -1;
+	
+	_guns = [];
+	
 		{
 		if not (isNull _x) then
 			{
-			_vh = assignedvehicle (leader _x);
-			_typeVh = typeOf _vh;
-
-
-			_hasAmmo = _x getVariable [_ammocheck,0];
-
-			if (_hasAmmo >= _amount) then
 				{
-				_minRange = 2375;
-				_maxRange = 5800;
-
-				switch (true) do
+				_vh = vehicle _x;
+				if not (_vh in _guns) then
 					{
-					case (_vh isKindOf "StaticMortar") : {_minRange = 100;_maxRange = 3700};
-					case (_typeVh in ["MLRS","MLRS_DES_EP1"]) : {_minRange = 4900;_maxRange = 15550};
-					case (_typeVh in ["GRAD_CDF","GRAD_INS","GRAD_RU","GRAD_TK_EP1"]) : {_minRange = 3300;_maxRange = 10100};
-					};
-
-				_rangeNeeded = _pos distance _vh;
-
-				if ((_rangeNeeded > _minRange) and (_rangeNeeded < _maxRange)) then
-					{
-					_battery = ObjNull;
-					_agp = leader _x;
-
-					if (alive _agp) then
+					_guns set [(count _guns),_vh];
+					_shots = 0;
+					
 						{
+						if ((_x select 0) in _ammo) then
 							{
-							if (_agp in (synchronizedObjects _x)) exitWith {_battery = _x}
+							_shots = _shots + (_x select 1)
 							}
-						foreach ([10,10] nearEntities [["BIS_ARTY_Logic"],50]);
+						}
+					foreach (magazinesAmmo _vh);
+					
+					_vh setVariable ["RydHQ_ShotsToFire",0];
+					_vh setVariable ["RydHQ_MyShots",_shots]
+					}
+				}
+			foreach (units _x)
+			}
+		}
+	foreach _battery;
+	
+	_aGuns = count _guns;
+	
+	if (_aGuns < 1) exitWith {-1};
+	
+	_perGun = floor (_amount/_aGuns);
+	_rest = _amount - (_perGun * _aGuns);
+	
+	_check = false;
+	_ct = 0;
+	_bad = false;
+	
+	while {not (_check) or (_amount > 0)} do
+		{
+		_check = true;
+		_rest0 = _rest;
+		
+			{
+			_shots = _x getVariable ["RydHQ_MyShots",0];
+			if not (_shots > _perGun) then
+				{
+				_x setVariable ["RydHQ_ShotsToFire",_shots];
+				_amount = _amount - _shots;
+				_rest = _rest + (_perGun - _shots)
+				}
+			else
+				{
+				_toFire = _x getVariable ["RydHQ_ShotsToFire",_perGun];
+				if (_toFire == 0) then {_toFire = _perGun};
+				
+				if (_rest > 0) then
+					{
+					_toFire = _toFire + 1;
+					_rest = _rest - 1
+					};
+					
+				_x setVariable ["RydHQ_ShotsToFire",_toFire];
+				_amount = _amount - _toFire;
+				};
+			}
+		foreach _guns;
+		
+		if ((_rest0 <= _rest) and (_rest > 0)) exitWith {_bad = true}
+		};
+		
+	if (_bad) exitWith {-1};
+				
+		/*{
+		diag_log format ["Gun: %1 MyShots: %2 ToFire: %3",_x,_x getVariable ["RydHQ_MyShots",0],_x getVariable ["RydHQ_ShotsToFire",0]];
+		}
+	foreach _guns;*/
+		
+		{
+		if not (isNull _x) then
+			{
+			_vh = vehicle _x;
+			
+			if ((_vh getVariable ["RydHQ_ShotsToFire",0]) > 0) then
+				{
+				_mags = getArtilleryAmmo [_vh];
+				
+				_ammoC = (magazines _vh) select 0;
+				
+					{
+					if (_x in _ammo) exitWith
+						{
+						_ammoC = _x
+						}
+					}
+				foreach (magazines _vh);	
+				
+				if (_ammoC in _mags) then
+					{
+					_amount = _amount - 1;
+					
+					_newEta = _vh getArtilleryETA [_pos,_ammoC];
+					
+					if ((_newEta < _eta) or (_eta < 0)) then
+						{
+						_eta = _newEta
+						};
 
-						if not (isNull _battery) then
+					[_vh,_pos,_ammoC] spawn
+						{
+						_vh = _this select 0;
+						_pos = _this select 1;
+						_ammo = _this select 2;
+						
+						if (_pos inRangeOfArtillery [[_vh],_ammo]) then
 							{
-							_batReady = _battery getvariable [("CFF_Ready" + (str _battery)),true];
-							if ((not (_battery getVariable "ARTY_ONMISSION")) and (_batReady)) then
+							if (_ammo in (getArtilleryAmmo [_vh])) then
 								{
-								_artyAv set [(count _artyAv),_x]
+								_vh setVariable ["RydHQ_GunFree",false];
+								_vh doArtilleryFire [_pos, _ammo,(_vh getVariable ["RydHQ_ShotsToFire",1])];
+								
+								_ct = 0;
+								
+								waitUntil
+									{
+									sleep 0.1;
+									_ct = _ct + 0.1;
+									(not ((_vh getVariable ["RydHQ_ShotFired2",0]) < (_vh getVariable ["RydHQ_ShotsToFire",1])) or (_ct > 15))
+									};
+								
+								_vh setVariable ["RydHQ_ShotFired",true];
+								_vh setVariable ["RydHQ_ShotFired2",0];
+								
+								sleep 2;
+								
+								_vh setVariable ["RydHQ_GunFree",true]
 								}
 							}
 						}
@@ -2187,26 +2053,148 @@ RYD_ArtyMission =
 				}
 			}
 		}
-	foreach _arty;
+	foreach _guns;
+		
+		/*{
+		if not (isNull _x) then
+			{
+				{
+				(vehicle _x) setVariable ["RydHQ_GunFree",true]
+				}
+			foreach (units _x)
+			}			
+		}
+	foreach _battery;*/
+		
+	_eta
+	};
 
+RYD_ArtyMission = 
+	{//_bArr = [_tgtPos,RydHQ_ArtG,"SADARM",6,leaderHQ] call RYD_ArtyMission;
+	private ["_pos","_arty","_ammoG","_amount","_FO","_ammo","_possible","_battery","_agp","_artyAv","_vehs","_gp","_hasAmmo","_checked","_vh","_tp","_inRange","_pX","_pY","_pZ","_ammoArr"];
+
+	_pos = _this select 0;
+	_arty = _this select 1;
+	_ammoG = _this select 2;
+	_amount = _this select 3;
+	_FO = _this select 4;
+
+	_ammo = "";
+	_ammoArr = [];
+
+	_hasAmmo = 0;
+	_possible = false;
+	_battery = [];
+	_agp = [];
+
+	_artyAv = [];
+	_vehs = 0;
+
+		{
+		_gp = _x; 
+		if not (isNull _gp) then
+			{
+			if not (_gp getVariable ["RydHQ_BatteryBusy",false]) then
+				{
+				_hasAmmo = 0;
+				_checked = [];
+				
+					{
+					_vh = vehicle _x;
+					if not (_vh in _checked) then
+						{
+						_checked set [(count _checked),_vh];
+											
+						_tp = typeOf _vh;
+						
+						switch (true) do
+							{
+							case (_tp in RydHQ_Mortar_A3) : 
+								{
+								switch (_ammoG) do
+									{
+									case ("HE") : {_ammo = "8Rnd_82mm_Mo_shells"};
+									case ("CLUSTER") : {_ammo = "8Rnd_82mm_Mo_shells"};
+									case ("GUIDED") : {_ammo = "8Rnd_82mm_Mo_shells"};
+									case ("SMOKE") : {_ammo = "8Rnd_82mm_Mo_Smoke_white"};
+									case ("ILLUM") : {_ammo = "8Rnd_82mm_Mo_Flare_white"};
+									}
+								};
+								
+							case (_tp in RydHQ_SPMortar_A3) : 
+								{
+								switch (_ammoG) do
+									{
+									case ("HE") : {_ammo = "32Rnd_155mm_Mo_shells"};
+									case ("CLUSTER") : {_ammo = "2Rnd_155mm_Mo_Cluster"};
+									case ("GUIDED") : {_ammo = "2Rnd_155mm_Mo_guided"};
+									case ("SMOKE") : {_ammo = "6Rnd_155mm_Mo_smoke"};
+									case ("ILLUM") : {_ammo = ""};
+									};
+								};
+										
+							case (_tp in RydHQ_Rocket_A3) :
+								{
+								switch (_ammoG) do
+									{
+									case ("HE") : {_ammo = "12Rnd_230mm_rockets"};
+									case ("CLUSTER") : {_ammo = "12Rnd_230mm_rockets"};
+									case ("GUIDED") : {_ammo = "12Rnd_230mm_rockets"};
+									case ("SMOKE") : {_ammo = ""};
+									case ("ILLUM") : {_ammo = ""};
+									};
+								}
+							};
+							
+						_inRange = _pos inRangeOfArtillery [[_vh],_ammo];
+						
+						if (_inRange) then
+							{
+								{
+								if ((_x select 0) in [_ammo]) then
+									{
+									_hasAmmo = _hasAmmo + (_x select 1);
+									_ammoArr set [(count _ammoArr),_ammo];
+									_vehs = _vehs + 1
+									};
+									
+								if not (_hasAmmo < _amount) exitWith {}
+								}
+							foreach (magazinesAmmo _vh);
+							}
+						};
+
+					if not (_vehs < _amount) exitWith {}
+					}
+				foreach (units _gp);
+
+				if (_hasAmmo > 0) then
+					{
+					_artyAv set [(count _artyAv),_gp];
+					_agp set [(count _agp),leader _gp]
+					}
+				}
+			};
+			
+		if not (_hasAmmo < _amount) exitWith {}
+		}
+	foreach _arty;
+	
 	if not ((count _artyAv) == 0) then
 		{
-		_artyGp = _artyAv select (floor (random (count _artyAv)));
-
-		_agp = leader _artyGp;
-
-			{
-			if (_agp in (synchronizedObjects _x)) exitWith {_battery = _x}
-			}
-		foreach ([10,10] nearEntities [["BIS_ARTY_Logic"],50]);
+		_battery = _artyAv;
 
 		_possible = true;
 
-		if (_ammo in ["ILLUM","SMOKE"]) then
+		if (_ammoG in ["ILLUM","SMOKE"]) then
 			{
-			[_battery,(200 + (random 200))] call BIS_ARTY_F_SetDispersion;
-
-			_template = ["IMMEDIATE",_ammo,0,_amount];
+				{
+				if not (isNull _x) then
+					{
+					_x setVariable ["RydHQ_BatteryBusy",true]
+					}
+				}
+			foreach _battery;
 
 			_pX = _pos select 0;
 			_pY = _pos select 1;
@@ -2217,56 +2205,96 @@ RYD_ArtyMission =
 			_pZ = _pZ + (random 20) - 10;
 
 			_pos = [_pX,_pY,_pZ];
-
-			[_battery,_pos,_template,_FO] spawn
+//_i = [_pos,(random 1000),"markArty","ColorRed","ICON","mil_dot",_ammoG,"",[0.75,0.75]] call RYD_Mark;
+			[_battery,_pos,_ammoArr,_FO,_amount,_ammoG] spawn
 				{
-				private ["_battery","_pos","_template","_ammo","_amount","_angle","_FO","_i","_pos2","_pos3","_i2","_i3"];
-
 				_battery = _this select 0;
 				_pos = _this select 1;
-				_template = _this select 2;
+				_ammo = _this select 2;
 				_FO = getPosASL (_this select 3);
-				_ammo = _template select 1;
-				_amount = _template select 3;
+				_amount = _this select 4;
+				_ammoG = _this select 5;
 
-				if (_ammo == "ILLUM") then 
+				if (_ammoG == "ILLUM") then 
 					{
-					[_battery,_pos,_template] call BIS_ARTY_F_ExecuteTemplateMission;
+					[_battery,_pos,_ammo,_amount] call RYD_CFF_Fire;
 					}
 				else
 					{
 					_angle = [_FO,_pos,10] call RYD_AngTowards;
 					_pos2 = [_pos,_angle + 110,200 + (random 100) - 50] call RYD_PosTowards2D;
 					_pos3 = [_pos,_angle - 110,200 + (random 100) - 50] call RYD_PosTowards2D;
-					//_i2 = [_pos2,(random 1000),"markArty","ColorRed","ICON","DOT",_ammo,"",[0.75,0.75]] call RYD_Mark;
-					//_i3 = [_pos3,(random 1000),"markArty","ColorRed","ICON","DOT",_ammo,"",[0.75,0.75]] call RYD_Mark;
+					//_i2 = [_pos2,(random 1000),"markArty","ColorRed","ICON","mil_dot",_ammoG,"",[0.75,0.75]] call RYD_Mark;
+					//_i3 = [_pos3,(random 1000),"markArty","ColorRed","ICON","mil_dot",_ammoG,"",[0.75,0.75]] call RYD_Mark;
 
-					_template = ["IMMEDIATE",_ammo,0,ceil (_amount/3)];
-
-					[_battery,_pos,_template] call BIS_ARTY_F_ExecuteTemplateMission;
-					waitUntil {sleep 0.1;_battery getVariable "ARTY_COMPLETE"};
-
-					[_battery,_pos2,_template] call BIS_ARTY_F_ExecuteTemplateMission;
-					waitUntil {sleep 0.1;_battery getVariable "ARTY_COMPLETE"};
-
-					[_battery,_pos3,_template] call BIS_ARTY_F_ExecuteTemplateMission;
-					waitUntil {sleep 0.1;_battery getVariable "ARTY_COMPLETE"};
-					} 
+						{
+						[_battery,_x,_ammo,ceil (_amount/3)] call RYD_CFF_Fire;
+								
+						_ct = 0;
+						waitUntil 
+							{
+							sleep 0.1;
+							_ct = _ct + 0.1;
+							_busy = 0; 
+							
+								{
+								if not (isNull _x) then
+									{
+									_busy = _busy + ({not ((vehicle _x) getVariable ["RydHQ_GunFree",true])} count (units _x))
+									};
+								}
+							foreach _battery;
+							
+							((_busy == 0) or (_ct > 12))
+							};
+						}
+					foreach [_pos,_pos2,_pos3]
+					};
+					
+				_ct = 0;
+				waitUntil 
+					{
+					sleep 0.1;
+					_ct = _ct + 0.1;
+					_busy = 0; 
+					
+						{
+						if not (isNull _x) then
+							{
+							_add = {not ((vehicle _x) getVariable ["RydHQ_GunFree",true])} count (units _x);
+							_busy = _busy + _add;
+							if (_add == 0) then {_x setVariable ["RydHQ_BatteryBusy",false]}
+							};
+						}
+					foreach _battery;
+					
+					((_busy == 0) or (_ct > 12))
+					};
+										
+					{
+					if not (isNull _x) then
+						{
+						_x setVariable ["RydHQ_BatteryBusy",false]
+						}
+					}
+				foreach _battery
 				}
 			}
 		};
 
-	[_possible,_battery,_agp]
+	//diag_log format ["AM: %1",[_possible,_battery,_agp,_ammoArr]];
+
+	[_possible,_battery,_agp,_ammoArr]
 	};
 
 RYD_CFF_FFE = 
 	{//[_battery,_tgt,_batlead,"SADARM",RydHQ_Friends,RydHQ_Debug] spawn RYD_CFF_FFE
-	private ["_battery","_target","_batlead","_Ammo","_friends","_Debug","_batname","_first","_phaseF","_targlead","_againF","_dispF","_accF","_Amount","_Rate","_FMType","_againcheck","_Aunit",
+	private ["_battery","_target","_batlead","_Ammo","_friends","_Debug","_ammoG","_batname","_first","_phaseF","_targlead","_againF","_dispF","_accF","_amount","_Rate","_FMType","_againcheck","_Aunit",
 	"_RydAccF","_TTI","_amount1","_amount2","_template","_targetPos","_X0","_Y0","_X1","_Y1","_X2","_Y2","_Xav","_Yav","_transspeed","_transdir","_Xhd","_Yhd","_impactpos","_safebase","_distance",
 	"_safe","_safecheck","_gauss1","_gauss09","_gauss04","_gauss2","_distance2","_DdistF","_DdamageF","_DweatherF","_DskillF","_anotherD","_Dreduct","_spawndisp","_dispersion","_disp","_RydAccF",
 	"_gauss1b","_gauss2b","_AdistF","_AweatherF","_AdamageF","_AskillF","_Areduct","_spotterF","_anotherA","_acc","_finalimpact","_posX","_posY","_i","_dX","_dY","_angle","_dXb","_dYb","_posX2",
 	"_posY2","_AmmoN","_exDst","_exPX","_exPY","_onRoad","_exPos","_nR","_stRS","_dMin","_dAct","_dSum","_checkedRS","_RSArr","_angle","_rPos","_actRS","_ammocheck","_artyGp","_ammoCount","_dstAct",
-	"_maxRange","_minRange","_isTaken","_batlead","_alive","_waitFor","_UL"];	
+	"_maxRange","_minRange","_isTaken","_batlead","_alive","_waitFor","_UL","_ammoC","_add"];	
 
 	_battery = _this select 0;
 	_target = _this select 1;
@@ -2274,96 +2302,64 @@ RYD_CFF_FFE =
 	_Ammo = _this select 3;
 	_friends = _this select 4;
 	_Debug = _this select 5;
-
-	_batname = str _battery;
-
-	_first = _battery getVariable [("FIRST" + _batname),1];
-
-	_artyGp = group _batlead;
-
-	_ammocheck = "SmokeAmmo";
+	_ammoG = _this select 6;
+	_amount = _this select 7;
 	
-	switch (_Ammo) do
-		{
-		case ("ILLUM") : {_ammocheck = "IllumAmmo"};
-		case ("HE") : {_ammocheck = "HEAmmo"};
-		case ("WP") : {_ammocheck = "WPAmmo"};
-		case ("SADARM") : {_ammocheck = "SADARMAmmo"};
-		};
+	_markers = [];
+	
+	_battery1 = _battery select 0;
+	_batLead1 = leader _battery1;
 
-	_isTaken = (leader _target) getvariable ["CFF_Taken" + str (leader _target),false];
-	if (_isTaken) exitWith {_battery setvariable [("CFF_Ready" + _batname),true]};
-	(leader _target) setvariable ["CFF_Taken" + str (leader _target),true];
+	_batname = str _battery1;
+
+	//_first = _battery getVariable [("FIRST" + _batname),1];
+
+	//_artyGp = group _batlead;
+
+	_isTaken = (group _target) getVariable ["CFF_Taken",false];
+	if (_isTaken) exitWith 
+		{
+			{
+			if not (isNull _x) then
+				{
+				_x setVariable ["RydHQ_BatteryBusy",false]
+				}
+			}
+		foreach _battery
+		};
+		
+	(group _target) setVariable ["CFF_Taken",true];
 
 	_phaseF = [1,2];
 
 	_targlead = vehicle (leader _target);
 
-	_minRange = 2375;
-	_maxRange = 5800;
-
-	switch (true) do
-		{
-		case ((vehicle _batlead) isKindOf "StaticMortar") : {_minRange = 100;_maxRange = 3700};
-		case ((typeOf (vehicle _batlead)) in ["MLRS","MLRS_DES_EP1"]) : {_minRange = 4900;_maxRange = 15550};
-		case ((typeOf (vehicle _batlead)) in ["GRAD_CDF","GRAD_INS","GRAD_RU","GRAD_TK_EP1"]) : {_minRange = 3300;_maxRange = 10100};
-		};
-
 	_waitFor = true;
 
 		{
 		if (isNil ("_target")) exitwith {_waitFor = false};
-		if (isNull _target) exitwith {_waitFor = false};
+		if (isNull _targlead) exitwith {_waitFor = false};
 		if not (alive _targlead) exitwith {_waitFor = false};
-
-		if (isNull _batlead) exitwith {_waitFor = false};
-		if not (alive _batlead) exitwith {_waitFor = false};
+		
+		if (({not (isNull _x)} count _batlead) < 1) exitwith {_waitFor = false};
+		if (isNull _battery1) exitWith {_waitFor = false};
+		if (({(alive _x)} count _batlead) < 1)  exitwith {_waitFor = false};
 
 		if ((abs (speed _targlead)) > 50) exitWith {_waitFor = false};
 		if (((getposATL _targlead) select 2) > 20)  exitWith {_waitFor = false};
 		
 		_againF = 0.5;
-		_dispF = 0.4;
 		_accF = 2;
-		_Amount = 6;
-		_Rate = 0;
-		_FMType = "IMMEDIATE";
 
-		_againcheck = _battery getVariable [("CFF_Trg" + _batname),objNull];
+		_againcheck = _battery1 getVariable [("CFF_Trg" + _batname),objNull];
 		if not ((str _againcheck) == (str _target)) then {_againF = 1};
 
-		_Aunit = vehicle _batlead;
 		_RydAccF = 1;
-		_TTI = 60;
 
-		Switch (typeOf _Aunit) do
-			{
-			case	"M119" : {_RydAccf = 2;_TTI = 20};
-			case	"M119_US_EP1" : {_RydAccf = 2;_TTI = 20};
-			case	"D30_RU" : {_RydAccf = 2;_TTI = 20};
-			case	"D30_INS" : {_RydAccf = 2;_TTI = 20};
-			case	"D30_CDF" : {_RydAccf = 2;_TTI = 20};
-			case	"D30_TK_EP1" : {_RydAccf = 2;_TTI = 20};
-			case	"D30_TK_GUE_EP1" : {_RydAccf = 2;_TTI = 20};
-			case	"D30_TK_INS_EP1" : {_RydAccf = 2;_TTI = 20};
-			case	"MLRS" : {_RydAccf = 3;_TTI = 35};
-			case	"MLRS_DES_EP1" : {_RydAccf = 3;_TTI = 35};
-			case	"GRAD_Base" : {_RydAccf = 4;_TTI = 35};
-			case	"GRAD_RU" : {_RydAccf = 4;_TTI = 35};
-			case	"GRAD_INS" : {_RydAccf = 4;_TTI = 35};
-			case	"GRAD_CDF" : {_RydAccf = 4;_TTI = 35};
-			case	"GRAD_TK_EP1" : {_RydAccf = 4;_TTI = 35};
-			default {_RydAccf = 1;_TTI = 25};
-			};
-
-		if (isNil ("RydART_FMType")) then {_FMType = "IMMEDIATE"} else {_FMType = RydART_FMType};
-		//if (isNil ("RydART_Ammo")) then {_Ammo = "HE"} else {_Ammo = RydART_Ammo};
-		if (isNil ("RydART_Rate")) then {_Rate = 0} else {_Rate = RydART_Rate};
-		if (isNil ("RydART_Amount")) then {_Amount = 6} else {_Amount = RydART_Amount};
-		if (isNil ("RydART_Disp")) then {_dispF = 0.4} else {_dispF = RydART_Disp};
+		if (isNil ("RydART_Amount")) then {_amount = _this select 7} else {_amount = RydART_Amount};
 		if (isNil ("RydART_Acc")) then {_accF = 2} else {_accF = RydART_Acc};
 
-		if (_Ammo == "SADARM") then {_amount = ceil (_amount/3)};
+		if (_ammoG in ["CLUSTER","GUIDED"]) then {_amount = ceil (_amount/3)};
 
 		_amount1 = ceil (_amount/6);
 		_amount2 = _amount - _amount1;
@@ -2381,26 +2377,66 @@ RYD_CFF_FFE =
 			};
 
 		if (_amount == 0) exitwith {_waitFor = false};
-		_template = [_FMType,_Ammo,_Rate,_Amount];
+
 		_targetPos = getPosASL _targlead;
+		_targetPosATL = ASLtoATL _targetPos;
+		
+		_eta = -1;
+		
+			{
+				{
+				_vh = vehicle _x;
+				_ammoC = (magazines _vh) select 0;
+				
+					{
+					if (_x in _ammo) exitWith
+						{
+						_ammoC = _x
+						}
+					}
+				foreach (magazines _vh);
+				
+				_newEta = _vh getArtilleryETA [_targetPosATL,_ammoC];
+				
+				if ((_newEta < _eta) or (_eta < 0)) then
+					{
+					_eta = _newEta
+					}
+				}
+			foreach (units _x)
+			}
+		foreach _battery;
+		
+		if (_eta == -1) exitWith {_waitFor = false};
 
 		_X0 = (_targetpos select 0);
 		_Y0 = (_targetpos select 1);
 		sleep 10;
 
-		if (isNull _targlead) exitWith {_waitFor = false};
-		if not (alive _targlead) exitWith {_waitFor = false};
+		if (isNull _targlead) exitwith {_waitFor = false};
+		if not (alive _targlead) exitwith {_waitFor = false};
+		
+		if (({not (isNull _x)} count _batlead) < 1) exitwith {_waitFor = false};
+		if (isNull _battery1) exitWith {_waitFor = false};
+		if (({(alive _x)} count _batlead) < 1)  exitwith {_waitFor = false};
+
+		if ((abs (speed _targlead)) > 50) exitWith {_waitFor = false};
+		if (((getposATL _targlead) select 2) > 20)  exitWith {_waitFor = false};
 
 		_targetPos = getPosASL _targlead;
 		_X1 = (_targetpos select 0);
 		_Y1 = (_targetpos select 1);
 		sleep 10;
 
-		if (isNull _targlead) exitWith {_waitFor = false};
-		if not (alive _targlead) exitWith {_waitFor = false};
+		if (isNull _targlead) exitwith {_waitFor = false};
+		if not (alive _targlead) exitwith {_waitFor = false};
+		
+		if (({not (isNull _x)} count _batlead) < 1) exitwith {_waitFor = false};
+		if (isNull _battery1) exitWith {_waitFor = false};
+		if (({(alive _x)} count _batlead) < 1)  exitwith {_waitFor = false};
 
-		if (isNull _batlead) exitwith {_waitFor = false};
-		if not (alive _batlead) exitwith {_waitFor = false};
+		if ((abs (speed _targlead)) > 50) exitWith {_waitFor = false};
+		if (((getposATL _targlead) select 2) > 20)  exitWith {_waitFor = false};
 
 		_targetPos = getPosASL _targlead;
 		_X2 = (_targetpos select 0);
@@ -2413,11 +2449,51 @@ RYD_CFF_FFE =
 
 		_transspeed = ([_X0,_Y0] distance [_Xav,_Yav])/15;
 		_transdir = (_Xav - _X0) atan2 (_Yav - _Y0);
+		
+		_add = 16/(1 + (_transspeed));
 
-		_Xhd = _transspeed * sin _transdir * 2.7 * _TTI;
-		_Yhd = _transspeed * cos _transdir * 2.7 * _TTI;
+		_Xhd = _transspeed * (sin _transdir) * (_eta + _add);
+		_Yhd = _transspeed * (cos _transdir) * (_eta + _add);
 		_impactpos = _targetpos;
 		_safebase = 100;
+
+		_exPX = (_targetPos select 0) + _Xhd;
+		_exPY = (_targetPos select 1) + _Yhd;
+
+		_exPos = [_exPX,_exPY,getTerrainHeightASL [_exPX,_exPY]];
+		_exTargetPosATL = ASLtoATL _exPos;
+		
+		_eta = -1;
+		
+			{
+				{
+				_vh = vehicle _x;
+				
+				_ammoC = (magazines _vh) select 0;
+				
+					{
+					if (_x in _ammo) exitWith
+						{
+						_ammoC = _x
+						}
+					}
+				foreach (magazines _vh);
+				
+				_newEta = _vh getArtilleryETA [_exTargetPosATL,_ammoC];
+				
+				if ((_newEta < _eta) or (_eta < 0)) then
+					{
+					_eta = _newEta
+					}
+				}
+			foreach (units _x)
+			}
+		foreach _battery;
+		
+		if (_eta == -1) exitWith {_waitFor = false};
+		
+		_Xhd = _transspeed * (sin _transdir) * (_eta + _add);
+		_Yhd = _transspeed * (cos _transdir) * (_eta + _add);
 
 		_exPX = (_targetPos select 0) + _Xhd;
 		_exPY = (_targetPos select 1) + _Yhd;
@@ -2543,37 +2619,59 @@ RYD_CFF_FFE =
 			foreach _friends
 			};
 
-		if not (_safecheck) exitwith {(leader _target) setvariable ["CFF_Taken" + str (leader _target),false]};
-		if (not (_battery getvariable [("CFF_Ready" + _batname),true]) and (_x == 1)) exitWith {(leader _target) setvariable ["CFF_Taken" + str (leader _target),false]};
-		_battery setvariable [("CFF_Ready" + _batname),false];
-
-		_gauss1 = (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) +  (random 0.1) + (random 0.1);
-		_gauss09 = (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) +  (random 0.09) + (random 0.09);
-		_gauss04 = (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) +  (random 0.04) + (random 0.04);
-		_gauss2 = (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) +  (random 0.2) + (random 0.2);
-		_distance2 = _impactPos distance (getPosATL (vehicle _batlead));
-		_DdistF = (_distance2/10) * (0.1 + _gauss04);
-		_DdamageF = 1 + 0.5 * (damage _batlead);
+		if not (_safecheck) exitwith {(group _target) setVariable ["CFF_Taken",false]};
+		
+		_BBusy = false;
+		
+			{
+			if not (isNull _x) then
+				{
+				_BBusy = _x getVariable ["RydHQ_BatteryBusy",false]
+				};
+				
+			if (_BBusy) exitWith {}
+			}
+		foreach _battery;
+		
+		if ((_BBusy) and (_x == 1)) exitWith {(group _target) setvariable ["CFF_Taken",false]};
+		
+			{
+			if not (isNull _x) then
+				{
+				_x setVariable ["RydHQ_BatteryBusy",true]
+				}
+			}
+		foreach _battery;
+		
+		_distance2 = _impactPos distance (getPosATL (vehicle _batlead1));
 		_DweatherF = 1 + overcast;
-		_DskillF = 2 * (skill _batlead);
-		_anotherD = 1 + _gauss1;
-		_Dreduct = (1 + _gauss2) + _DskillF;
+		_gauss09 = (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) +  (random 0.09) + (random 0.09);
+
+		//_gauss1 = (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) +  (random 0.1) + (random 0.1);
+		//_gauss04 = (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) + (random 0.04) +  (random 0.04) + (random 0.04);
+		//_gauss2 = (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) +  (random 0.2) + (random 0.2);
+		//_DdistF = (_distance2/10) * (0.1 + _gauss04);
+		//_DdamageF = 1 + 0.5 * (damage _batlead1);
+		//_DskillF = 2 * (skill _batlead1);
+		//_anotherD = 1 + _gauss1;
+		//_Dreduct = (1 + _gauss2) + _DskillF;
 		 
-		_spawndisp = _dispF * ((_RydAccf * _DdistF * _DdamageF) + (50 * _DweatherF * _anotherD)) / _Dreduct;
-		_dispersion = 10000 * (_spawndisp atan2 _distance2) / 57.3;
+		//_spawndisp = _dispF * ((_RydAccf * _DdistF * _DdamageF) + (50 * _DweatherF * _anotherD)) / _Dreduct;
+		//_dispersion = 10000 * (_spawndisp atan2 _distance2) / 57.3;
 
-		_disp = _dispersion;
-		if (isNil ("RydART_SpawnM")) then {_disp = _dispersion} else {_disp = _spawndisp};
+		//_disp = _dispersion;
+		//if (isNil ("RydART_SpawnM")) then {_disp = _dispersion} else {_disp = _spawndisp};
 
+		//[_battery,_disp] call BIS_ARTY_F_SetDispersion;
+		
 		_RydAccF = 1;
-		[_battery,_disp] call BIS_ARTY_F_SetDispersion;
 
 		_gauss1b = (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) +  (random 0.1) + (random 0.1);
 		_gauss2b = (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) +  (random 0.2) + (random 0.2);
 		_AdistF = (_distance2/10) * (0.1 + _gauss09);
 		_AweatherF = _DweatherF;
-		_AdamageF = 1 + 0.1 * (damage (vehicle _batlead));
-		_AskillF = 5 * (_batlead skill "aimingAccuracy");
+		_AdamageF = 1 + 0.1 * (damage (vehicle _batlead1));
+		_AskillF = 5 * (_batlead1 skill "aimingAccuracy");
 		_Areduct = (1 + _gauss2b) + _AskillF;
 		_spotterF = 0.2 + (random 0.2);
 		_anotherA = 1 + _gauss1b;
@@ -2584,54 +2682,73 @@ RYD_CFF_FFE =
 
 		_finalimpact = [(_impactpos select 0) + (random (2 * _acc)) - _acc,(_impactpos select 1) + (random (2 * _acc)) - _acc];
 
-		if (isNull _targlead) exitWith {_waitFor = false};
-		if not (alive _targlead) exitWith {_waitFor = false};
+		if (isNull _targlead) exitwith {_waitFor = false};
+		if not (alive _targlead) exitwith {_waitFor = false};
+		
+		if (({not (isNull _x)} count _batlead) < 1) exitwith {_waitFor = false};
+		if (isNull _battery1) exitWith {_waitFor = false};
+		if (({(alive _x)} count _batlead) < 1)  exitwith {_waitFor = false};
 
 		if ((abs (speed _targlead)) > 50) exitWith {_waitFor = false};
 		if (((getposATL _targlead) select 2) > 20)  exitWith {_waitFor = false};
 
-		_dstAct = _impactpos distance _batlead;
-
-		if ((_dstAct > _maxRange) or (_dstAct < _minRange)) exitWith {_waitFor = false};
-
-		[_battery, _finalimpact, _template] call BIS_ARTY_F_ExecuteTemplateMission;
-		_UL = _batlead;
-		if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_ArtFire,"ArtFire"] call RYD_AIChatter};
-
-		_ammoCount = _artyGp getVariable _ammocheck;
-
-		_artyGp setVariable [_ammocheck,_ammoCount - _Amount];
+		//_dstAct = _impactpos distance _batlead;
+		
+			{
+			if not (isNull _x) then
+				{
+					{
+					(vehicle _x) setVariable ["RydHQ_ShotFired",false]
+					}
+				foreach (units _x)
+				};
+			}
+		foreach _battery;
 
 		sleep 0.2;
 		_posX = 0;
 		_posY = 0;
 		if (_Debug) then 
 			{
+			_i = "markBat" + str (_battery1);
+			_i = createMarker [_i,getposATL (vehicle _batlead1)];
+			_i setMarkerColor "ColorBlack";
+			_i setMarkerShape "ICON";
+			_i setMarkerType "mil_circle";
+			_i setMarkerSize [0.4,0.4];
+			_i setMarkerText (" " + _i + " - " + str (typeOf (vehicle _batlead1)));
+			
+			_markers set [(count _markers),_i];
+			
 			_distance = _impactPos distance _finalimpact;
-			_distance2 = _impactPos distance (getposATL (vehicle _batlead));
-			_i = "mark0" + str (_battery);
+			_distance2 = _impactPos distance (getposATL (vehicle _batlead1));
+			_i = "mark0" + str (_battery1);
 			_i = createMarker [_i,_impactPos];
 			_i setMarkerColor "ColorBlue";
 			_i setMarkerShape "ELLIPSE";
 			_i setMarkerSize [_distance, _distance];
 			_i setMarkerBrush "Border";
+			
+			_markers set [(count _markers),_i];
 
-			_dX = (_impactPos select 0) - (getposATL (vehicle _batlead) select 0);
-			_dY = (_impactPos select 1) - (getposATL (vehicle _batlead) select 1);
+			_dX = (_impactPos select 0) - (getposATL (vehicle _batlead1) select 0);
+			_dY = (_impactPos select 1) - (getposATL (vehicle _batlead1) select 1);
 			_angle = _dX atan2 _dY;
 			if (_angle >= 180) then {_angle = _angle - 180};
 			_dXb = (_distance2/2) * (sin _angle);
 			_dYb = (_distance2/2) * (cos _angle);
-			_posX = (getposATL (vehicle _batlead) select 0) + _dXb;
-			_posY = (getposATL (vehicle _batlead) select 1) + _dYb;
+			_posX = (getposATL (vehicle _batlead1) select 0) + _dXb;
+			_posY = (getposATL (vehicle _batlead1) select 1) + _dYb;
 
-			_i = "mark1" + str (_battery);
+			_i = "mark1" + str (_battery1);
 			_i = createMarker [_i,[_posX,_posY]];
 			_i setMarkerColor "ColorBlack";
 			_i setMarkerShape "RECTANGLE";
 			_i setMarkerSize [0.5,_distance2/2];
 			_i setMarkerBrush "Solid";
 			_i setMarkerdir _angle;
+			
+			_markers set [(count _markers),_i];
 
 			_dX = (_finalimpact select 0) - (_impactPos select 0);
 			_dY = (_finalimpact select 1) - (_impactPos select 1);
@@ -2642,145 +2759,194 @@ RYD_CFF_FFE =
 			_posX2 = (_impactPos select 0) + _dXb;
 			_posY2 = (_impactPos select 1) + _dYb;
 
-			_i = "mark2" + str (_battery);
+			_i = "mark2" + str (_battery1);
 			_i = createMarker [_i,[_posX2,_posY2]];
 			_i setMarkerColor "ColorBlack";
 			_i setMarkerShape "RECTANGLE";
 			_i setMarkerSize [0.5,_distance/2];
 			_i setMarkerBrush "Solid";
 			_i setMarkerdir _angle;
+			
+			_markers set [(count _markers),_i];
 
-			_i = "mark3" + str (_battery);
+			_i = "mark3" + str (_battery1);
 			_i = createMarker [_i,_impactPos];
 			_i setMarkerColor "ColorBlack";
 			_i setMarkerShape "ICON";
-			_i setMarkerType "DOT";
+			_i setMarkerType "mil_dot";
+			
+			_markers set [(count _markers),_i];
 
-			_i = "mark4" + str (_battery);
+			_i = "mark4" + str (_battery1);
 			_i = createMarker [_i,_finalimpact];
 			_i setMarkerColor "ColorRed";
 			_i setMarkerShape "ICON";
-			_i setMarkerType "DOT";
-			_i setMarkerText (str (round (_distance)) + "m" + "/" + str (round (_spawndisp)) + "m" + " - " + _Ammo);
-				
-			[_i,_battery,_distance,_spawndisp,_Ammo,_batlead,_target] spawn
+			_i setMarkerType "mil_dot";
+			_i setMarkerText (str (round _distance) + "m" + " - ETA: " + str (round _eta) + " - " + _ammoG);
+			
+			_markers set [(count _markers),_i];
+						
+			[_battery,_distance,_eta,_ammoG,_batlead,_target,_markers] spawn
 				{
-				private ["_mark","_battery","_distance","_spawndisp","_Ammo","_target","_alive","_stoper","_TOF","_batlead"];
+				private ["_mark","_battery","_distance","_eta","_Ammo","_target","_alive","_stoper","_TOF","_batlead"];
 
-				_mark = _this select 0;
-				_battery = _this select 1;
-				_distance = _this select 2;
-				_spawndisp = _this select 3;
-				_Ammo = _this select 4;
-				_batlead = _this select 5;
-				_target = _this select 6;
-
+				_battery = _this select 0;
+				_distance = _this select 1;
+				_eta = _this select 2;
+				_ammoG = _this select 3;
+				_batlead = _this select 4;
+				_target = _this select 5;
+				_markers = _this select 6;
+				
+				_battery1 = _battery select 0;
+				
 				_alive = true;
+				_shot = false;
 
 				waitUntil 
 					{
-					if (isNull _batlead) then {_alive = false};
-					if not (alive _batlead) then {_alive = false};
-					((_battery getVariable "ARTY_SHOTCALLED") or not (_alive))
+					sleep 0.1;
+					if (({not (isNull _x)} count _batlead) < 1) then {_alive = false};
+					if (isNull _battery1) then {_alive = false};
+					if (({(alive _x)} count _batlead) < 1) then {_alive = false};
+					
+						{
+						if not (isNull _x) then
+							{
+								{
+								if ((vehicle _x) getVariable ["RydHQ_ShotFired",false]) exitWith {_shot = true}
+								}
+							foreach (units _x)
+							};
+						
+						if (_shot) exitWith {}
+						}
+					foreach _battery;
+					
+					((_shot) or not (_alive))
 					};
+					
+					{
+					if not (isNull _x) then
+						{
+							{
+							(vehicle _x) setVariable ["RydHQ_ShotFired",false]
+							}
+						foreach (units _x)
+						};
+					}
+				foreach _battery;
 
 				_stoper = time;
 				_TOF = 0;
+				_rEta = _eta;
+				
+				_mark = _markers select ((count _markers) -1);
 
-				while {(not (_battery getVariable "ARTY_SPLASH") and not (_TOF > 100))} do
+				while {(not (_rEta < 5) and not (_TOF > 100) and (_alive))} do
 					{
-					if (isNull _batlead) exitWith {(leader _target) setvariable ["CFF_Taken" + str (leader _target),false]};
-					if not (alive _batlead) exitWith {(leader _target) setvariable ["CFF_Taken" + str (leader _target),false]};
+					if (({not (isNull _x)} count _batlead) < 1) exitWith {_alive = false};
+					if (isNull _battery1) exitWith {_alive = false};
+					if (({(alive _x)} count _batlead) < 1) exitWith {_alive = false};
+
 					_TOF = (round (10 * (time - _stoper)))/10;
-					_mark setMarkerText (str (round (_distance)) + "m" + "/" + str (round (_spawndisp)) + "m" + " - " + _Ammo + " - TOF: " + (str _TOF));
+					_rEta = _eta - _TOF;
+					
+					 if ((_rEta < 5) or (_TOF > 100)) then {_battery1 setVariable ["RydHQ_SPLASH",true]};
+					
+					_mark setMarkerText (str (round _distance) + "m" + " - ETA: " + str (round _rEta) + " - TOF: " + (str _TOF) + " - " + _ammoG);
 					sleep 0.1
 					};
 
-				if (isNull _batlead) exitWith {deleteMarker _mark};
-				if not (alive _batlead) exitWith {deleteMarker _mark};
+				if not (_alive) exitWith 
+					{
+					(group _target) setvariable ["CFF_Taken",false];
+					
+						{
+						deleteMarker _x;
+						}
+					foreach _markers;
+					};
 
-				_mark setMarkerText (str (round (_distance)) + "m" + "/" + str (round (_spawndisp)) + "m" + " - " + _Ammo + " - SPLASH!");
+				_mark setMarkerText (str (round _distance) + "m"  + " - SPLASH!" + " - " + _ammoG);
 				};
 
-			_i = "mark5" + str (_battery);
+			/*_i = "mark5" + str (_battery);
 			_i = createMarker [_i,_finalimpact];
 			_i setMarkerColor "ColorRedAlpha";
 			_i setMarkerShape "ELLIPSE";
-			_i setMarkerSize [_spawndisp,_spawndisp];
-
-			_i = str _battery;
-			if (_first == 1) then 
-				{
-				_i = createMarker [_i,getpos (vehicle _batlead)];
-				_i setMarkerColor "ColorBlack";
-				_i setMarkerShape "ICON";
-				_i setMarkerType "n_empty";
-				_i setMarkerText (_i + " - " + str (typeof (vehicle _batlead)))
-				}
-			else
-				{
-				(str _battery) setMarkerPos getpos (vehicle _batlead)
-				}
-
+			_i setMarkerSize [_spawndisp,_spawndisp];*/
 			};
+			
+		[_battery,_finalimpact,_ammo,_amount] call RYD_CFF_Fire;
+					
+		_UL = _batlead1;
+		if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_ArtFire,"ArtFire"] call RYD_AIChatter};
 
 		_alive = true;
 
 		waituntil 
 			{
 			sleep 1;
-			
-				{
-					{
-					_AmmoN = _x ammo (primaryWeapon (vehicle _x)); 
-					if (_AmmoN == 0) then 
-						{
-						sleep 0.1;
-						reload (vehicle _x)
-						}
-					}
-				foreach units (group _x)
-				}
-			foreach (synchronizedObjects _battery);
 
-			if (isNull _batlead) then {_alive = false};
-			if not (alive _batlead) then {_alive = false};
+			_available = true;
+			if (({not (isNull _x)} count _batlead) < 1) then {_alive = false};
+			if (isNull _battery1) then {_alive = false};
+			if (({(alive _x)} count _batlead) < 1) then {_alive = false};
+						
+				{
+				if not (isNull _x) then
+					{
+						{
+						if not ((vehicle _x) getVariable ["RydHQ_GunFree",true]) exitWith {_available = false}
+						}
+					foreach (units _x)
+					};
+				
+				if not (_available) exitWith {}
+				}
+			foreach _battery;
 			
-			(([_battery, _template] call BIS_ARTY_F_Available) or not (_alive))
+			((_available) or not (_alive))
 			};
 
 		if not (_alive) exitWith {};
 
 		if (((count _phaseF) == 2) and (_x == 1)) then 
 			{
-			_alive = true;			
+			_alive = true;
+			_splash = false;			
 
 			waitUntil 
 				{
 				sleep 1;
 
-				if (isNull _batlead) then {_alive = false};
-				if not (alive _batlead) then {_alive = false};
-
-				((_battery getVariable "ARTY_SPLASH") or not (_alive))
+				if (({not (isNull _x)} count _batlead) < 1) then {_alive = false};
+				if (isNull _battery1) then {_alive = false};
+				if (({(alive _x)} count _batlead) < 1) then {_alive = false};
+				if not (isNull _battery1) then {_splash = _battery1 getVariable ["RydHQ_SPLASH",false]};
+				
+				((_splash) or not (_alive))
 				};
+				
+			if not (isNull _battery1) then {_battery1 setVariable ["RydHQ_SPLASH",false]};
 
 			sleep 10;
-
+			
 				{
-				deleteMarker ("mark" + str (_x) + str (_battery));
+				deleteMarker _x;
 				}
-			foreach [0,1,2,3,4,5];
-
-			if not (_alive) exitWith {};
+			foreach _markers
 			};
 
+		if not (_alive) exitWith {};
 		}
 	foreach _phaseF;
 
-	_battery setVariable [("CFF_Trg" + _batname),_target];
+	_battery1 setVariable [("CFF_Trg" + _batname),_target];
 
 	_alive = true;
+	_splash = false;
 
 	if (_waitFor) then
 		{
@@ -2788,31 +2954,67 @@ RYD_CFF_FFE =
 			{
 			sleep 1;
 
-			if (isNull _batlead) then {_alive = false};
-			if not (alive _batlead) then {_alive = false};
-
-			((_battery getVariable "ARTY_SPLASH") or not (_alive))
+			if (({not (isNull _x)} count _batlead) < 1) then {_alive = false};
+			if (isNull _battery1) then {_alive = false};
+			if (({(alive _x)} count _batlead) < 1) then {_alive = false};
+			if not (isNull _battery1) then {_splash = _battery1 getVariable ["RydHQ_SPLASH",false]};
+			
+			((_splash) or not (_alive))
 			};
+			
+		if not (isNull _battery1) then {_battery1 setVariable ["RydHQ_SPLASH",false]};
 
-		sleep 10;
-
+		sleep 10
 		};
 
+		{
+		deleteMarker _x;
+		}
+	foreach _markers;
+
+	(group _target) setVariable ["CFF_Taken",false];
+	
+	_alive = true;
+
+	waitUntil 
+		{
+		sleep 1;
+
+		_available = true;
+		if (({not (isNull _x)} count _batlead) < 1) then {_alive = false};
+		//if (isNull _battery1) then {_alive = false};
+		if (({(alive _x)} count _batlead) < 1) then {_alive = false};
+					
 			{
-			deleteMarker ("mark" + str (_x) + str (_battery));
+			if not (isNull _x) then
+				{
+					{
+					if not ((vehicle _x) getVariable ["RydHQ_GunFree",true]) exitWith {_available = false}
+					}
+				foreach (units _x)
+				};
+			
+			if not (_available) exitWith {}
 			}
-		foreach [0,1,2,3,4,5];
+		foreach _battery;
+		
+		((_available) or not (_alive))
+		};
 
-	if not (_alive) exitWith {(leader _target) setvariable ["CFF_Taken" + str (leader _target),false]};
+	//if not (_alive) exitWith {};
 
-	(leader _target) setvariable ["CFF_Taken" + str (leader _target),false];
-
-	_battery setvariable [("CFF_Ready" + _batname),true];
+		{
+		if not (isNull _x) then
+			{
+			_x setVariable ["RydHQ_BatteryBusy",false]
+			}
+		}
+	foreach _battery
 	};
 
 RYD_CFF = 
 	{//[RydHQ_ArtG,RydHQ_KnEnemies,(RydHQ_EnHArmor + RydHQ_EnMArmor + RydHQ_EnLArmor),RydHQ_Friends,RydHQ_Debug] call RYD_CFF;
-	private ["_artG","_knEnemies","_enArmor","_friends","_Debug","_CFFMissions","_tgt","_ammo","_bArr","_possible","_UL","_ldr"];
+	private ["_amnt","_artG","_knEnemies","_enArmor","_friends","_Debug","_CFFMissions","_tgt","_ammo","_bArr","_possible","_UL","_ldr"];
 
 	_artG = _this select 0;
 	_knEnemies = _this select 1;
@@ -2829,10 +3031,11 @@ RYD_CFF =
 		if not (isNull _tgt) then
 			{
 			_ammo = "HE";
-			if ((random 100) > 75) then {_ammo = "WP"};
-			if (_tgt in _enArmor) then {_ammo = "SADARM"};	
+			_amnt = 6;
+			if ((random 100) > 85) then {_ammo = "CLUSTER";_amnt = 6};
+			//if (_tgt in _enArmor) then {_ammo = "HE";_amnt = 6};	
 
-			_bArr = [(getPosATL _tgt),_artG,_ammo,6,objNull] call RYD_ArtyMission;
+			_bArr = [(getPosATL _tgt),_artG,_ammo,_amnt,objNull] call RYD_ArtyMission;
 			_possible = _bArr select 0;
 
 			_UL = leader (_friends select (floor (random (count _friends))));
@@ -2842,23 +3045,23 @@ RYD_CFF =
 			if (_possible) then
 				{
 				if ((random 100) < RydxHQ_AIChatDensity) then {[_ldr,RydxHQ_AIC_ArtAss,"ArtAss"] call RYD_AIChatter};
-				[_bArr select 1,_tgt,_bArr select 2,_ammo,_friends,_Debug] spawn RYD_CFF_FFE
+				[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
 				}
 			else
 				{
 				switch (true) do
 					{
-					case (_ammo in ["SADARM","WP"]) : {_ammo = "HE"};
-					case (_ammo in ["HE"]) : {_ammo = "WP"};
+					case (_ammo in ["CLUSTER","GUIDED"]) : {_ammo = "HE";_amnt = 6};
+					case (_ammo in ["HE"]) : {_ammo = "GUIDED";_amnt = 6};
 					};
 
-				_bArr = [(getPosATL _tgt),_artG,_ammo,6,objNull] call RYD_ArtyMission;
+				_bArr = [(getPosATL _tgt),_artG,_ammo,_amnt,objNull] call RYD_ArtyMission;
 
 				_possible = _bArr select 0;
 				if (_possible) then
 					{
 					if ((random 100) < RydxHQ_AIChatDensity) then {[_ldr,RydxHQ_AIC_ArtAss,"ArtAss"] call RYD_AIChatter};
-					[_bArr select 1,_tgt,_bArr select 2,_ammo,_friends,_Debug] spawn RYD_CFF_FFE
+					[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
 					}
 				else
 					{
@@ -2991,7 +3194,7 @@ RYD_LZ =
 	if (_posX > 0) then
 		{
 		_lz = createVehicle ["HeliHEmpty", [_posX,_posY,0], [], 0, "NONE"];
-		//_i01 = [[_posX,_posY],str (random 100),"markLZ","ColorRed","ICON","DOT","LZ",""] call RYD_Mark
+		//_i01 = [[_posX,_posY],str (random 100),"markLZ","ColorRed","ICON","mil_dot","LZ",""] call RYD_Mark
 		};
 
 	_lz
@@ -3013,7 +3216,7 @@ RYD_TimeMachine =
 
 	true
 	};
-
+	
 RYD_AddTask = 
 	{//[(leader _unitG),[],[_posX,_posY]] call RYD_AddTask;
 	private ["_unit","_descr","_dstn","_task","_tasks","_tName"];
@@ -3022,43 +3225,42 @@ RYD_AddTask =
 	_descr = _this select 1;
 	_dstn = _this select 2;
 	
+	_tasks = _unit getVariable ["HACAddedTasks",[]];
 	_task = taskNull;
-	
-	_tasks = _unit getVariable ["HACAddedTasks",[]];	
-
+		
 	if (isPlayer _unit) then
 		{
 		if not (isMultiplayer) then
 			{
+			["TaskAssigned",[nil,(_descr select 1)]] call BIS_fnc_showNotification;
+			_unit setVariable ["HACAddedTasks",[]];
+			
 				{
 				_unit removeSimpleTask _x
 				} 
 			foreach _tasks;
 
 			_task = _unit createSimpleTask ["title"];
-			_tasks = _unit getVariable ["HACAddedTasks",[]];
+			_tasks = [];
+			
 			_tasks set [(count _tasks),_task];
+
 			_unit setVariable ["HACAddedTasks",_tasks];
 			_task setSimpleTaskDescription _descr;
 			_task setSimpleTaskDestination _dstn
 			}
 		else
 			{
-				{
-				[nil,nil, "per", rSETTASKSTATE,_x,"Succeeded"] call RE
-				} 
-			foreach _tasks;
+			[["TaskAssigned",[nil,(_descr select 1)]],"BIS_fnc_showNotification",_unit,false,true] call BIS_fnc_MP;
 			
-			_tName = (str (group _unit)) + (str (count _tasks)) + "HACtask";
-			_task = _tName;
-			[_unit,nil, "per", rCREATESIMPLETASK,_tName] call RE;
+			_unit setVariable ["HACAddedTasks",[]];
 
-			_tasks = _unit getVariable ["HACAddedTasks",[]];
-			_tasks set [(count _tasks),_tName];
+			_tasks = [];
+
+			_task = [nil,_unit,_descr,_dstn,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			_tasks set [(count _tasks),_task];
+			
 			_unit setVariable ["HACAddedTasks",_tasks];
-
-			[nil,nil, "per", rSETSIMPLETASKDESCRIPTION, _tName,_descr] call RE;
-			[nil,nil, "per", rSETSIMPLETASKDESTINATION, _tName,_dstn] call RE
 			}
 		};
 
@@ -3246,7 +3448,7 @@ RYD_AmmoDrop =
 
 	_parachutePos = _cargo modelToWorld [(random 10) - 5,-10,-10];
 
-	_parachute = createVehicle ["ParachuteMediumWest_EP1", [_parachutePos select 0,_parachutePos select 1,2000], [], 0.5, "NONE"];
+	_parachute = createVehicle ["B_Parachute_02_F", [_parachutePos select 0,_parachutePos select 1,2000], [], 0.5, "NONE"];
 	_parachute setPos _parachutePos;
 	_parachute setDir _dir;
 
@@ -3256,7 +3458,7 @@ RYD_AmmoDrop =
 
 	_ammoBox setDir _dir;
 
-	_ammoBox attachTo [_parachute,[0,0,1]];
+	_ammoBox attachTo [_parachute,[0,0,0]];
 
 	sleep 2;
 
@@ -3277,9 +3479,9 @@ RYD_AmmoDrop =
 
 	_pos = getPosATL _ammoBox;
 
-	deleteVehicle _ammoBox;
+	//deleteVehicle _ammoBox;
 
-	_ammoBox = createVehicle [_type, _pos, [], 0, "NONE"];
+	//_ammoBox = createVehicle [_type, _pos, [], 0, "NONE"];
 
 	_off = _ammoBox modelToWorld [0,0,0] select 2;
 	if (_off < 2) then 
@@ -3440,7 +3642,9 @@ RYD_FireCount =
 
 RYD_AIChatter = 
 	{
-	private ["_unit","_gp","_lastComm","_sentences","_side","_lastTime","_varName","_sentence","_kind","_lastKind","_exitNow","_chatRep","_repExChance","_ct"];
+	//if (isMultiPlayer) exitWith {};
+	
+	private ["_unit","_gp","_lastComm","_sentences","_side","_lastTime","_varName","_sentence","_kind","_lastKind","_exitNow","_chatRep","_repExChance","_ct","_units"];
 
 	_unit = _this select 0;
 	
@@ -3514,10 +3718,22 @@ RYD_AIChatter =
 		}
 	else
 		{
-		[_unit,nil, "per", rSIDERADIO,_sentence] call RE;
+		_sentence = getText (missionConfigFile >> "CfgRadio" >> _sentence >> "title");		
+		[[_unit,_sentence],"RYD_MP_Sidechat",true,false,true] call BIS_fnc_MP;
 		};
 
 	missionNameSpace setVariable ["HAC_AIChatLT" + _varName,[time,_kind]];
+	};
+	
+RYD_MP_Sidechat = 
+	{
+	private ["_unit","_sentence"];
+	
+	_unit = _this select 0;
+	_sentence = _this select 1;
+	_unit sidechat _sentence;
+	
+	true
 	};
 	
 RYD_FindBiggest = 

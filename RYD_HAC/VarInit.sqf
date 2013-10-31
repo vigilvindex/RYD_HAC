@@ -2,6 +2,29 @@ RydHQ_Howitzer = ["M119","M119_US_EP1","D30_CDF","D30_Ins","D30_RU","D30_TK_EP1"
 RydHQ_Mortar = ["M252","M252_US_EP1","2b14_82mm_CDF","2b14_82mm_GUE","2b14_82mm_INS","2b14_82mm_TK_EP1","2b14_82mm_TK_GUE_EP1","2b14_82mm_TK_INS_EP1"];
 RydHQ_Rocket = ["MLRS","MLRS_DES_EP1","GRAD_CDF","GRAD_INS","GRAD_RU","GRAD_TK_EP1"];
 
+RydHQ_Mortar_A3 = ["I_Mortar_01_F","O_Mortar_01_F","B_G_Mortar_01_F","B_Mortar_01_F"];
+RydHQ_SPMortar_A3 = ["O_MBT_02_arty_F","B_MBT_01_arty_F"];
+RydHQ_Rocket_A3 = ["B_MBT_01_mlrs_F"];
+
+RydxHQ_SmokeMuzzles = 
+	[
+	["SmokeShellMuzzle",["SmokeShell"]],
+	["SmokeShellYellowMuzzle",["SmokeShellYellow"]],
+	["SmokeShellGreenMuzzle",["SmokeShellGreen"]],
+	["SmokeShellRedMuzzle",["SmokeShellRed"]],
+	["SmokeShellPurpleMuzzle",["SmokeShellPurple"]],
+	["SmokeShellOrangeMuzzle",["SmokeShellOrange"]],
+	["SmokeShellBlueMuzzle",["SmokeShellBlue"]],
+	["EGLM",["1Rnd_Smoke_Grenade_shell","1Rnd_SmokeRed_Grenade_shell","1Rnd_SmokeGreen_Grenade_shell","1Rnd_SmokeYellow_Grenade_shell","1Rnd_SmokePurple_Grenade_shell","1Rnd_SmokeBlue_Grenade_shell","1Rnd_SmokeOrange_Grenade_shell"]],
+	["GL_3GL_F",["1Rnd_Smoke_Grenade_shell","1Rnd_SmokeRed_Grenade_shell","1Rnd_SmokeGreen_Grenade_shell","1Rnd_SmokeYellow_Grenade_shell","1Rnd_SmokePurple_Grenade_shell","1Rnd_SmokeBlue_Grenade_shell","1Rnd_SmokeOrange_Grenade_shell","3Rnd_Smoke_Grenade_shell","3Rnd_SmokeRed_Grenade_shell","3Rnd_SmokeGreen_Grenade_shell","3Rnd_SmokeYellow_Grenade_shell","3Rnd_SmokePurple_Grenade_shell","3Rnd_SmokeBlue_Grenade_shell","3Rnd_SmokeOrange_Grenade_shell"]]
+	];
+	
+RydxHQ_FlareMuzzles = 
+	[
+	["EGLM",["UGL_FlareWhite_F","UGL_FlareGreen_F","UGL_FlareRed_F","UGL_FlareYellow_F","UGL_FlareCIR_F"]],
+	["GL_3GL_F",["UGL_FlareWhite_F","UGL_FlareGreen_F","UGL_FlareRed_F","UGL_FlareYellow_F","UGL_FlareCIR_F","3Rnd_UGL_FlareWhite_F","3Rnd_UGL_FlareGreen_F","3Rnd_UGL_FlareRed_F","3Rnd_UGL_FlareYellow_F","3Rnd_UGL_FlareCIR_F"]]
+	];
+
 if (isNil ("RydBB_Active")) then {RydBB_Active = false};
 if (isNil ("RydBBa_HQs")) then {RydBBa_HQs = []};
 if (isNil ("RydBBb_HQs")) then {RydBBb_HQs = []};

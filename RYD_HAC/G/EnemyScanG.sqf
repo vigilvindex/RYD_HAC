@@ -13,7 +13,7 @@ if (RydHQG_DebugII) then
 		{
 		_dngr = _x getVariable "NearE";
 		if (isNil "_dngr") then {_dngr = 0};
-		_i = [(position (vehicle (leader _x))),_x,"markDanger","ColorGreen","ICON","DOT",(str _dngr),""] call RYD_Mark;
+		_i = [(position (vehicle (leader _x))),_x,"markDanger","ColorGreen","ICON","mil_dot",(str _dngr),""] call RYD_Mark;
 		_x setVariable ["RydHQ_MarkerES",true];
 		}
 	foreach RydHQG_Friends;
@@ -33,7 +33,7 @@ if (RydHQG_DebugII) then
 						{
 						_dngr = _x getVariable "NearE";
 						if (isNil "_dngr") then {_dngr = 0};
-						_mark = [(position (vehicle (leader _x))),_x,"markDanger","ColorGreen","ICON","DOT",(str _dngr),""] call RYD_Mark;
+						_mark = [(position (vehicle (leader _x))),_x,"markDanger","ColorGreen","ICON","mil_dot",(str _dngr),""] call RYD_Mark;
 						_x setVariable ["RydHQ_MarkerES",true];
 						};
 						

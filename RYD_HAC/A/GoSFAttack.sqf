@@ -263,10 +263,10 @@ if ((_ammo > 0) and not (_busy)) then
 	
 	if ((RydHQ_Debug) or (isPlayer (leader _unitG))) then 
 		{
-		_i1 = [[_posXWP1,_posYWP1],_unitG,"markSFFlank1","ColorOrange","ICON","DOT","SF1 A"," - SF FLANK 1"] call RYD_Mark;
-		_i2 = [[_posXWP2,_posYWP2],_unitG,"markSFFlank2","ColorOrange","ICON","DOT","SF2 A"," - SF FLANK 2"] call RYD_Mark;
-		_i3 = [[_posXWP3,_posYWP3],_unitG,"markSFFlank3","ColorOrange","ICON","DOT","SF3 A"," - SF FLANK 3"] call RYD_Mark;
-		_i4 = [[_posXWP4,_posYWP4],_unitG,"markSFFlank4","ColorOrange","ICON","DOT","SF4 A"," - SF ATTACK"] call RYD_Mark
+		_i1 = [[_posXWP1,_posYWP1],_unitG,"markSFFlank1","ColorOrange","ICON","mil_dot","SF1 A"," - SF FLANK 1"] call RYD_Mark;
+		_i2 = [[_posXWP2,_posYWP2],_unitG,"markSFFlank2","ColorOrange","ICON","mil_dot","SF2 A"," - SF FLANK 2"] call RYD_Mark;
+		_i3 = [[_posXWP3,_posYWP3],_unitG,"markSFFlank3","ColorOrange","ICON","mil_dot","SF3 A"," - SF FLANK 3"] call RYD_Mark;
+		_i4 = [[_posXWP4,_posYWP4],_unitG,"markSFFlank4","ColorOrange","ICON","mil_dot","SF4 A"," - SF ATTACK"] call RYD_Mark
 		};
 
 	_CargoCheck = _unitG getvariable ("CC" + _unitvar);
@@ -364,8 +364,8 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posXWP2,_posYWP2]] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Reach designated position. Try to avoid engaging in combat.", "Move", ""]] call RE
+			[_task,(leader _unitG),["Reach designated position. Try to avoid engaging in combat.", "Move", ""],[_posXWP2,_posYWP2],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 
@@ -378,8 +378,8 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _GDV),nil, "per", rSETSIMPLETASKDESTINATION, _Ctask,[_posXWP2,_posYWP2]] call RE;
-			[(leader _GDV),nil, "per", rSETSIMPLETASKDESCRIPTION, _Ctask,["Reach designated position. Try to avoid engaging in combat.", "Move", ""]] call RE
+			[_Ctask,(leader _GDV),["Reach designated position. Try to avoid engaging in combat.", "Move", ""],[_posXWP2,_posYWP2],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 
@@ -435,8 +435,8 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posXWP3,_posYWP3]] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Reach designated position. Try to avoid engaging in combat.", "Move", ""]] call RE
+			[_task,(leader _unitG),["Reach designated position. Try to avoid engaging in combat.", "Move", ""],[_posXWP3,_posYWP3],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 
@@ -449,8 +449,8 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _GDV),nil, "per", rSETSIMPLETASKDESTINATION, _Ctask,[_posXWP3,_posYWP3]] call RE;
-			[(leader _GDV),nil, "per", rSETSIMPLETASKDESCRIPTION, _Ctask,["Disembark group at designated position.", "Move", ""]] call RE
+			[_Ctask,(leader _GDV),["Disembark group at designated position.", "Move", ""],[_posXWP3,_posYWP3],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 
@@ -480,7 +480,7 @@ if ((_ammo > 0) and not (_busy)) then
 		};
 
 	_sts = ["true","deletewaypoint [(group this), 0];"];
-	//if (((group (assigneddriver _AV)) in RydHQ_AirG) and (_unitG in RydHQ_NCrewInfG)) then {_sts = ["true","(vehicle this) land 'GET OUT';deletewaypoint [(group this), 0]"]};
+	if (((group (assigneddriver _AV)) in RydHQ_AirG) and (_unitG in RydHQ_NCrewInfG)) then {_sts = ["true","(vehicle this) land 'GET OUT';deletewaypoint [(group this), 0]"]};
 	_TO = [0,0,0];
 	if ((isNull _AV) and (([_posXWP3,_posYWP3] distance _UL) > 1000)) then {_TO = [40, 45, 50]};
 	_frm = formation _grp;
@@ -575,8 +575,8 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posXWP4,_posYWP4]] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Eliminate enemy at designated position.", "Eliminate", ""]] call RE
+			[_task,(leader _unitG),["Eliminate enemy at designated position.", "Eliminate", ""],[_posXWP4,_posYWP4],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+
 			}
 		};
 
@@ -657,8 +657,8 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posXWP3,_posYWP3]] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return.", "Move", ""]] call RE
+			[_task,(leader _unitG),["Return.", "Move", ""],[_posXWP3,_posYWP3],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 
@@ -701,7 +701,7 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posXWP2,_posYWP2]] call RE
+			[_task,(leader _unitG),["Return.", "Move", ""],[_posXWP2,_posYWP2],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 			}
 		};
 
@@ -738,7 +738,7 @@ if ((_ammo > 0) and not (_busy)) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posXWP1,_posYWP1]] call RE
+			[_task,(leader _unitG),["Return.", "Move", ""],[_posXWP1,_posYWP1],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 			}
 		};
 

@@ -3,8 +3,8 @@ RydHQB = GrpNull;
 
 RydHQB = group leaderHQB;
 
-leaderHQB kbAddTopic ["orders","RYD_HAC\topics.bikb",""];
-waituntil {(leaderHQB kbHasTopic "orders")};
+//leaderHQB kbAddTopic ["orders","RYD_HAC\topics.bikb",""];
+//waituntil {(leaderHQB kbHasTopic "orders")};
 
 RydHQB_Cyclecount = 0;
 
@@ -26,7 +26,7 @@ if (isNil ("RydHQB_AmmoBoxes")) then
 	if not (isNil "RydHQB_AmmoDepot") then 
 		{
 		_rds = (triggerArea RydHQB_AmmoDepot) select 0;
-		RydHQB_AmmoBoxes = (getPosATL RydHQB_AmmoDepot) nearObjects ["ReammoBox",_rds]
+		RydHQB_AmmoBoxes = (getPosATL RydHQB_AmmoDepot) nearObjects ["ReammoBox_F",_rds]
 		}
 	};
 
@@ -40,32 +40,600 @@ if (isNil ("RydHQB_AmmoBoxes")) then
 [] spawn B_Reloc;
 [] spawn B_LPos;
 
-_specFor = RHQ_SpecFor + ["RUS_Soldier_Sab","RUS_Soldier_GL","RUS_Soldier_Marksman","RUS_Commander","RUS_Soldier1","RUS_Soldier2","RUS_Soldier3","RUS_Soldier_TL"] - RHQs_SpecFor;
-_recon = RHQ_Recon + ["FR_TL","FR_Sykes","FR_R","FR_Rodriguez","FR_OHara","FR_Miles","FR_Marksman","FR_AR","FR_GL","FR_AC","FR_Sapper","FR_Corpsman","FR_Cooper","FR_Commander","FR_Assault_R","FR_Assault_GL","USMC_SoldierS_Spotter","USMC_SoldierS","MQ9PredatorB","CDF_Soldier_Spotter","RU_Soldier_Spotter","RUS_Soldier3","Pchela1T","GUE_Soldier_Scout"] - RHQs_Recon;
-_FO = RHQ_FO + ["USMC_SoldierS_Spotter","CDF_Soldier_Spotter","RU_Soldier_Spotter","Ins_Soldier_CO","GUE_Soldier_Scout"] - RHQs_FO;
-_snipers = RHQ_Snipers + ["USMC_SoldierS_Sniper","USMC_SoldierS_SniperH","USMC_SoldierM_Marksman","FR_Marksman","CDF_Soldier_Sniper","CDF_Soldier_Marksman","RU_Soldier_Marksman","RU_Soldier_Sniper","RU_Soldier_SniperH","MVD_Soldier_Marksman","MVD_Soldier_Sniper","RUS_Soldier_Marksman","Ins_Soldier_Sniper","GUE_Soldier_Sniper"] - RHQs_Snipers;
-_ATinf = RHQ_ATInf + ["USMC_Soldier_HAT","USMC_Soldier_AT","USMC_Soldier_LAT","HMMWV_TOW","CDF_Soldier_RPG","RU_Soldier_HAT","RU_Soldier_AT","RU_Soldier_LAT","MVD_Soldier_AT","Ins_Soldier_AT","GUE_Soldier_AT"] - RHQs_ATInf;
-_AAinf = RHQ_AAInf + ["USMC_Soldier_AA","HMMWV_Avenger","CDF_Soldier_Strela","Ural_ZU23_CDF","RU_Soldier_AA","2S6M_Tunguska","Ins_Soldier_AA","ZSU_INS","Ural_ZU23_INS","GUE_Soldier_AA","Ural_ZU23_Gue"] - RHQs_AAInf;
-_Inf = RHQ_Inf + ["GUE_Commander","GUE_Soldier_Scout","GUE_Soldier_Sab","GUE_Soldier_AA","GUE_Soldier_AT","GUE_Soldier_1","GUE_Soldier_2","GUE_Soldier_3","GUE_Soldier_Pilot","GUE_Soldier_Medic","GUE_Soldier_MG","GUE_Soldier_Sniper","GUE_Soldier_GL","GUE_Soldier_Crew","GUE_Soldier_CO","GUE_Soldier_AR","Ins_Woodlander1","Ins_Villager4","Ins_Worker2","Ins_Woodlander2","Ins_Woodlander3","Ins_Villager3","Ins_Soldier_Sniper","Ins_Soldier_Sapper","Ins_Soldier_Sab","Ins_Soldier_2","Ins_Soldier_1","Ins_Soldier_Pilot","Ins_Soldier_CO","Ins_Soldier_Medic","Ins_Soldier_MG","Ins_Bardak","Ins_Soldier_GL","Ins_Soldier_Crew","Ins_Commander","Ins_Lopotev","Ins_Soldier_AR","Ins_Soldier_AT","Ins_Soldier_AA","RUS_Soldier_TL","RUS_Soldier3","RUS_Soldier2","RUS_Soldier1","RUS_Commander","RUS_Soldier_Marksman","RUS_Soldier_GL","RUS_Soldier_Sab","MVD_Soldier_TL","MVD_Soldier_Sniper","MVD_Soldier_AT","MVD_Soldier_GL","MVD_Soldier","MVD_Soldier_Marksman","MVD_Soldier_MG","RU_Soldier_TL","RU_Soldier_SL","RU_Soldier_Spotter","RU_Soldier_SniperH","RU_Soldier_Sniper","RU_Soldier2","RU_Soldier_AT","RU_Soldier_LAT","RU_Soldier","RU_Soldier_Pilot","RU_Soldier_Officer","RU_Soldier_Medic","RU_Soldier_Marksman","RU_Soldier_MG","RU_Soldier_GL","RU_Commander","RU_Soldier_Crew","RU_Soldier_AR","RU_Soldier_HAT","RU_Soldier_AA","CDF_Soldier_TL","CDF_Soldier_Spotter","CDF_Soldier_Light","CDF_Soldier_Sniper","CDF_Soldier","CDF_Soldier_Pilot","CDF_Soldier_Officer","CDF_Soldier_Militia","CDF_Soldier_Medic","CDF_Soldier_Marksman","CDF_Soldier_MG","CDF_Soldier_GL","CDF_Commander","CDF_Soldier_Engineer","CDF_Soldier_Crew","CDF_Soldier_AR","CDF_Soldier_RPG","CDF_Soldier_Strela","FR_TL","FR_Sykes","FR_R","FR_Rodriguez","FR_OHara","FR_Miles","FR_Marksman","FR_AR","FR_GL","FR_AC","FR_Sapper","FR_Corpsman","FR_Cooper","FR_Commander","FR_Assault_R","FR_Assault_GL","USMC_Soldier_SL","USMC_SoldierS_Spotter","USMC_SoldierS_SniperH","USMC_SoldierS_Sniper","USMC_SoldierS","USMC_Soldier_LAT","USMC_Soldier2","USMC_Soldier","USMC_Soldier_Pilot","USMC_Soldier_Officer","USMC_Soldier_MG","USMC_Soldier_GL","USMC_Soldier_TL","USMC_SoldierS_Engineer","USMC_SoldierM_Marksman","USMC_Soldier_Crew","USMC_Soldier_Medic","USMC_Soldier_AR","USMC_Soldier_AT","USMC_Soldier_HAT","USMC_Soldier_AA"] - RHQs_Inf;
-_Art = RHQ_Art + ["2b14_82mm_GUE","2b14_82mm_INS","GRAD_INS","2b14_82mm","D30_RU","GRAD_RU","2b14_82mm_CDF","D30_CDF","GRAD_CDF","MLRS","M252","M119"] - RHQs_Art;
-_HArmor = RHQ_HArmor + ["T72_Gue","T34","T72_INS","T90","T72_RU","T72_CDF","M1A1","M1A2_TUSK_MG"] - RHQs_HArmor;
-_MArmor = RHQ_MArmor + ["T34","BMP2_Gue","BMP2_INS","BMP2_CDF","BMP3"] - RHQs_MArmor;
-_LArmor = RHQ_LArmor + ["BRDM2_HQ_Gue","BRDM2_Gue","BMP2_Gue","ZSU_INS","BRDM2_ATGM_INS","BRDM2_INS","BMP2_HQ_INS","BMP2_INS","GAZ_Vodnik_HMG","GAZ_Vodnik","BTR90_HQ","BTR90","BMP3","2S6M_Tunguska","ZSU_CDF","BRDM2_ATGM_CDF","BRDM2_CDF","BMP2_HQ_CDF","BMP2_CDF","LAV25_HQ","LAV25","AAV"] - RHQs_LArmor;
-_LArmorAT = RHQ_LArmorAT + ["BMP2_Gue","BRDM2_ATGM_INS","BMP2_INS","BTR90","BMP3","BRDM2_ATGM_CDF","BMP2_CDF"] - RHQs_LArmorAT;
-_Cars = RHQ_Cars + ["Ural_ZU23_Gue","V3S_Gue","Pickup_PK_GUE","Offroad_SPG9_Gue","Offroad_DSHKM_Gue","TT650_Gue","UralRepair_INS","UralRefuel_INS","UralReammo_INS","BMP2_Ambul_INS","Ural_ZU23_INS","UralOpen_INS","Ural_INS","UAZ_SPG9_INS","UAZ_MG_INS","UAZ_AGS30_INS","UAZ_INS","Pickup_PK_INS","Offroad_DSHKM_INS","TT650_Ins","GRAD_INS","GAZ_Vodnik_MedEvac","KamazRepair","KamazRefuel","KamazReammo","KamazOpen","Kamaz","UAZ_AGS30_RU","UAZ_RU","GRAD_RU","UralRepair_CDF","UralRefuel_CDF","UralReammo_CDF","BMP2_Ambul_CDF","Ural_ZU23_CDF","UralOpen_CDF","Ural_CDF","UAZ_MG_CDF","UAZ_AGS30_CDF","UAZ_CDF","GRAD_CDF","MtvrRepair","MtvrRefuel","MtvrReammo","HMMWV_Ambulance","TowingTractor","MTVR","MMT_USMC","M1030","HMMWV_Avenger","HMMWV_TOW","HMMWV_MK19","HMMWV_Armored","HMMWV_M2","HMMWV"] - RHQs_Cars;
-_Air = RHQ_Air + ["Mi17_medevac_Ins","Su25_Ins","Mi17_Ins","Mi17_medevac_RU","Su34","Su39","Pchela1T","Mi17_rockets_RU","Mi24_V","Mi24_P","Ka52Black","Ka52","Mi17_medevac_CDF","Su25_CDF","Mi24_D","Mi17_CDF","MV22","C130J","MQ9PredatorB","AH64D","UH1Y","MH60S","F35B","AV8B","AV8B2","AH1Z","A10"] - RHQs_Air;
-_BAir = RHQ_BAir + [] - RHQs_BAir;
-_RAir = RHQ_RAir + ["Pchela1T","MQ9PredatorB"] - RHQs_RAir;
-_NCAir = RHQ_NCAir + ["Mi17_medevac_Ins","Mi17_medevac_RU","Pchela1T","Mi17_medevac_CDF","MV22","C130J","MQ9PredatorB"] - RHQs_NCAir;
-_Naval = RHQ_Naval + ["PBX","RHIB2Turret","RHIB","Zodiac"] - RHQs_Naval;
-_Static = RHQ_Static + ["GUE_WarfareBMGNest_PK","ZU23_Gue","SPG9_Gue","2b14_82mm_GUE","DSHKM_Gue","Ins_WarfareBMGNest_PK","ZU23_Ins","SPG9_Ins","2b14_82mm_INS","DSHkM_Mini_TriPod","DSHKM_Ins","D30_Ins","AGS_Ins","RU_WarfareBMGNest_PK","CDF_WarfareBMGNest_PK","USMC_WarfareBMGNest_M240","2b14_82mm","Metis","KORD","KORD_high","D30_RU","AGS_RU","Igla_AA_pod_East","ZU23_CDF","SPG9_CDF","2b14_82mm_CDF","DSHkM_Mini_TriPod_CDF","DSHKM_CDF","D30_CDF","AGS_CDF","TOW_TriPod","MK19_TriPod","M2HD_mini_TriPod","M252","M2StaticMG","M119","Stinger_Pod","Fort_Nest_M240"] - RHQs_Static;
-_StaticAA = RHQ_StaticAA + ["ZU23_Gue","ZU23_Ins","Igla_AA_pod_East","ZU23_CDF","Stinger_Pod"] - RHQs_StaticAA;
-_StaticAT = RHQ_StaticAT + ["SPG9_Gue","SPG9_Ins","Metis","SPG9_CDF","TOW_TriPod"] - RHQs_StaticAT;
-_Support = RHQ_Support + ["UralRepair_INS","UralRefuel_INS","UralReammo_INS","Mi17_medevac_Ins","BMP2_Ambul_INS","GAZ_Vodnik_MedEvac","KamazRepair","KamazRefuel","Mi17_medevac_RU","KamazReammo","UralRepair_CDF","UralRefuel_CDF","UralReammo_CDF","Mi17_medevac_CDF","BMP2_Ambul_CDF","MtvrRepair","MtvrRefuel","MtvrReammo","HMMWV_Ambulance","MH60S"] - RHQs_Support;
-_Cargo = RHQ_Cargo + ["V3S_Gue","Pickup_PK_GUE","Offroad_SPG9_Gue","Offroad_DSHKM_Gue","BRDM2_HQ_Gue","BRDM2_Gue","BMP2_Gue","Mi17_medevac_Ins","BMP2_Ambul_INS","UralOpen_INS","Ural_INS","UAZ_SPG9_INS","UAZ_MG_INS","UAZ_AGS30_INS","UAZ_INS","Pickup_PK_INS","Offroad_DSHKM_INS","BRDM2_ATGM_INS","BRDM2_INS","BMP2_HQ_INS","BMP2_INS","Mi17_Ins","GAZ_Vodnik_MedEvac","Mi17_medevac_RU","PBX","KamazOpen","Kamaz","UAZ_AGS30_RU","UAZ_RU","GAZ_Vodnik_HMG","GAZ_Vodnik","BTR90_HQ","BTR90","BMP3","Mi17_rockets_RU","Mi17_medevac_CDF","BMP2_Ambul_CDF","UralOpen_CDF","Ural_CDF","UAZ_MG_CDF","UAZ_AGS30_CDF","UAZ_CDF","BRDM2_ATGM_CDF","BRDM2_CDF","BMP2_HQ_CDF","BMP2_CDF","Mi17_CDF","HMMWV_Ambulance","RHIB2Turret","RHIB","Zodiac","MTVR","HMMWV_TOW","HMMWV_MK19","HMMWV_Armored","HMMWV_M2","HMMWV","LAV25_HQ","LAV25","AAV","UH1Y","MH60S","MV22","C130J"] - RHQs_Cargo;
-_NCCargo = RHQ_NCCargo + ["V3S_Gue","Mi17_medevac_Ins","BMP2_Ambul_INS","UralOpen_INS","Ural_INS","UAZ_INS","GAZ_Vodnik_MedEvac","Mi17_medevac_RU","PBX","KamazOpen","Kamaz","UAZ_RU","Mi17_medevac_CDF","BMP2_Ambul_CDF","UralOpen_CDF","Ural_CDF","UAZ_CDF","HMMWV_Ambulance","Zodiac","MTVR","HMMWV","MV22","C130J"] - RHQs_NCCargo;
-_Crew = RHQ_Crew + ["GUE_Soldier_Pilot","INS_Soldier_Pilot","RU_Soldier_Pilot","CDF_Soldier_Pilot","USMC_Soldier_Pilot","GUE_Soldier_Crew","INS_Soldier_Crew","RU_Soldier_Crew","CDF_Soldier_Crew","USMC_Soldier_Crew"] - RHQs_Crew;
-_Other = RHQ_Other + [];
+_specFor = RHQ_SpecFor + 
+	[
+	] - RHQs_SpecFor;
+
+_recon = RHQ_Recon + 
+	[
+	"O_recon_exp_F",
+	"O_recon_F",
+	"O_recon_JTAC_F",
+	"O_recon_LAT_F",
+	"O_recon_M_F",
+	"O_recon_medic_F",
+	"O_recon_TL_F",
+	"B_recon_exp_F",
+	"B_recon_F",
+	"B_recon_JTAC_F",
+	"B_recon_LAT_F",
+	"B_recon_M_F",
+	"B_recon_medic_F",
+	"B_recon_TL_F",
+	"I_UAV_AI",
+	"O_UAV_AI",
+	"B_UAV_AI",
+	"I_UAV_01_F",
+	"I_UAV_02_CAS_F",
+	"I_UAV_02_F",
+	"I_UGV_01_F",
+	"I_UGV_01_rcws_F",
+	"O_UAV_01_F",
+	"O_UAV_02_CAS_F",
+	"O_UAV_02_F",
+	"O_UGV_01_F",
+	"O_UGV_01_rcws_F",
+	"B_UAV_01_F",
+	"B_UAV_02_CAS_F",
+	"B_UAV_02_F",
+	"B_UGV_01_F",
+	"B_UGV_01_rcws_F"
+	] - RHQs_Recon;
+	
+_FO = RHQ_FO + 
+	[
+	"I_Spotter_F",
+	"O_Spotter_F",
+	"B_Spotter_F",
+	"O_recon_JTAC_F",
+	"B_recon_JTAC_F"
+	] - RHQs_FO;
+	
+_snipers = RHQ_Snipers + 
+	[
+	"I_Sniper_F",
+	"O_Sniper_F",
+	"B_Sniper_F",
+	"I_Soldier_M_F",
+	"O_Soldier_M_F",
+	"B_G_Soldier_M_F",
+	"B_Soldier_M_F",
+	"O_recon_M_F",
+	"B_recon_M_F",
+	"O_soldierU_M_F"
+	] - RHQs_Snipers;
+	
+_ATinf = RHQ_ATInf + 
+	[
+	"I_Soldier_AT_F",
+	"I_Soldier_LAT_F",
+	"O_Soldier_AT_F",
+	"O_Soldier_LAT_F",
+	"B_Soldier_AT_F",
+	"B_Soldier_LAT_F",
+	"B_G_Soldier_LAT_F",
+	"O_soldierU_AT_F",
+	"O_soldierU_LAT_F",
+	"O_recon_LAT_F",
+	"B_recon_LAT_F"
+	] - RHQs_ATInf;
+	
+_AAinf = RHQ_AAInf + 
+	[
+	"I_Soldier_AA_F",
+	"B_Soldier_AA_F",
+	"O_Soldier_AA_F",
+	"O_APC_Tracked_02_AA_F",
+	"B_APC_Tracked_01_AA_F",
+	"O_soldierU_AA_F"
+	] - RHQs_AAInf;
+
+_Inf = RHQ_Inf + 
+	[
+	"I_crew_F",
+	"I_engineer_F",
+	"I_helicrew_F",
+	"I_helipilot_F",
+	"I_medic_F",
+	"I_officer_F",
+	"I_pilot_F",
+	"I_Soldier_A_F",
+	"I_Soldier_AA_F",
+	"I_Soldier_AR_F",
+	"I_Soldier_AT_F",
+	"I_Soldier_exp_F",
+	"I_Soldier_F",
+	"I_Soldier_GL_F",
+	"I_Soldier_LAT_F",
+	"I_Soldier_lite_F",
+	"I_Soldier_M_F",
+	"I_Soldier_repair_F",
+	"I_Soldier_SL_F",
+	"I_Soldier_TL_F",
+	"I_Soldier_UAV_F",
+	"O_crew_F",
+	"O_engineer_F",
+	"O_helicrew_F",
+	"O_helipilot_F",
+	"O_medic_F",
+	"O_officer_F",
+	"O_pilot_F",
+	"O_Soldier_A_F",
+	"O_Soldier_AA_F",
+	"O_Soldier_AR_F",
+	"O_Soldier_AT_F",
+	"O_Soldier_exp_F",
+	"O_Soldier_F",
+	"O_Soldier_GL_F",
+	"O_Soldier_LAT_F",
+	"O_Soldier_lite_F",
+	"O_Soldier_M_F",
+	"O_Soldier_PG_F",
+	"O_Soldier_repair_F",
+	"O_Soldier_SL_F",
+	"O_Soldier_TL_F",
+	"O_Soldier_UAV_F",
+	"B_G_engineer_F",
+	"B_G_medic_F",
+	"B_G_officer_F",
+	"B_G_Soldier_A_F",
+	"B_G_Soldier_AR_F",
+	"B_G_Soldier_exp_F",
+	"B_G_Soldier_F",
+	"B_G_Soldier_GL_F",
+	"B_G_Soldier_LAT_F",
+	"B_G_Soldier_lite_F",
+	"B_G_Soldier_M_F",
+	"B_G_Soldier_SL_F",
+	"B_G_Soldier_TL_F",
+	"B_crew_F",
+	"B_engineer_F",
+	"B_helicrew_F",
+	"B_helipilot_F",
+	"B_medic_F",
+	"B_officer_F",
+	"B_pilot_F",
+	"B_Soldier_A_F",
+	"B_Soldier_AA_F",
+	"B_Soldier_AR_F",
+	"B_Soldier_AT_F",
+	"B_Soldier_exp_F",
+	"B_Soldier_F",
+	"B_Soldier_GL_F",
+	"B_Soldier_LAT_F",
+	"B_Soldier_lite_F",
+	"B_Soldier_M_F",
+	"B_Soldier_PG_F",
+	"B_Soldier_repair_F",
+	"B_Soldier_SL_F",
+	"B_Soldier_TL_F",
+	"B_Soldier_UAV_F",
+	"O_recon_exp_F",
+	"O_recon_F",
+	"O_recon_JTAC_F",
+	"O_recon_LAT_F",
+	"O_recon_M_F",
+	"O_recon_medic_F",
+	"O_recon_TL_F",
+	"B_recon_exp_F",
+	"B_recon_F",
+	"B_recon_JTAC_F",
+	"B_recon_LAT_F",
+	"B_recon_M_F",
+	"B_recon_medic_F",
+	"B_recon_TL_F",
+	"I_Sniper_F",
+	"I_Spotter_F",
+	"O_Sniper_F",
+	"O_Spotter_F",
+	"B_Sniper_F",
+	"B_Spotter_F",
+	"O_engineer_U_F",
+	"O_soldierU_A_F",
+	"O_soldierU_AA_F",
+	"O_soldierU_AAA_F",
+	"O_soldierU_AAR_F",
+	"O_soldierU_AAT_F",
+	"O_soldierU_AR_F",
+	"O_soldierU_AT_F",
+	"O_soldierU_exp_F",
+	"O_soldierU_F",
+	"O_SoldierU_GL_F",
+	"O_soldierU_LAT_F",
+	"O_soldierU_M_F",
+	"O_soldierU_medic_F",
+	"O_soldierU_repair_F",
+	"O_SoldierU_SL_F",
+	"O_soldierU_TL_F",
+	"I_Soldier_AAA_F",
+	"I_Soldier_AAR_F",
+	"I_Soldier_AAT_F",
+	"I_support_AMG_F",
+	"I_support_AMort_F",
+	"I_support_GMG_F",
+	"I_support_MG_F",
+	"I_support_Mort_F",
+	"O_Soldier_AAA_F",
+	"O_Soldier_AAR_F",
+	"O_Soldier_AAT_F",
+	"O_support_AMG_F",
+	"O_support_AMort_F",
+	"O_support_GMG_F",
+	"O_support_MG_F",
+	"O_support_Mort_F",
+	"B_Soldier_AAA_F",
+	"B_Soldier_AAR_F",
+	"B_Soldier_AAT_F",
+	"B_support_AMG_F",
+	"B_support_AMort_F",
+	"B_support_GMG_F",
+	"B_support_MG_F",
+	"B_support_Mort_F",
+	"I_diver_exp_F",
+	"I_diver_F",
+	"I_diver_TL_F",
+	"O_diver_exp_F",
+	"O_diver_F",
+	"O_diver_TL_F",
+	"B_diver_exp_F",
+	"B_diver_F",
+	"B_diver_TL_F",
+	"I_Story_Colonel_F",
+	"O_Story_CEO_F",
+	"O_Story_Colonel_F",
+	"I_G_Story_Protagonist_F",
+	"B_Competitor_F",
+	"B_RangeMaster_F",
+	"B_Story_Colonel_F",
+	"B_Story_Engineer_F",
+	"B_Story_Pilot_F",
+	"B_Story_Protagonist_F",
+	"B_Story_SF_Captain_F",
+	"B_Story_Tank_Commander_F"
+	] - RHQs_Inf;
+	
+_Art = RHQ_Art + 
+	[
+	"B_MBT_01_arty_F",
+	"O_MBT_02_arty_F",
+	"B_MBT_01_mlrs_F",
+	"I_Mortar_01_F",
+	"O_Mortar_01_F",
+	"B_G_Mortar_01_F",
+	"B_Mortar_01_F"
+	] - RHQs_Art;
+	
+_HArmor = RHQ_HArmor + 
+	[
+	"B_MBT_01_cannon_F",
+	"O_MBT_02_cannon_F"
+	] - RHQs_HArmor;
+	
+_MArmor = RHQ_MArmor + 
+	[
+	] - RHQs_MArmor;
+
+_LArmor = RHQ_LArmor + 
+	[
+	"I_APC_Wheeled_03_cannon_F",
+	"O_APC_Tracked_02_AA_F",
+	"O_APC_Tracked_02_cannon_F",
+	"O_APC_Wheeled_02_rcws_F",
+	"B_APC_Tracked_01_AA_F",
+	"B_APC_Tracked_01_rcws_F",
+	"B_APC_Wheeled_01_cannon_F"
+	] - RHQs_LArmor;
+	
+_LArmorAT = RHQ_LArmorAT + 
+	[
+	"I_APC_Wheeled_03_cannon_F",
+	"O_APC_Tracked_02_cannon_F"
+	] - RHQs_LArmorAT;
+
+_Cars = RHQ_Cars + 
+	[
+	"I_MRAP_03_F",
+	"I_MRAP_03_gmg_F",
+	"I_MRAP_03_hmg_F",
+	"I_Quadbike_01_F",
+	"I_Truck_02_covered_F",
+	"I_Truck_02_transport_F",
+	"O_MRAP_02_F",
+	"O_MRAP_02_gmg_F",
+	"O_MRAP_02_hmg_F",
+	"O_Quadbike_01_F",
+	"O_Truck_02_covered_F",
+	"O_Truck_02_transport_F",
+	"B_G_Offroad_01_armed_F",
+	"B_G_Offroad_01_F",
+	"B_G_Quadbike_01_F",
+	"B_G_Van_01_transport_F",
+	"B_MRAP_01_F",
+	"B_MRAP_01_gmg_F",
+	"B_MRAP_01_hmg_F",
+	"B_Quadbike_01_F",
+	"B_Truck_01_box_F",
+	"B_Truck_01_covered_F",
+	"B_Truck_01_mover_F",
+	"B_Truck_01_transport_F",
+	"I_Truck_02_ammo_F",
+	"I_Truck_02_box_F",
+	"I_Truck_02_fuel_F",
+	"I_Truck_02_medical_F",
+	"O_Truck_02_ammo_F",
+	"O_Truck_02_box_F",
+	"O_Truck_02_fuel_F",
+	"O_Truck_02_medical_F",
+	"B_G_Van_01_fuel_F",
+	"B_Truck_01_ammo_F",
+	"B_Truck_01_Repair_F",
+	"B_Truck_01_fuel_F",
+	"B_Truck_01_medical_F",
+	"I_UGV_01_F",
+	"I_UGV_01_rcws_F",
+	"O_UGV_01_F",
+	"O_UGV_01_rcws_F",
+	"B_UGV_01_F",
+	"B_UGV_01_rcws_F"
+	] - RHQs_Cars;
+	
+_Air = RHQ_Air + 
+	[
+	"I_Heli_Transport_02_F",
+	"I_Plane_Fighter_03_AA_F",
+	"I_Plane_Fighter_03_CAS_F",
+	"O_Heli_Attack_02_black_F",
+	"O_Heli_Attack_02_F",
+	"O_Heli_Light_02_F",
+	"O_Heli_Light_02_unarmed_F",
+	"B_Heli_Attack_01_F",
+	"B_Heli_Light_01_armed_F",
+	"B_Heli_Light_01_F",
+	"B_Heli_Transport_01_camo_F",
+	"B_Heli_Transport_01_F",
+	"I_UAV_AI",
+	"O_UAV_AI",
+	"B_UAV_AI",
+	"I_UAV_01_F",
+	"I_UAV_02_CAS_F",
+	"I_UAV_02_F",
+	"O_UAV_01_F",
+	"O_UAV_02_CAS_F",
+	"O_UAV_02_F",
+	"B_UAV_01_F",
+	"B_UAV_02_CAS_F",
+	"B_UAV_02_F"
+	] - RHQs_Air;
+	
+_BAir = RHQ_BAir + 
+	[
+	"I_Plane_Fighter_03_CAS_F"
+	] - RHQs_BAir;
+	
+_RAir = RHQ_RAir + 
+	[
+	"I_UAV_01_F",
+	"I_UAV_02_CAS_F",
+	"I_UAV_02_F",
+	"O_UAV_01_F",
+	"O_UAV_02_CAS_F",
+	"O_UAV_02_F",
+	"B_UAV_01_F",
+	"B_UAV_02_CAS_F",
+	"B_UAV_02_F"
+	] - RHQs_RAir;
+	
+_NCAir = RHQ_NCAir + 
+	[
+	"I_Heli_Transport_02_F",
+	"O_Heli_Light_02_unarmed_F",
+	"B_Heli_Light_01_F",
+	"B_Heli_Transport_01_camo_F",
+	"B_Heli_Transport_01_F",
+	"I_UAV_01_F",
+	"I_UAV_02_F",
+	"O_UAV_01_F",
+	"O_UAV_02_F",
+	"B_UAV_01_F",
+	"B_UAV_02_F"	
+	] - RHQs_NCAir;
+
+_Naval = RHQ_Naval + 
+	[
+	"I_Boat_Armed_01_minigun_F",
+	"I_Boat_Transport_01_F",
+	"O_Boat_Armed_01_hmg_F",
+	"O_Boat_Transport_01_F",
+	"O_Lifeboat",
+	"B_G_Boat_Transport_01_F",
+	"B_Boat_Armed_01_minigun_F",
+	"B_Boat_Transport_01_F",
+	"B_Lifeboat",
+	"I_SDV_01_F",
+	"O_SDV_01_F",
+	"B_SDV_01_F"	
+	] - RHQs_Naval;
+
+_Static = RHQ_Static + 
+	[
+	"I_GMG_01_A_F",
+	"I_GMG_01_F",
+	"I_GMG_01_high_F",
+	"I_HMG_01_A_F",
+	"I_HMG_01_F",
+	"I_HMG_01_high_F",
+	"I_Mortar_01_F",
+	"I_static_AA_F",
+	"I_static_AT_F",
+	"O_GMG_01_A_F",
+	"O_GMG_01_F",
+	"O_GMG_01_high_F",
+	"O_HMG_01_A_F",
+	"O_HMG_01_F",
+	"O_HMG_01_high_F",
+	"O_Mortar_01_F",
+	"O_static_AA_F",
+	"O_static_AT_F",
+	"B_G_Mortar_01_F",
+	"B_GMG_01_A_F",
+	"B_GMG_01_F",
+	"B_GMG_01_high_F",
+	"B_HMG_01_A_F",
+	"B_HMG_01_F",
+	"B_HMG_01_high_F",
+	"B_Mortar_01_F",
+	"B_static_AA_F",
+	"B_static_AT_F"
+	] - RHQs_Static;
+	
+_StaticAA = RHQ_StaticAA + 
+	[
+	"I_static_AA_F",
+	"O_static_AA_F",
+	"B_static_AA_F"
+	] - RHQs_StaticAA;
+	
+_StaticAT = RHQ_StaticAT + 
+	[
+	"I_static_AT_F",
+	"O_static_AT_F",
+	"B_static_AT_F"
+	] - RHQs_StaticAT;
+	
+_Support = RHQ_Support + 
+	[
+	"I_Truck_02_ammo_F",
+	"I_Truck_02_box_F",
+	"I_Truck_02_fuel_F",
+	"I_Truck_02_medical_F",
+	"O_Truck_02_ammo_F",
+	"O_Truck_02_box_F",
+	"O_Truck_02_fuel_F",
+	"O_Truck_02_medical_F",
+	"B_G_Van_01_fuel_F",
+	"B_APC_Tracked_01_CRV_F",
+	"B_Truck_01_ammo_F",
+	"B_Truck_01_Repair_F",
+	"B_Truck_01_fuel_F",
+	"B_Truck_01_medical_F"
+	] - RHQs_Support;
+	
+_Cargo = RHQ_Cargo + 
+	[
+	"I_Heli_Transport_02_F",
+	"O_Heli_Attack_02_black_F",
+	"O_Heli_Attack_02_F",
+	"O_Heli_Light_02_F",
+	"O_Heli_Light_02_unarmed_F",
+	"B_Heli_Light_01_F",
+	"B_Heli_Transport_01_camo_F",
+	"B_Heli_Transport_01_F",
+	"I_Truck_02_medical_F",
+	"O_Truck_02_medical_F",
+	"B_Truck_01_medical_F",
+	"I_Boat_Armed_01_minigun_F",
+	"I_Boat_Transport_01_F",
+	"O_Boat_Armed_01_hmg_F",
+	"O_Boat_Transport_01_F",
+	"O_Lifeboat",
+	"B_G_Boat_Transport_01_F",
+	"B_Boat_Armed_01_minigun_F",
+	"B_Boat_Transport_01_F",
+	"B_Lifeboat",
+	"I_SDV_01_F",
+	"O_SDV_01_F",
+	"B_SDV_01_F",
+	"B_MBT_01_cannon_F",
+	"I_APC_Wheeled_03_cannon_F",
+	"O_APC_Tracked_02_cannon_F",
+	"O_APC_Wheeled_02_rcws_F",
+	"B_APC_Tracked_01_rcws_F",
+	"B_APC_Wheeled_01_cannon_F",
+	"I_MRAP_03_F",
+	"I_MRAP_03_gmg_F",
+	"I_MRAP_03_hmg_F",
+	"I_Quadbike_01_F",
+	"I_Truck_02_covered_F",
+	"I_Truck_02_transport_F",
+	"O_MRAP_02_F",
+	"O_MRAP_02_gmg_F",
+	"O_MRAP_02_hmg_F",
+	"O_Quadbike_01_F",
+	"O_Truck_02_covered_F",
+	"O_Truck_02_transport_F",
+	"B_G_Offroad_01_armed_F",
+	"B_G_Offroad_01_F",
+	"B_G_Quadbike_01_F",
+	"B_G_Van_01_transport_F",
+	"B_MRAP_01_F",
+	"B_MRAP_01_gmg_F",
+	"B_MRAP_01_hmg_F",
+	"B_Quadbike_01_F",
+	"B_Truck_01_box_F",
+	"B_Truck_01_covered_F",
+	"B_Truck_01_mover_F",
+	"B_Truck_01_transport_F"	
+	] - RHQs_Cargo;
+	
+_NCCargo = RHQ_NCCargo + 
+	[
+	"I_Heli_Transport_02_F",
+	"O_Heli_Light_02_unarmed_F",
+	"B_Heli_Light_01_F",
+	"B_Heli_Transport_01_camo_F",
+	"B_Heli_Transport_01_F",
+	"I_Truck_02_medical_F",
+	"O_Truck_02_medical_F",
+	"B_Truck_01_medical_F",
+	"I_Boat_Transport_01_F",
+	"O_Boat_Transport_01_F",
+	"O_Lifeboat",
+	"B_G_Boat_Transport_01_F",
+	"B_Boat_Transport_01_F",
+	"B_Lifeboat",
+	"I_MRAP_03_F",
+	"I_Quadbike_01_F",
+	"I_Truck_02_covered_F",
+	"I_Truck_02_transport_F",
+	"O_MRAP_02_F",
+	"O_Quadbike_01_F",
+	"O_Truck_02_covered_F",
+	"O_Truck_02_transport_F",
+	"B_G_Offroad_01_F",
+	"B_G_Quadbike_01_F",
+	"B_G_Van_01_transport_F",
+	"B_MRAP_01_F",
+	"B_Quadbike_01_F",
+	"B_Truck_01_box_F",
+	"B_Truck_01_covered_F",
+	"B_Truck_01_mover_F",
+	"B_Truck_01_transport_F"	
+	] - RHQs_NCCargo;
+	
+_Crew = RHQ_Crew + 
+	[
+	"I_crew_F",
+	"I_helicrew_F",
+	"I_helipilot_F",
+	"I_pilot_F",
+	"O_crew_F",
+	"O_helicrew_F",
+	"O_helipilot_F",
+	"O_pilot_F",
+	"B_crew_F",
+	"B_helicrew_F",
+	"B_helipilot_F",
+	"B_pilot_F",
+	"B_Story_Pilot_F"
+	] - RHQs_Crew;
+	
+_Other = RHQ_Other + 
+	[
+	"I_UAV_AI",
+	"O_UAV_AI",
+	"B_UAV_AI"	
+	];
+
 _NCrewInf = _Inf - _Crew;
 _Cargo = _Cargo - (_Support - ["MH60S"]);
 RydHQB_NCVeh = _NCCargo + (_Support - ["MH60S"]);
@@ -276,7 +844,7 @@ while {not ((isNull RydHQB) or (RydHQB_Surrender))} do
 	if (isNil "RydHQB_NoRec") then {RydHQB_NoRec = 1};
 	if (isNil "RydHQB_RapidCapt") then {RydHQB_RapidCapt = 10};
 	if (isNil "RydHQB_Muu") then {RydHQB_Muu = 1};
-	if (isNil "RydHQB_ArtyShells") then {RydHQB_ArtyShells = 120};
+	if (isNil "RydHQB_ArtyShells") then {RydHQB_ArtyShells = 1};
 	if (isNil "RydHQB_Withdraw") then {RydHQB_Withdraw = 1};
 	if (isNil "RydHQB_Berserk") then {RydHQB_Berserk = false};
 	if (isNil "RydHQB_IDChance") then {RydHQB_IDChance = 100};
@@ -324,7 +892,7 @@ while {not ((isNull RydHQB) or (RydHQB_Surrender))} do
 	RydHQB_LastSub = RydHQB_Subordinated;
 	RydHQB_Subordinated = [];
 
-	_civF = ["CIV","CIV_RU","BIS_TK_CIV","BIS_CIV_special"];
+	_civF = ["CIV_F","CIV","CIV_RU","BIS_TK_CIV","BIS_CIV_special"];
 	if not (isNil ("RydHQB_CivF")) then {_civF = RydHQB_CivF};
 
 		{
@@ -804,7 +1372,7 @@ while {not ((isNull RydHQB) or (RydHQB_Surrender))} do
 				{
 				[_x] call RYD_WPdel;
 				_x setVariable [("inPanic" + (str _x)), true];
-				if (RydHQB_DebugII) then {_i = [(getPosATL (vehicle (leader _x))),_x,"markPanic","ColorYellow","ICON","DOT","B!","B!",[0.5,0.5]] call RYD_Mark};
+				if (RydHQB_DebugII) then {_i = [(getPosATL (vehicle (leader _x))),_x,"markPanic","ColorYellow","ICON","mil_dot","B!","B!",[0.5,0.5]] call RYD_Mark};
 				_x setVariable [("Busy" + (str _x)), true];
 
 				_UL = leader _x;

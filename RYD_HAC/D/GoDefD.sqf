@@ -114,7 +114,7 @@ if ((RydHQD_Debug) or (isPlayer (leader _unitG))) then
 	_pltxt = " - DEFEND POSITION";
 	if (_unitG in (RydHQD_SupportG - RydHQD_AirG)) then {_pltxt = " - SUPPORT"};
 
-	_i = [_DefPos,_unitG,"markDef",_clr,"ICON","DOT",_txt,_pltxt] call RYD_Mark
+	_i = [_DefPos,_unitG,"markDef",_clr,"ICON","mil_dot",_txt,_pltxt] call RYD_Mark
 	};
 
 _AV = assignedVehicle _UL;
@@ -157,7 +157,7 @@ _TED = [_posX,_posY];
 
 if ((RydHQD_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [_TED,_unitG,"markWatch","ColorGreenAlpha","ICON","DOT","D","D",[0.2,0.2]] call RYD_Mark
+	_i = [_TED,_unitG,"markWatch","Default","ICON","mil_dot","D","D",[0.2,0.2]] call RYD_Mark
 	};
 
 _dir = [(getPosATL (vehicle (leader _unitG))),_TED,10] call RYD_AngTowards;

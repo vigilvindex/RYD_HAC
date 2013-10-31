@@ -47,7 +47,7 @@ if (isPlayer _UL) then {[_UL,leaderHQC] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQC_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [[_posX,_posY],_unitG,"markFuelSupp","ColorKhaki","ICON","End"," Refuel C"," - FUEL SUPPORT",[0.6,0.6]] call RYD_Mark
+	_i = [[_posX,_posY],_unitG,"markFuelSupp","ColorKhaki","ICON","mil_end"," Refuel C"," - FUEL SUPPORT",[0.6,0.6]] call RYD_Mark
 	};
 
 _task = [(leader _unitG),["Deliver Fuel.", "Support", ""],(position _Trg)] call RYD_AddTask;
@@ -83,7 +83,7 @@ while {(_counter <= 3)} do
 				}
 			else
 				{
-				[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,[_posX,_posY]] call RE
+				[_task,(leader _unitG),["Provide support to nearby units. Stay in this area.", "Support", ""],[_posX,_posY],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 				}
 			}
 		};

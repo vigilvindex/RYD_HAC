@@ -122,7 +122,7 @@ if (isPlayer _UL) then {[_UL,leaderHQH] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQH_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","DOT","Snp H"," - ATTACK"] call RYD_Mark
+	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","mil_dot","Snp H"," - ATTACK"] call RYD_Mark
 	};
 
 _AV = assignedVehicle _UL;
@@ -191,7 +191,7 @@ _crr = false;
 if ((_nW == 1) and (isNull _AV)) then {_crr = true};
 if not (isNull _AV) then {_crr = true};
 _sts = ["true","deletewaypoint [(group this), 0];"];
-//if (((group (assigneddriver _AV)) in RydHQH_AirG) and (_unitG in RydHQH_NCrewInfG)) then {_sts = ["true","(vehicle this) land 'GET OUT';deletewaypoint [(group this), 0]"]};
+if (((group (assigneddriver _AV)) in RydHQH_AirG) and (_unitG in RydHQH_NCrewInfG)) then {_sts = ["true","(vehicle this) land 'GET OUT';deletewaypoint [(group this), 0]"]};
 
 _wp = [_gp,_pos,_tp,_beh,"YELLOW",_spd,_sts,_crr,0.001,_TO] call RYD_WPadd;
 
@@ -252,8 +252,8 @@ if (isPlayer (leader _unitG)) then
 		}
 	else
 		{
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,(position _Trg)] call RE;
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Stay hidden, where you are and snipe any spotted enemy units.", "Snipe", ""]] call RE
+		 
+		[_task,(leader _unitG),["Stay hidden, where you are and snipe any spotted enemy units.", "Snipe", ""],(position _Trg),"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 		}
 	};
 
@@ -321,8 +321,8 @@ if (isPlayer (leader _unitG)) then
 		}
 	else
 		{
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_Spos] call RE;
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Withdraw.", "Move", ""]] call RE
+		[_task,(leader _unitG),["Withdraw.", "Move", ""],_Spos,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+		 
 		};
 	};
 
@@ -343,8 +343,8 @@ if (_unitG in RydHQH_Garrison) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_Spos] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return.", "Move", ""]] call RE
+			[_task,(leader _unitG),["Withdraw.", "Move", ""],_Spos,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 	

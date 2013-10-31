@@ -84,7 +84,7 @@ if (isPlayer _UL) then {[_UL,leaderHQC] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQC_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [[_posX,_posY],_unitG,"markRecon","ColorRed","ICON","DOT","Rec C"," - NON-COMBAT RECON"] call RYD_Mark;
+	_i = [[_posX,_posY],_unitG,"markRecon","ColorRed","ICON","mil_dot","Rec C"," - NON-COMBAT RECON"] call RYD_Mark;
 	};
 
 _AV = assignedVehicle _UL;
@@ -241,7 +241,7 @@ while {(_nothing)} do
 		sleep 15;
 		_rd = 0;
 		if (_unitG in RydHQC_AirG) then {_End = _PosLand;_rd = 0} else {_End = [((position leaderHQC) select 0) + (random 400) - 200,((position leaderHQC) select 1) + (random 400) - 200];_isWater = surfaceIsWater _End;if (_isWater) then {_End = [((position leaderHQC) select 0) + (random 40) - 20,((position leaderHQC) select 1) + (random 40) - 20]}};
-
+				
 		if (isPlayer (leader _unitG)) then
 			{
 			if not (isMultiplayer) then
@@ -251,8 +251,8 @@ while {(_nothing)} do
 				}
 			else
 				{
-				[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_End] call RE;
-				[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return.", "Move", ""]] call RE
+				[_task,(leader _unitG),["Return.", "Move", ""],_End,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+				 
 				}
 			};
 

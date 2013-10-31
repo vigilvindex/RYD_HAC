@@ -5,7 +5,7 @@ if (isNil ("RydHQG_SMed")) then {RydHQG_SMed = true};
 if (isNil ("RydHQG_ExMedic")) then {RydHQG_ExMedic = []};
 if (isNil ("RydHQG_MedPoints")) then {RydHQG_MedPoints = []};
 
-_med = RHQ_Med + ["LandRover_Ambulance_ACR","M113Ambul_UN_EP1","M113Ambul_TK_EP1","UH60M_MEV_EP1","M1133_MEV_EP1","HMMWV_Ambulance_CZ_DES_EP1","HMMWV_Ambulance_DES_EP1","Mi17_medevac_Ins","BMP2_Ambul_INS","GAZ_Vodnik_MedEvac","Mi17_medevac_RU","Mi17_medevac_CDF","BMP2_Ambul_CDF","HMMWV_Ambulance","MH60S"] - RHQs_Med;
+_med = RHQ_Med + ["I_Truck_02_medical_F","O_Truck_02_medical_F","B_Truck_01_medical_F"] - RHQs_Med;
 _noenemy = true;
 
 while {not (isNull RydHQG)} do

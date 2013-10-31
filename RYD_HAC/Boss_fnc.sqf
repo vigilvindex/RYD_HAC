@@ -307,7 +307,7 @@ RYD_Sectorize =
 	if not (_ang in [0,90,180,270]) then
 		{
 		_main setDirection _ang;
-		_centers2 = _centers;
+		_centers2 = +_centers;
 		_centers = [];
 
 			{

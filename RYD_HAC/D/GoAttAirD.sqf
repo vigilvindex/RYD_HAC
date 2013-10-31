@@ -42,7 +42,7 @@ if (isPlayer _UL) then {[_UL,leaderHQD] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQD_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","DOT","Air D"," - ATTACK"] call RYD_Mark
+	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","mil_dot","Air D"," - ATTACK"] call RYD_Mark
 	};
 
 _task = [(leader _unitG),["Search and destroy enemy.", "S&D", ""],[_posX,_posY]] call RYD_AddTask;
@@ -127,8 +127,8 @@ if (isPlayer (leader _unitG)) then
 		}
 	else
 		{
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_Posland] call RE;
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return to the landing site.", "Move", ""]] call RE
+		[_task,(leader _unitG),["Return to the landing site.", "Move", ""],_Posland,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+		 
 		}
 	};
 

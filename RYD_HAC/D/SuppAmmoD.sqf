@@ -6,7 +6,7 @@ if (isNil ("RydHQD_SAmmo")) then {RydHQD_SAmmo = true};
 if (isNil ("RydHQD_ExReammo")) then {RydHQD_ExReammo = []};
 if (isNil ("RydHQD_AmmoPoints")) then {RydHQD_AmmoPoints = []};
 
-_ammo = RHQ_Ammo + ["T810Reammo_Des_ACR","T810Reammo_ACR","UralReammo_TK_EP1","MtvrReammo_DES_EP1","V3S_Reammo_TK_GUE_EP1","UralReammo_INS","KamazReammo","UralReammo_CDF","MtvrReammo"] - RHQs_Ammo;
+_ammo = RHQ_Ammo + ["I_Truck_02_ammo_F","O_Truck_02_ammo_F","B_APC_Tracked_01_CRV_F","B_Truck_01_ammo_F"] - RHQs_Ammo;
 
 _noenemy = true;
 
@@ -233,7 +233,7 @@ while {not (isNull RydHQD)} do
 					_eClose2 = [_halfway,RydHQD_KnEnemiesG,_distT] call RYD_CloseEnemy;				
 					if ((_eClose1) or (_eClose2)) then {_noenemy = false};
 
-					if not ((group _Nunit) in (RydHQD_ASupportedG + RydHQD_Boxed)) then
+					if not ((group _Hunit) in (RydHQD_ASupportedG + RydHQD_Boxed)) then
 						{
 						_UL = leader (group _Hunit);
 						if not (isPlayer _UL) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_SuppReq,"SuppReq"] call RYD_AIChatter}};

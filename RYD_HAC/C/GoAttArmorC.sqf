@@ -68,7 +68,7 @@ if (isPlayer _UL) then {[_UL,leaderHQC] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQC_Debug) or (isPlayer (leader _unitG))) then
 	{
-	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","DOT","Arm C"," - ATTACK"] call RYD_Mark;
+	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","mil_dot","Arm C"," - ATTACK"] call RYD_Mark;
 	};
 
 _task = [(leader _unitG),["Search and destroy enemy.", "S&D", ""],[_posX,_posY]] call RYD_AddTask;
@@ -102,7 +102,7 @@ if (isPlayer (leader _unitG)) then
 		}
 	else
 		{
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,(position _Trg)] call RE
+		[_task,(leader _unitG),["Search and destroy enemy.", "S&D", ""],(position _Trg),"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 		}
 	};
 
@@ -145,8 +145,8 @@ if ((RydHQC_Debug) or (isPlayer (leader _unitG))) then {_i setMarkerColor "Color
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_Spos] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return.", "Move", ""]] call RE
+			[_task,(leader _unitG),["Return.", "Move", ""],_Spos,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 
@@ -161,8 +161,8 @@ if (_unitG in RydHQC_Garrison) then
 			}
 		else
 			{
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,_Spos] call RE;
-			[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Return.", "Move", ""]] call RE
+			[_task,(leader _unitG),["Return.", "Move", ""],_Spos,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+			 
 			}
 		};
 	_wp = [_unitG,_Spos,"MOVE","SAFE","YELLOW","NORMAL",["true","deletewaypoint [(group this), 0];"],true,5] call RYD_WPadd;

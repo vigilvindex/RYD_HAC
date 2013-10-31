@@ -1,7 +1,7 @@
 _UL = _this select 0;
 _HQ = _this select 1;
 
-if not (isMultiplayer) then
+/*if not (isMultiplayer) then
 	{
 	if (not (_UL kbHasTopic "orders")) then 
 		{
@@ -30,31 +30,36 @@ else
 	{
 	if (not (_UL kbHasTopic "orders")) then 
 		{
-		[objNull,_UL,"loc",rKBADDTOPIC,"orders","RYD_HAC\topics.bikb",""] call RE;
-		waituntil {[nil,_UL,"loc",rKBHASTOPIC,"orders"] call RE};
+		[[_UL,["orders","RYD_HAC\topics.bikb",""]],"RydHQ_MP_KBADDTOPIC",_UL,false,true] call RydHQ_MP;
+		//[objNull,_UL,"loc",rKBADDTOPIC,"orders","RYD_HAC\topics.bikb",""] call RE;
+		waituntil {[[_UL,"orders"],"RydHQ_MP_KBHASTOPIC",_UL,false,true] call RydHQ_MP};
 		sleep 0.5;
 		};
 
-	[objNull,_UL,"loc",rKBTELL,_HQ,"orders","First",true] call RE;
+	[[_UL,[_HQ, "orders", "First", true]],"RydHQ_MP_KBTELL",_UL,false,true] call RydHQ_MP;
+	//[objNull,_UL,"loc",rKBTELL,_HQ,"orders","First",true] call RE;
 	sleep (2 + (random 1));
-	waituntil {[nil,_UL,"loc",rKBWASSAID,_HQ,"orders","First",5] call RE};
+	
+	waituntil {[[_UL,[_HQ, "orders", "First", 5]],"RydHQ_MP_KBWASSAID",_UL,false,true] call RydHQ_MP};
 	sleep 1;
 
 	if ((isPlayer _UL) and (RydHQ_VoiceComm)) then
 		{
-		[objNull,_HQ,"loc",rKBTELL,_UL,"orders","NewMessage",true] call RE;
-		waituntil {[nil,_HQ,"loc",rKBWASSAID,_UL,"orders","NewMessage",5] call RE};
+		[[_HQ,[_UL, "orders", "NewMessage", true]],"RydHQ_MP_KBTELL",_UL,false,true] call RydHQ_MP;
+		//[objNull,_HQ,"loc",rKBTELL,_UL,"orders","NewMessage",true] call RE;
+		waituntil {[[_HQ,[_UL, "orders", "NewMessage", 5]],"RydHQ_MP_KBWASSAID",_UL,false,true] call RydHQ_MP};
 		sleep (2 + (random 1));
 		sleep (0.2 + (random 0.8));
 
 		_OK = "OK" + str (floor (random 5));
 
-		[objNull,_UL,"loc",rKBTELL,_HQ,"orders",_OK,true] call RE;
-		waituntil {[nil,_UL,"loc",rKBWASSAID,_HQ,"orders",_OK,5] call RE};
+		[[_UL,[_HQ, "orders", _OK, true]],"RydHQ_MP_KBTELL",_UL,false,true] call RydHQ_MP;
+		//[objNull,_UL,"loc",rKBTELL,_HQ,"orders",_OK,true] call RE;
+		waituntil {[[_UL,[_HQ, "orders", _OK, 5]],"RydHQ_MP_KBWASSAID",_UL,false,true] call RydHQ_MP};
 		sleep (2 + (random 1));
 		sleep (0.2 + (random 0.8))
 		}
-	};
+	};*/
 
 RydHQ_VCDone = true;
 RydHQB_VCDone = true;

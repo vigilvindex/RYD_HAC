@@ -79,7 +79,7 @@ if (isPlayer _UL) then {[_UL,leaderHQG] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQG_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [[_posX,_posY],_unitG,"markCapture","ColorRed","ICON","DOT","Cap G"," - SECURE AREA"] call RYD_Mark
+	_i = [[_posX,_posY],_unitG,"markCapture","ColorRed","ICON","mil_dot","Cap G"," - SECURE AREA"] call RYD_Mark
 	};
 
 _CargoCheck = _unitG getvariable ("CC" + _unitvar);
@@ -211,7 +211,7 @@ _crr = false;
 if ((_nW == 1) and (isNull _AV)) then {_crr = true};
 if not (isNull _AV) then {_crr = true};
 _sts = ["true","deletewaypoint [(group this), 0];"];
-//if (((group (assigneddriver _AV)) in RydHQG_AirG) and (_unitG in RydHQG_NCrewInfG)) then {_sts = ["true","(vehicle this) land 'GET OUT';deletewaypoint [(group this), 0]"]};
+if (((group (assigneddriver _AV)) in RydHQG_AirG) and (_unitG in RydHQG_NCrewInfG)) then {_sts = ["true","(vehicle this) land 'GET OUT';deletewaypoint [(group this), 0]"]};
 
 _wp = [_gp,_pos,_tp,_beh,"YELLOW",_spd,_sts,_crr,0,_TO] call RYD_WPadd;
 
@@ -431,8 +431,8 @@ if (isPlayer (leader _unitG)) then
 		}
 	else
 		{
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESTINATION, _task,(position _Trg)] call RE;
-		[(leader _unitG),nil, "per", rSETSIMPLETASKDESCRIPTION, _task,["Secure Area.", "S&D", ""]] call RE
+		 
+		[_task,(leader _unitG),["Secure Area.", "S&D", ""],(position _Trg),"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 		}
 	};
 

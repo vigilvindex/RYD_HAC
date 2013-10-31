@@ -92,7 +92,7 @@ if (isPlayer _UL) then {[_UL,leaderHQD] spawn VoiceComm;sleep 3;waituntil {sleep
 
 if ((RydHQD_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [_DefPos,_unitG,"markDef","ColorBrown","ICON","DOT","Rec D"," - WATCH FOREGROUND"] call RYD_Mark
+	_i = [_DefPos,_unitG,"markDef","ColorBrown","ICON","mil_dot","Rec D"," - WATCH FOREGROUND"] call RYD_Mark
 	};
 
 _task = [(leader _unitG),["Take a defensive, elevated position as fast, as possible. Then observe foreground and search for enemy targets.", "Sentry", ""],_DefPos] call RYD_AddTask;
@@ -124,7 +124,7 @@ _TED = [_posX,_posY];
 
 if ((RydHQD_Debug) or (isPlayer (leader _unitG))) then 
 	{
-	_i = [_TED,_unitG,"markWatch","ColorGreenAlpha","ICON","DOT","D","D",[0.2,0.2]] call RYD_Mark
+	_i = [_TED,_unitG,"markWatch","Default","ICON","mil_dot","D","D",[0.2,0.2]] call RYD_Mark
 	};
 
 _dir = [(getPosATL (vehicle (leader _unitG))),_TED,10] call RYD_AngTowards;
