@@ -89,7 +89,7 @@ if not (_emptyV) then
 	[_GD] call RYD_WPdel;
 
 	_UL = leader _GD;
-	RydHQG_VCDone = false;
+	RydHQG_VCDone = true;
 	if (isPlayer _UL) then {[_UL,leaderHQG] spawn VoiceComm;sleep 3;waituntil {sleep 0.1;(RydHQG_VCDone)}} else {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
 
 	_ChosenOne disableAI "TARGET";_ChosenOne disableAI "AUTOTARGET";
@@ -117,8 +117,8 @@ if not (_emptyV) then
 		_DAV = assigneddriver _ChosenOne;
 		_GD = group _DAV;
 		if (isNull _GD) then {_alive = false};
-		if not (alive  (leader _GD)) then {_alive = false};
-		if ((speed _ChosenOne) < 0.5) then {_timer = _timer + 5};
+		if (_alive) then {if not (alive  (leader _GD)) then {_alive = false}};
+		if (_alive) then {if ((speed _ChosenOne) < 0.5) then {_timer = _timer + 5}};
 		sleep 6;
 
 		((((count (waypoints _GD)) < 1)) or (_timer > 120) or not (_alive));
@@ -137,22 +137,29 @@ if not (_emptyV) then
 		};
 
 	_ct = 0;
+	_alive = true;
 	waituntil 
 		{
 		sleep 0.1;
 		_ct = _ct + 1;
-
+		
+		if (isNull _unitG) then {_alive = false;_ct = 3001};
+		if not (alive (leader _unitG)) then {_alive = false;_ct = 3001};
+		
 		_assigned = true;
 
+		if (_alive) then
 			{
-			if (isNull (assignedVehicle _x)) exitWith {_assigned = false}
-			}
-		foreach (units _unitG);
+				{
+				if (isNull (assignedVehicle _x)) exitWith {_assigned = false}
+				}
+			foreach (units _unitG);
+			};
 
 		((_assigned) or (_ct > 3000))
 		};
 
-	if (_ct > 2400) then {_alive = false;_unitG leaveVehicle _ChosenOne;_unitG setVariable [("CC" + _unitvar), true]};
+	if (_ct > 3000) then {_alive = false;_unitG leaveVehicle _ChosenOne;_unitG setVariable [("CC" + _unitvar), true]};
 	};
 
 if not (_alive) exitWith {};
@@ -181,15 +188,25 @@ _busy = false;
 if not (_GD == _unitG) then 
 	{
 	_timer = -5;
+	_alive = true;
 	waituntil 
 		{
 		sleep 5;
 		_GD = (group (assigneddriver _ChosenOne));
-		_busy = _GD getvariable ("CargoM" + _unitvar);
-		if ((abs (speed _ChosenOne)) < 0.5) then {_timer = _timer + 5};
-		(not (_busy) or (_timer > 120));
+		if (isNull _GD) then {_alive = false};
+		if (_alive) then {if not (alive  (leader _GD)) then {_alive = false}};
+		
+		if (_alive) then
+			{
+			_busy = _GD getvariable ("CargoM" + _unitvar);
+			if ((abs (speed _ChosenOne)) < 0.5) then {_timer = _timer + 5};
+			};
+			
+		(not (_busy) or (_timer > 120) or not (_alive));
 		};
-
+		
+	if not (_alive) exitWith {};
+	
 	if (_timer > 120) then 
 		{
 		[_GD, (currentWaypoint _GD)] setWaypointPosition [position _ChosenOne, 0];
@@ -234,14 +251,24 @@ if not (_GD == _unitG) then
 	_wp = [_GD,_LandPos,"MOVE",_beh,"YELLOW","FULL",["true","{(vehicle _x) land 'LAND'} foreach (units (group this));deletewaypoint [(group this), 0]"]] call RYD_WPadd;
 
 	_timer = -5;
+	_alive = true;
 	waituntil 
 		{
+		_cnt = 1;
 		_GD = (group (assigneddriver _ChosenOne));
-		if (abs (speed _ChosenOne) < 0.5) then {_timer = _timer + 5};
-		sleep 5;
-		(((count (waypoints _GD)) < 1) or (_timer > 120))
+		if (isNull _GD) then {_alive = false};
+		if (_alive) then {if not (alive  (leader _GD)) then {_alive = false}};
+		if (_alive) then
+			{
+			_cnt = (count (waypoints _GD));
+			if (abs (speed _ChosenOne) < 0.5) then {_timer = _timer + 5};
+			sleep 5;
+			};
+			
+		((_cnt < 1) or (_timer > 120) or not (_alive))
 		};
-
+		
+	if not (_alive) exitWith {};
 	if (_timer > 120) then {deleteWaypoint [_GD, 1]};
 	if ((isPlayer (leader _GD)) and not (isMultiplayer)) then {(leader _GD) removeSimpleTask _task};
 	_GD setVariable [("Busy" + _unitvar), false];

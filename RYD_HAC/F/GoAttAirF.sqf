@@ -37,7 +37,7 @@ _posY = ((getPos leaderHQF) select 1) + _dYb;
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
 _UL = leader _unitG;
-RydHQF_VCDone = false;
+RydHQF_VCDone = true;
 if (isPlayer _UL) then {[_UL,leaderHQF] spawn VoiceComm;sleep 3;waituntil {sleep 0.1;(RydHQF_VCDone)}} else {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
 
 if ((RydHQF_Debug) or (isPlayer (leader _unitG))) then 

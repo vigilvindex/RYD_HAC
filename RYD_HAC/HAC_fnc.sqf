@@ -2843,7 +2843,7 @@ RYD_CFF_FFE =
 				
 				_mark = _markers select ((count _markers) -1);
 
-				while {(not (_rEta < 5) and not (_TOF > 100) and (_alive))} do
+				while {(not (_rEta < 5) and not (_TOF > 200) and (_alive))} do
 					{
 					if (({not (isNull _x)} count _batlead) < 1) exitWith {_alive = false};
 					if (isNull _battery1) exitWith {_alive = false};
@@ -2852,7 +2852,7 @@ RYD_CFF_FFE =
 					_TOF = (round (10 * (time - _stoper)))/10;
 					_rEta = _eta - _TOF;
 					
-					 if ((_rEta < 5) or (_TOF > 100)) then {_battery1 setVariable ["RydHQ_SPLASH",true]};
+					 if ((_rEta < 5) or (_TOF > 200)) then {_battery1 setVariable ["RydHQ_SPLASH",true]};
 					
 					_mark setMarkerText (str (round _distance) + "m" + " - ETA: " + str (round _rEta) + " - TOF: " + (str _TOF) + " - " + _ammoG);
 					sleep 0.1

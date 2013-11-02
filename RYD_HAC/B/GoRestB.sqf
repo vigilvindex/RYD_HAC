@@ -190,7 +190,7 @@ if (_VLU == _UL) then {sleep 20};
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
 _UL = leader _unitG;
-RydHQB_VCDone = false;
+RydHQB_VCDone = true;
 if (isPlayer _UL) then {[_UL,leaderHQB] spawn VoiceComm;sleep 3;waituntil {sleep 0.1;(RydHQB_VCDone)}} else {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
 
 if ((RydHQB_Debug) or (isPlayer (leader _unitG))) then

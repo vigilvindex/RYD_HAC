@@ -9,7 +9,7 @@ waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
 _hi = "HAL 1.0 is here";
 
-if ((random 100) < 1) then {_hi = "Good Morning, Dave."};
+if ((random 100) < 1) then {_hi = "Good morning, Dave."};
 
 leaderHQ sidechat _hi;
 

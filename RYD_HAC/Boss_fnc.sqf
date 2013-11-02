@@ -1553,7 +1553,7 @@ RYD_ReserveExecuting =
 						if (isPlayer (leader _unitG)) then {_form = formation _unitG};
 						_unitG setVariable ["Busy" + (str _unitG),true];
 
-						RydHQ_VCDone = false;
+						RydHQ_VCDone = true;
 						if (isPlayer (leader _unitG)) then {[(leader _unitG),_HQ] spawn VoiceComm;sleep 3;waituntil {sleep 0.1;(RydHQ_VCDone)}} else {if ((random 100) < RydxHQ_AIChatDensity) then {[(leader _unitG),RydxHQ_AIC_OrdConf,"OrdConf"] spawn RYD_AIChatter}};
 
 						_task = [(leader _unitG),["Reach the designated position.", "Move", ""],_Wpos] call RYD_AddTask;

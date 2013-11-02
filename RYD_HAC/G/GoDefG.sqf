@@ -103,7 +103,7 @@ if not (isNull _nE) then
 		}
 	};
 
-RydHQG_VCDone = false;
+RydHQG_VCDone = true;
 if (isPlayer _UL) then {[_UL,leaderHQG] spawn VoiceComm;sleep 3;waituntil {sleep 0.1;(RydHQG_VCDone)}} else {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
 
 if ((RydHQG_Debug) or (isPlayer (leader _unitG))) then 

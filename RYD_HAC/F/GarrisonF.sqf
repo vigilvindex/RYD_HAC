@@ -25,7 +25,7 @@ while {not (isNull RydHQF)} do
 			_UL = leader _unitG;
 			_AV = assignedVehicle _UL;
 
-			RydHQF_VCDone = false;
+			RydHQF_VCDone = true;
 			if (isPlayer _UL) then {[_UL,leaderHQF] spawn VoiceComm;sleep 3;waituntil {sleep 0.1;(RydHQF_VCDone)}} else {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
 
 			if ((RydHQF_Debug) or (isPlayer (leader _unitG))) then 

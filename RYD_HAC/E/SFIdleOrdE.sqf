@@ -49,7 +49,7 @@ while {not (isNull RydHQE)} do
 			if not (_isWater) then 
 				{
 				_UL = leader _unitG;
-				RydHQE_VCDone = false;
+				RydHQE_VCDone = true;
 				if (isPlayer _UL) then {[_UL,leaderHQE] spawn VoiceComm;sleep 3;waituntil {sleep 0.1;(RydHQE_VCDone)}};
 
 				_tasks = _UL getVariable ["HACAddedTasks",[]];
