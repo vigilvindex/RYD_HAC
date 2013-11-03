@@ -7,7 +7,7 @@ sleep RydHQ_Wait;
 
 waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
-_hi = "HAL 1.0 is here";
+_hi = "HAL 1.02 is here";
 
 if ((random 100) < 1) then {_hi = "Good morning, Dave."};
 
@@ -17,6 +17,8 @@ call compile preprocessfile "RYD_HAC\VarInit.sqf";
 call compile preprocessfile "RYD_HAC\HAC_fnc.sqf";
 
 publicVariable "RYD_MP_Sidechat";
+
+if (RydHQ_RHQCheck) then {[] call RYD_RHQCheck};
 
 RydHQ_Fronts = false;
 [] execVM "RYD_HAC\Front.sqf";

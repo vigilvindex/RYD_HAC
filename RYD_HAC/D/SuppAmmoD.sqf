@@ -6,7 +6,7 @@ if (isNil ("RydHQD_SAmmo")) then {RydHQD_SAmmo = true};
 if (isNil ("RydHQD_ExReammo")) then {RydHQD_ExReammo = []};
 if (isNil ("RydHQD_AmmoPoints")) then {RydHQD_AmmoPoints = []};
 
-_ammo = RHQ_Ammo + ["I_Truck_02_ammo_F","O_Truck_02_ammo_F","B_APC_Tracked_01_CRV_F","B_Truck_01_ammo_F"] - RHQs_Ammo;
+_ammo = RHQ_Ammo + ["I_Truck_02_ammo_F","O_Truck_02_Ammo_F","B_APC_Tracked_01_CRV_F","B_Truck_01_ammo_F"] - RHQs_Ammo;
 
 _noenemy = true;
 

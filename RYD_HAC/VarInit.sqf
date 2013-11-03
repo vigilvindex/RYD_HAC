@@ -121,6 +121,9 @@ if (isNil ("RydHQF_DebugII")) then {RydHQF_DebugII = false};
 if (isNil ("RydHQG_DebugII")) then {RydHQG_DebugII = false};
 if (isNil ("RydHQH_DebugII")) then {RydHQH_DebugII = false};
 
+if (isNil ("RydHQ_RHQCheck")) then {RydHQ_RHQCheck = false};
+
+if (isNil ("RydHQ_A2Lib")) then {RydHQ_A2Lib = false};
 if (isNil ("RydHQ_OALib")) then {RydHQ_OALib = false};
 if (isNil ("RydHQ_ACRLib")) then {RydHQ_ACRLib = false};
 if (isNil ("RydHQ_BAFLib")) then {RydHQ_BAFLib = false};
@@ -689,6 +692,35 @@ RydxHQ_AIC_ArtFire =
 	"HAC_ArtFire4",
 	"HAC_ArtFire5"
 	];
+	
+if (RydHQ_A2Lib) then
+	{
+	RHQ_SpecFor = RHQ_SpecFor + RHQ_SpecFor_A2;
+	RHQ_Recon = RHQ_Recon + RHQ_Recon_A2;
+	RHQ_FO = RHQ_FO + RHQ_FO_A2;
+	RHQ_Snipers = RHQ_Snipers + RHQ_Snipers_A2;
+	RHQ_ATInf = RHQ_ATInf + RHQ_ATInf_A2;
+	RHQ_AAInf = RHQ_AAInf + RHQ_AAInf_A2;
+	RHQ_Inf = RHQ_Inf + RHQ_Inf_A2;
+	RHQ_Art = RHQ_Art + RHQ_Art_A2;
+	RHQ_HArmor = RHQ_HArmor + RHQ_HArmor_A2;
+	RHQ_MArmor = RHQ_MArmor + RHQ_MArmor_A2;
+	RHQ_LArmor = RHQ_LArmor + RHQ_LArmor_A2;
+	RHQ_LArmorAT = RHQ_LArmorAT + RHQ_LArmorAT_A2;
+	RHQ_Cars = RHQ_Cars + RHQ_Cars_A2;
+	RHQ_Air = RHQ_Air + RHQ_Air_A2;
+	RHQ_BAir = RHQ_BAir + RHQ_BAir_A2;
+	RHQ_RAir = RHQ_RAir + RHQ_RAir_A2;
+	RHQ_NCAir = RHQ_NCAir + RHQ_NCAir_A2;
+	RHQ_Naval = RHQ_Naval + RHQ_Naval_A2;
+	RHQ_Static = RHQ_Static + RHQ_Static_A2;
+	RHQ_StaticAA = RHQ_StaticAA + RHQ_StaticAA_A2;
+	RHQ_StaticAT = RHQ_StaticAT + RHQ_StaticAT_A2;
+	RHQ_Support = RHQ_Support + RHQ_Support_A2;
+	RHQ_Cargo = RHQ_Cargo + RHQ_Cargo_A2;
+	RHQ_NCCargo = RHQ_NCCargo + RHQ_NCCargo_A2;
+	RHQ_Crew = RHQ_Crew + RHQ_Crew_A2;
+	};
 
 if (RydHQ_OALib) then
 	{
