@@ -1,12 +1,22 @@
 private ["_HQ","_ldr","_Fineness","_obj","_KnEnemies","_FlankAv","_Epos0","_Epos1","_default","_Epos0Max","_Epos0Min","_sel0Max","_sel0Min","_Epos1Max","_Epos1Min","_sel1Max","_sel1Min",
 	"_EposA","_EposB","_max0Enemy","_min0Enemy","_max1Enemy","_min1Enemy","_PosMid0","_PosMid1","_dX","_dY","_angle0","_BEnemyPosA","_BEnemyPosB","_BEnemyPos","_rnd1","_rnd2","_minF",
-	"_maxF","_bothF","_FlankU"];
+	"_maxF","_bothF","_FlankU","_AAO"];
 
 _HQ = _this select 0;
+
+_AAO = _HQ getVariable ["RydHQ_ChosenAAO",false];
 
 _ldr = vehicle (leader _HQ);
 _Fineness = _HQ getVariable ["RydHQ_Fineness",0.5];
 _obj = _HQ getVariable ["RydHQ_Obj",_ldr];
+
+if (_AAO) then
+	{
+	_nT = ((_HQ getVariable ["RydHQ_Objectives",[]]) - (_HQ getVariable ["RydHQ_Taken",[]]));
+	if ((count _nT) < 1) then {_nT = (_HQ getVariable ["RydHQ_Objectives",[]])};
+	_obj = _nT select 0;
+	};
+
 _KnEnemies = _HQ getVariable ["RydHQ_KnEnemies",[]];
 _FlankAv = _HQ getVariable ["RydHQ_FlankAv",[]];
 
@@ -14,6 +24,11 @@ _Epos0 = [];
 _Epos1 = [];
 
 _default = getPosATL _obj;
+
+if (_AAO) then
+	{
+	_default = _HQ getVariable ["RydHQ_EyeOfBattle",getPosATL _obj]
+	};
 
 if not ((count _KnEnemies) == 0) then 
 	{
@@ -128,7 +143,16 @@ switch true do
 	case (_minF or _maxF) : 
 		{
 			{
-			if (_minF) then {[_x,_BEnemyPosA,_PosMid0,_PosMid1,_angle0,true,_HQ] spawn HAL_GoFlank } else {[_x,_BEnemyPosB,_PosMid0,_PosMid1,_angle0,false,_HQ] spawn HAL_GoFlank };
+			if (_minF) then 
+				{
+				//[_x,_BEnemyPosA,_PosMid0,_PosMid1,_angle0,true,_HQ] spawn HAL_GoFlank
+				[[_x,_BEnemyPosA,_PosMid0,_PosMid1,_angle0,true,_HQ],HAL_GoFlank] call RYD_Spawn;
+				} 
+			else 
+				{
+				//[_x,_BEnemyPosB,_PosMid0,_PosMid1,_angle0,false,_HQ] spawn HAL_GoFlank
+				[[_x,_BEnemyPosB,_PosMid0,_PosMid1,_angle0,false,_HQ],HAL_GoFlank] call RYD_Spawn;
+				};
 			}
 		foreach _FlankAv;
 		
@@ -141,11 +165,13 @@ switch true do
 			_FlankU = _FlankAv select _b;
 			if ((_b/2 - floor (_b/2)) == 0) then 
 				{
-				[_FlankU,_BEnemyPosA,_PosMid0,_PosMid1,_angle0,true,_HQ] spawn HAL_GoFlank;
+				//[_FlankU,_BEnemyPosA,_PosMid0,_PosMid1,_angle0,true,_HQ] spawn HAL_GoFlank;
+				[[_FlankU,_BEnemyPosA,_PosMid0,_PosMid1,_angle0,true,_HQ],HAL_GoFlank] call RYD_Spawn;
 				} 
 			else 
 				{
-				[_FlankU,_BEnemyPosB,_PosMid0,_PosMid1,_angle0,false,_HQ] spawn HAL_GoFlank 
+				//[_FlankU,_BEnemyPosB,_PosMid0,_PosMid1,_angle0,false,_HQ] spawn HAL_GoFlank 
+				[[_FlankU,_BEnemyPosB,_PosMid0,_PosMid1,_angle0,false,_HQ],HAL_GoFlank] call RYD_Spawn;
 				}
 			}		
 		}

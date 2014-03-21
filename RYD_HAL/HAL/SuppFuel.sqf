@@ -3,7 +3,7 @@ private ["_HQ","_fuel","_noenemy","_fuelS","_fuelSG","_dried","_ZeroF","_av","_c
 
 _HQ = _this select 0;
 
-_fuel = RHQ_Fuel + ["I_Truck_02_fuel_F","O_Truck_02_fuel_F","B_G_Van_01_fuel_F","B_APC_Tracked_01_CRV_F","B_Truck_01_fuel_F"] - RHQs_Fuel;
+_fuel = RHQ_Fuel + ["O_Truck_03_fuel_F","I_Truck_02_fuel_F","O_Truck_02_fuel_F","B_G_Van_01_fuel_F","B_APC_Tracked_01_CRV_F","B_Truck_01_fuel_F"] - RHQs_Fuel;
 _noenemy = true;
 	
 _fuelS = [];
@@ -150,7 +150,8 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 				_cisterns = _cisterns - [_x];
 				_Zunits = _Zunits - [_Zunit];
 				_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Zunit)]];
-				[_cistern,_Zunit,_dried,_HQ] spawn HAL_GoFuelSupp; 
+				//[_cistern,_Zunit,_dried,_HQ] spawn HAL_GoFuelSupp;
+				[[_cistern,_Zunit,_dried,_HQ],HAL_GoFuelSupp] call RYD_Spawn;
 				}
 			else
 				{
@@ -220,7 +221,8 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 				_cisterns = _cisterns - [_x];
 				_Dunits = _Dunits - [_Dunit];
 				_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Dunit)]];
-				[_cistern,_Dunit,_dried,_HQ] spawn HAL_GoFuelSupp; 
+				//[_cistern,_Dunit,_dried,_HQ] spawn HAL_GoFuelSupp; 
+				[[_cistern,_Dunit,_dried,_HQ],HAL_GoFuelSupp] call RYD_Spawn;
 				}
 			else
 				{

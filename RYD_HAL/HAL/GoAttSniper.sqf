@@ -269,7 +269,7 @@ _UL = leader _unitG;if not (isPlayer _UL) then {if (_timer <= 300) then {if ((ra
 
 _wp = [_unitG,getPosATL (vehicle (leader _unitG)),"SENTRY","STEALTH","RED","NORMAL",["true",""],_cur,0.001,[0,0,0],_frm] call RYD_WPadd;
 
-_fEH = (leader _unitG) addEventHandler ["Fired",{_this spawn RYD_FireCount}];
+_fEH = (leader _unitG) addEventHandler ["Fired",{[_this,RYD_FireCount] call RYD_Spawn}];
 (leader _unitG) setVariable ["HAC_FEH",_fEH];
 [_unitG,_Trg] spawn {_unitG = _this select 0;_Trg = _this select 1; sleep (5 + (random 5));_unitG reveal [_Trg,3]};
 _cause = [_unitG,5,true,0,240,[],false,true,true,false,false,false,true] call RYD_Wait;

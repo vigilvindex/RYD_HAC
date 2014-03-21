@@ -5,7 +5,16 @@ _unitG = _this select 0;_Spos = _unitG getvariable ("START" + (str _unitG));if (
 _stage = _this select 2;
 _HQ = _this select 3;
 
+_reconNr = _this select 4;
+_stages = _reconNr select 1;
+_reconNr = _reconNr select 0;
+
+_stage = _stage - (_stages * _reconNr);
+
 _PosObj1 = _this select 1;
+
+_specialized = _this select 5;
+
 _recvar = str (_unitG);
 
 [_unitG] call RYD_WPdel;
@@ -47,25 +56,52 @@ switch (_stage) do
 _dXb = _distance * (sin _angle);
 _dYb = _distance * (cos _angle);
 
-_posX = ((getPosATL (leader _HQ)) select 0) + _dXb + _dXc + (random 200) - 100;
-_posY = ((getPosATL (leader _HQ)) select 1) + _dYb + _dYc + (random 200) - 100;
+_isLOS = false;
+_ct = 0;
 
-_MElevated = [_posX,_posY];
-_MElev = (getPosATL (nearestObject [_posX,_posY,10])) select 2;
+_posX = 0;
+_posY = 0;
 
-if (_unitG in (_HQ getVariable ["RydHQ_FOG",[]])) then 
+_POASL = ATLtoASL _PosObj1;
+
+//_tgtV = vehicle (_this select 4);
+_VL = vehicle _UL;
+
+while {not _isLOS} do
 	{
-	for [{_a = 0},{_a <= 50},{_a = _a + 1}] do
-		{
-		_posX0 = _posX + (random 500) - 250;
-		_posY0 = _posY + (random 500) - 250;
-		_Elev = getTerrainHeightASL [_posX0,_posY0];
-		if (_Elev > _MElev) then {_MElev = _Elev;_MElevated = [_posX0,_posY0]};
-		}
-	};
+	_posX = ((getPosATL (leader _HQ)) select 0) + _dXb + _dXc + (random 200) - 100;
+	_posY = ((getPosATL (leader _HQ)) select 1) + _dYb + _dYc + (random 200) - 100;
+	
+	_MElevated = [_posX,_posY];
+	_MElev = getTerrainHeightASL [_posX,_posY];
 
-_posX = _MElevated select 0;
-_posY = _MElevated select 1;
+	if (_unitG in (_HQ getVariable ["RydHQ_FOG",[]])) then 
+		{
+		for [{_a = 0},{_a <= 50},{_a = _a + 1}] do
+			{
+			_posX0 = _posX + (random 500) - 250;
+			_posY0 = _posY + (random 500) - 250;
+			_Elev = getTerrainHeightASL [_posX0,_posY0];
+			if (_Elev > _MElev) then 
+				{
+				_MElev = _Elev;
+				_MElevated = [_posX0,_posY0]
+				}
+			}
+		};
+
+	_posX = _MElevated select 0;
+	_posY = _MElevated select 1;
+	
+	_isWater = surfaceIsWater [_posX,_posY];
+	if not (_isWater) then 
+		{
+		_isLOS = [[_posX,_posY,_MElev],_POASL,0.5,1,_VL,objNull] call RYD_LOSCheck
+		};
+	
+	_ct = _ct + 1;
+	if (_ct > 50) exitWith {}
+	};
 
 _isWater = surfaceIsWater [_posX,_posY];
 
@@ -82,7 +118,7 @@ _onlyL = (_HQ getVariable ["RydHQ_LArmorG",[]]) - (_HQ getVariable ["RydHQ_MArmo
 
 if (_isWater) exitwith 
 	{
-	if (_unitG in (((_HQ getVariable ["RydHQ_RAirG",[]]) + (_HQ getVariable ["RydHQ_ReconG",[]]) + (_HQ getVariable ["RydHQ_FOG",[]]) + (_HQ getVariable ["RydHQ_SnipersG",[]]) + (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_NCCargoG",[]])) + _onlyL) - ((_HQ getVariable ["RydHQ_AOnly",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]])))) then
+	if (_unitG in (((_HQ getVariable ["RydHQ_RAirG",[]]) + (_HQ getVariable ["RydHQ_ReconG",[]]) + (_HQ getVariable ["RydHQ_FOG",[]]) + (_HQ getVariable ["RydHQ_SnipersG",[]]) + (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_NCCargoG",[]])) + _onlyL) - ((_HQ getVariable ["RydHQ_NoRecon",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]])))) then
 		{
 		_reconAv = _HQ getVariable ["RydHQ_ReconAv",[]];
 		_reconAv set [(count _reconAv),_unitG];
@@ -247,6 +283,32 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then 
 
 [_unitG] call RYD_WPdel;
 
+if not (_specialized) exitWith
+	{
+	sleep 60;
+	
+	if not (isNull _unitG) then
+		{
+		if (({alive _x} count (units _unitG)) > 0) then
+			{
+			if not (_unitG getVariable ["RydHQ_MIA",false]) then
+				{
+				if (_unitG in (_HQ getVariable ["RydHQ_NCrewInfG",[]])) then {_pass orderGetIn true};
+				_unitG setVariable [("Busy" + (str _unitG)), false];
+				if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) removeSimpleTask _task};
+				_UL = leader _unitG;
+				if not (isPlayer _UL) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdEnd,"OrdEnd"] call RYD_AIChatter}};
+				}
+			else
+				{
+				_unitG setVariable ["RydHQ_MIA",nil]
+				};
+				
+			if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker ("markRecon" + str (_unitG))}
+			}
+		}
+	};
+
 _timer2 = 0;
 
 while {(_nothing)} do
@@ -288,7 +350,7 @@ while {(_nothing)} do
 
 		if (_alive) then
 			{
-			if (_unitG in (((_HQ getVariable ["RydHQ_RAirG",[]]) + (_HQ getVariable ["RydHQ_ReconG",[]]) + (_HQ getVariable ["RydHQ_FOG",[]]) + (_HQ getVariable ["RydHQ_SnipersG",[]]) + (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_NCCargoG",[]])) + _onlyL) - ((_HQ getVariable ["RydHQ_AOnly",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]])))) then 
+			if (_unitG in (((_HQ getVariable ["RydHQ_RAirG",[]]) + (_HQ getVariable ["RydHQ_ReconG",[]]) + (_HQ getVariable ["RydHQ_FOG",[]]) + (_HQ getVariable ["RydHQ_SnipersG",[]]) + (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_NCCargoG",[]])) + _onlyL) - ((_HQ getVariable ["RydHQ_NoRecon",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]])))) then 
 				{
 				_reconAv = _HQ getVariable ["RydHQ_ReconAv",[]];
 				_reconAv set [(count _reconAv),_unitG];

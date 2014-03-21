@@ -90,7 +90,7 @@ while {not (_endThis)} do
 
 			_lasT = createVehicle [_tgt, [_tX,_tY,0], [], 0, "CAN_COLLIDE"]; 
 
-			[_Trg,_lasT,_unitG] spawn
+			_code =
 				{
 				_Trg = _this select 0;
 				_lasT = _this select 1;
@@ -106,6 +106,7 @@ while {not (_endThis)} do
 					if (({alive _x} count (units _unitG)) < 1) exitWith {};
 					_isBusy = _unitG getVariable [("Busy" + (str _unitG)),false];
 					if not (_isBusy) exitWith {};
+					if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {};
 					
 					_tPos = getPosATL _Trg;
 					_tX = (_tPos select 0) + (random 60) - 30;
@@ -118,7 +119,9 @@ while {not (_endThis)} do
 					};
 
 				deleteVehicle _lasT
-				}
+				};
+				
+			[[_Trg,_lasT,_unitG],_code] call RYD_Spawn
 			}
 		};
 

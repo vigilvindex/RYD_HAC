@@ -7,10 +7,19 @@ _HQ = _this select 1;
 
 if (_unitG in (_HQ getVariable ["RydHQ_Garrison",[]])) exitwith {};
 
+_AAO = _HQ getVariable ["RydHQ_ChosenAAO",false];
+
 _unitG setVariable [("Deployed" + (str _unitG)),true];
 
-_Xpos = ((((getPosATL (leader _HQ)) select 0) + ((getPosATL (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) select 0))/2) + (random 100) - 50;
-_Ypos = ((((getPosATL (leader _HQ)) select 1) + ((getPosATL (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) select 1))/2) + (random 100) - 50;
+_obj = getPosATL (_HQ getVariable ["RydHQ_Obj",(leader _HQ)]);
+
+if (_AAO) then
+	{
+	_obj = _HQ getVariable ["RydHQ_EyeOfBattle",getPosATL (vehicle (leader _HQ))]
+	};
+
+_Xpos = ((((getPosATL (leader _HQ)) select 0) + (_obj select 0))/2) + (random 100) - 50;
+_Ypos = ((((getPosATL (leader _HQ)) select 1) + (_obj select 1))/2) + (random 100) - 50;
 
 _posX = _Xpos;
 _posY = _Ypos;
@@ -53,12 +62,12 @@ if not (_isDecoy) then
 	_safedist = 1000/(0.75 + ((_HQ getVariable ["RydHQ_Recklessness",0.5])/2));
 	_behind = false;
 	_behind2 = false;
-	if ((_HQ getVariable ["RydHQ_Cyclecount",1]) > (4 + (((leader _HQ) distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)]))/1000))) then {_behind2 = true};
+	if ((_HQ getVariable ["RydHQ_Cyclecount",1]) > (4 + (((leader _HQ) distance _obj)/1000))) then {_behind2 = true};
 	_counterU = 0;
 
 		{
 		_VL = vehicle (leader _x);
-		if (((_VL distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) < ([_Xpos,_Ypos] distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)]))) or (((_VL distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) < ([_Xpos,_Ypos] distance _VL)) and ((_VL distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) < ((_HQ getVariable ["RydHQ_Obj",(leader _HQ)]) distance _VLU)))) then {_counterU = _counterU + 1};
+		if (((_VL distance _obj) < ([_Xpos,_Ypos] distance _obj)) or (((_VL distance _obj) < ([_Xpos,_Ypos] distance _VL)) and ((_VL distance _obj) < (_obj distance _VLU)))) then {_counterU = _counterU + 1};
 		if ((_counterU >= (round (2/(0.5 + ((_HQ getVariable ["RydHQ_Recklessness",0.5])/2))))) or (_counterU >= ((count (_HQ getVariable ["RydHQ_Friends",[]]))/(4*(0.5 + ((_HQ getVariable ["RydHQ_Recklessness",0.5])/2)))))) exitwith {_behind = true}
 		}
 	foreach (_HQ getVariable ["RydHQ_Friends",[]]);
@@ -66,19 +75,19 @@ if not (_isDecoy) then
 	_Xpos2 = _Xpos;
 	_Ypos2 = _Ypos;
 
-	while {((((_HQ getVariable ["RydHQ_Obj",(leader _HQ)]) distance [_Xpos,_Ypos]) > _safedist) and (_behind2) and (_behind))} do
+	while {(((_obj distance [_Xpos,_Ypos]) > _safedist) and (_behind2) and (_behind))} do
 		{
 		_Xpos3 = _Xpos2;
 		_Ypos3 = _Ypos2;
 		_behind2 = false;
 		_counterU = 0;
-		_Xpos2 = (_Xpos2 + ((getPosATL (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) select 0))/2;
-		_Ypos2 = (_Ypos2 + ((getPosATL (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) select 1))/2;
-		if not (((_HQ getVariable ["RydHQ_Obj",(leader _HQ)]) distance [_Xpos2,_Ypos2]) > _safedist) exitWith {_Xpos = _Xpos3;_Ypos = _Ypos3};
+		_Xpos2 = (_Xpos2 + (_obj select 0))/2;
+		_Ypos2 = (_Ypos2 + (_obj select 1))/2;
+		if not ((_obj distance [_Xpos2,_Ypos2]) > _safedist) exitWith {_Xpos = _Xpos3;_Ypos = _Ypos3};
 
 			{
 			_VL = vehicle (leader _x);
-			if (((_VL distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) < ([_Xpos2,_Ypos2] distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)]))) or (((_VL distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) < ([_Xpos2,_Ypos2] distance _VL)) and ((_VL distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) < ((_HQ getVariable ["RydHQ_Obj",(leader _HQ)]) distance _VLU)))) then {_counterU = _counterU + 1};
+			if (((_VL distance _obj) < ([_Xpos2,_Ypos2] distance _obj)) or (((_VL distance _obj) < ([_Xpos2,_Ypos2] distance _VL)) and ((_VL distance _obj) < (_obj distance _VLU)))) then {_counterU = _counterU + 1};
 			if ((_counterU >= (round (2/(0.5 + ((_HQ getVariable ["RydHQ_Recklessness",0.5])/2))))) or (_counterU >= ((count (_HQ getVariable ["RydHQ_Friends",[]]))/(4*(0.5 + ((_HQ getVariable ["RydHQ_Recklessness",0.5])/2)))))) exitwith {_behind2 = true}
 			}
 		foreach (_HQ getVariable ["RydHQ_Friends",[]]);
@@ -97,7 +106,7 @@ if not (_isDecoy) then
 		}
 	else
 		{
-		if (not (_unitG in ((_HQ getVariable ["RydHQ_NCCargoG",[]]) - (_HQ getVariable ["RydHQ_SupportG",[]]))) and ((_VLU distance [_Xpos,_Ypos]) < (_VLU distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)]))) and (_behind)) then 
+		if (not (_unitG in ((_HQ getVariable ["RydHQ_NCCargoG",[]]) - (_HQ getVariable ["RydHQ_SupportG",[]]))) and ((_VLU distance [_Xpos,_Ypos]) < (_VLU distance _obj)) and (_behind)) then 
 			{
 			_position = [_Xpos + (random 400) - 200,_Ypos + (random 400) - 200];
 			_allowed = true;
@@ -134,7 +143,7 @@ if not (_isDecoy) then
 
 	_sec = false;
 
-	if  ((not (_unitG in (_HQ getVariable ["RydHQ_NCCargoG",[]])) or ((count (units _unitG)) > 1)) and not (_unitG in (_HQ getVariable ["RydHQ_SupportG",[]])) and ((_VLU distance (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])) > (_VLU distance (leader _HQ)))) then 
+	if  ((not (_unitG in (_HQ getVariable ["RydHQ_NCCargoG",[]])) or ((count (units _unitG)) > 1)) and not (_unitG in (_HQ getVariable ["RydHQ_SupportG",[]])) and ((_VLU distance _obj) > (_VLU distance (leader _HQ)))) then 
 		{
 		_rnd = random 100;
 

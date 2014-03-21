@@ -165,25 +165,60 @@ if ((_ammo > 0) and not (_busy)) then
 		_i4 = [[_posXWP4,_posYWP4],_unitG,"markFlank4","ColorOrange","ICON","mil_dot","Fl4 " + _signum," - FLANKING ATTACK"] call RYD_Mark
 		};
 
+	_alive = true;
 	_CargoCheck = _unitG getvariable ("CC" + _unitvar);
 	if (isNil ("_CargoCheck")) then {_unitG setVariable [("CC" + _unitvar), false]};
 	_AV = assignedVehicle _UL;
-	if (((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) and (isNull _AV) and (([_posXWP4,_posYWP4] distance (vehicle _UL)) > 1000)) then {[_unitG,_HQ] spawn HAL_SCargo } else {_unitG setVariable [("CC" + _unitvar), true]};
-	if ((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) then 
+	if (((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) and (isNull _AV) and (([_posXWP4,_posYWP4] distance (vehicle _UL)) > 1000)) then 
 		{
-		waituntil {sleep 0.05;(_unitG getvariable ("CC" + _unitvar))};
-		_unitG setVariable [("CC" + _unitvar), false];
+		//[_unitG,_HQ,[_posXWP4,_posYWP4]] spawn HAL_SCargo
+		[[_unitG,_HQ,[_posXWP4,_posYWP4]],HAL_SCargo] call RYD_Spawn;
+		} 
+	else 
+		{
+		_unitG setVariable [("CC" + _unitvar), true]
+		};
+		
+	if ((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) then 
+		{	
+		waituntil 
+			{
+			sleep 0.05;
+			switch (true) do
+				{
+				case (isNull _unitG) : {_alive = false};
+				case (({alive _x} count (units _unitG)) < 1) : {_alive = false};
+				case ((_this select 0) getVariable ["RydHQ_MIA",false]) : {_alive = false;(_this select 0) setVariable ["RydHQ_MIA",nil]}
+				};
+				
+			_cc = false;
+			if (_alive) then
+				{
+				_cc = (_unitG getvariable ("CC" + _unitvar))
+				};
+				
+			(not (_alive) or (_cc))
+			};
+			
+		if not (isNull _unitG) then {_unitG setVariable [("CC" + _unitvar), false]};
 		};
 
+	if not (_alive) exitWith 
+		{
+		if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {{deleteMarker _x} foreach [_i1,_i2,_i3,_i4]}
+		};
+		
 	_AV = assignedVehicle _UL;
 	_DAV = assigneddriver _AV;
 	_GDV = group _DAV;
 	_alive = false;
 	_timer = 0;
+	
+	[_unitG] call RYD_WPdel;
 
 	if (not (isNull _AV) and ((_HQ getVariable ["RydHQ_CargoFind",0]) > 0)) then
 		{
-		_task = [(leader _unitG),["Wait and get into vehicle.", "GET IN", ""],(getPosATL (leader _unitG))] call RYD_AddTask;
+		//_task = [(leader _unitG),["Wait and get into vehicle.", "GET IN", ""],(getPosATL (leader _unitG))] call RYD_AddTask;
 
 		_wp = [_unitG,_AV,"GETIN"] call RYD_WPadd;
 		_wp waypointAttachVehicle _AV;
@@ -378,8 +413,18 @@ if ((_ammo > 0) and not (_busy)) then
 	if ((isNull _AV) and (([_posXWP3,_posYWP3] distance _UL) > 1000)) then {_TO = [40, 45, 50]};
 	_frm = formation _grp;
 	if not (isPlayer (leader _grp)) then {_frm = "STAG COLUMN"};
+	
+	_EDPos = _GDV getVariable "RydHQ_EDPos";
+	_posDis = [_posXWP3,_posYWP3];
 
-	_wp3 = [_grp,[_posXWP3,_posYWP3],_tp,_beh,"GREEN","NORMAL",_sts,true,0,_TO,_frm] call RYD_WPadd;
+	if not (isNil "_EDPos") then
+		{
+		_EDPos = +_EDPos;
+		_GDV setVariable ["RydHQ_EDPos",nil];
+		_posDis = _EDPos select 1
+		};
+
+	_wp3 = [_grp,_posDis,_tp,_beh,"GREEN","NORMAL",_sts,true,0,_TO,_frm] call RYD_WPadd;
 
 	_DAV = assigneddriver _AV;
 	_OtherGroup = false;

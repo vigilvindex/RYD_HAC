@@ -113,10 +113,11 @@ RYD_PosTowards2D =
 
 RYD_GarrP = 
 	{
-	private ["_gp","_points","_nHouse","_frm","_wp","_i","_posAll","_posAct","_sum","_sumAct","_added"];
+	private ["_gp","_points","_nHouse","_frm","_wp","_i","_posAll","_posAct","_sum","_sumAct","_added","_HQ","_code"];
 
 	_gp = _this select 0;
 	_points = _this select 1;
+	_HQ = _this select 2;
 
 		{
 		_nHouse = _x nearestObject "House";
@@ -124,35 +125,11 @@ RYD_GarrP =
 		_i = 0;
 		_posAct = _nHouse buildingpos _i;
 		
-		while {not ((str _posAct) in ["[0,0,0]"])} do
+		while {((_posAct distance [0,0,0]) > 0)} do
 			{
+			_posAll set [(count _posAll),_posAct];
+				
 			_i = _i + 1;
-			_sum = 0;
-			
-				{
-				_sum = _sum + _x
-				}
-			foreach _posAct;
-			
-			_added = false;
-			
-				{
-				_sumAct = 0;
-				
-					{
-					_sum = _sum + _x
-					}
-				foreach _x;
-				
-				if (_sum == _sumAct) exitWith {_added = true}
-				}
-			foreach _posAll;
-			
-			if not (_added) then 
-				{
-				_posAll set [(count _posAll),_posAct]
-				};
-				
 			_posAct = _nHouse buildingpos _i;
 			};
 
@@ -174,11 +151,12 @@ RYD_GarrP =
 
 	_wp = [[_gp],_points select 0,"CYCLE","AWARE","YELLOW","LIMITED",["true",""],false,0.01,[10,15,20],_frm] call RYD_WPadd;
 
-	[_gp] spawn
+	_code =
 		{
 		private ["_gp","_UL","_nE","_dst"];
 
 		_gp = _this select 0;
+		_HQ = _this select 1;
 
 		_UL = leader _gp;
 
@@ -188,8 +166,16 @@ RYD_GarrP =
 			{
 			sleep 20;
 			_dst = 10000;
+			
 			_alive = true;
-			if (isNull _gp) then {_alive = false};
+			switch (true) do
+				{
+				case (isNull _gp) : {_alive = false};
+				case (({alive _x} count (units _gp)) < 1) : {_alive = false};
+				case (_HQ getVariable ["RydHQ_KIA",false]) : {_alive = false};
+				case (_gp getVariable ["RydHQ_MIA",false]) : {_alive = false;_gp setVariable ["RydHQ_MIA",nil]}
+				};
+
 			if (_alive) then 
 				{
 				_UL = leader _gp;
@@ -207,15 +193,19 @@ RYD_GarrP =
 
 		_gp setVariable ["Garrisoned" + (str _gp),false]
 		};
+		
+	[[_gp,_HQ],_code] call RYD_Spawn
 	};
 
 RYD_GarrS = 
 	{
-	private ["_unit","_pos","_timer","_alive","_dst","_taken","_gar","_i","_vel","_sum","_posLast","_dst2"];
+	private ["_unit","_pos","_timer","_alive","_dst","_taken","_gar","_i","_vel","_sum","_posLast","_dst2","_HQ","_bld","_ix"];
 
 	_unit = _this select 0;
 	_pos = _this select 1;
-	_taken = _this select 2;
+	_bld = _this select 2;
+	_taken = _this select 3;
+	_HQ = _this select 4;
 
 	_unit doMove _pos;
 
@@ -233,33 +223,129 @@ RYD_GarrS =
 		sleep 0.1;
 		_dst2 = 0;
 		if not (isNull _unit) then {_dst2 = _unit distance _pos};
-		if (isNull _unit) then {_alive = false};
-		if not (alive _unit) then {_alive = false};
+
+		switch (true) do
+			{
+			case (isNull _unit) : {_alive = false};
+			case (not (alive _unit)) : {_alive = false};
+			case (_HQ getVariable ["RydHQ_KIA",false]) : {_alive = false};
+			case ((group _unit) getVariable ["RydHQ_MIA",false]) : {_alive = false;(group _unit) setVariable ["RydHQ_MIA",nil]}
+			};
+			
 		if (_dst2 >= _dst) then {_timer = _timer + 1};
 
 		((unitReady _unit) or (_timer > 240) or not (_alive))
 		};
 
+	if not (_alive) exitWith {};
+	
+	doStop _unit;
+	
+	_dir = getDir _bld;
+	
+	_uPosASL = getPosASL _unit;
+	_watchPos = [];
+	_unitP = "UP";
 
-	if (_alive) then {doStop _unit};
+	for "_i" from _dir to (_dir + 270) step 90 do
+		{
+		_cPosASL = [_uPosASL,_i,5] call RYD_PosTowards2D;
+		_isLOS = [_cPosASL,_cPosASL,1.5,20,_unit,objNull] call RYD_LOSCheck;
+		
+		if (_isLOS) then
+			{
+			_isLOS = [_uPosASL,_cPosASL,1.5,1.5,_unit,objNull] call RYD_LOSCheck;
+			
+			if (_isLOS) then
+				{
+				_watchPos = ASLtoATL _cPosASL
+				}
+			}
+		};
+		
+	if ((count _watchPos) < 2) then
+		{
+		_unitP = "MIDDLE";
+		_exits = [];
+		_exitAct = _bld buildingExit 0;
+		_ct = 0;
 
-	_unit doWatch ObjNull;
-	sleep 0.1;
-	_unit setDir (random 360);
+		while {((_exitAct distance [0,0,0]) > 0)} do 
+			{
+			_isLOS = [_uPosASL,ATLtoASL _exitAct,1.5,1.5,_unit,objNull] call RYD_LOSCheck;
+			if (_isLOS) then
+				{
+				_exits set [(count _exits),_exitAct];
+				};
+				
+			_ct = _ct + 1;
+			_exitAct = _Bld buildingExit _ct;
+			};
+			
+		if ((count _exits) > 0) then
+			{
+			_closestExit = [_uPosASL,_exits] call RYD_FindClosest;
+			_watchPos = _closestExit
+			}
+		};
+		
+	if ((count _watchPos) < 2) then
+		{
+		_unitP = "MIDDLE";
+		_chosenDir = random 360;
+		_maxDst = 1;
+		_dir = getDir _bld;
+		for "_i" from _dir to (_dir + 270) step 90 do
+			{
+			_isLOS = true;
+			_dst = 1;
+			
+			while {_isLOS} do
+				{
+				_cPosASL = [_uPosASL,_i,_dst] call RYD_PosTowards2D;
+				_isLOS = [_uPosASL,_cPosASL,1.5,1.5,_unit,objNull] call RYD_LOSCheck;
+				_dst = _dst + 1;
+				if (_dst > 50) exitWith {};
+				};
+				
+			if (_dst > _maxDst) then
+				{
+				_maxDst = _dst;
+				_chosenDir = _i;
+				};
+				
+			_watchPos = ASLtoATL ([_uPosASL,_chosenDir,5] call RYD_PosTowards2D);
+			};
+		};
+		
+	_watchDir = [_uPosASL,_watchPos,5] call RYD_AngTowards;
+		
+	_unit setUnitPos _unitP;
+	_unit setDir _watchDir;
+	_unit doWatch _watchPos;	
 
 	waitUntil 
 		{
 		sleep 30;
-		if (isNull _unit) then {_alive = false};
-		if not (alive _unit) then {_alive = false};
+		switch (true) do
+			{
+			case (isNull _unit) : {_alive = false};
+			case (not (alive _unit)) : {_alive = false};
+			case (_HQ getVariable ["RydHQ_KIA",false]) : {_alive = false};
+			case ((group _unit) getVariable ["RydHQ_MIA",false]) : {_alive = false;(group _unit) setVariable ["RydHQ_MIA",nil]}
+			};
+			
 		_gar = (group _unit) getVariable ("Garrisoned" + (str (group _unit)));
 		if not (_gar) then {_alive = false};
 		not (_alive)
 		};
 
-	_taken = _taken - [_pos]
+	_ix = _taken select 1;
+	_taken = _taken select 0;
+	_taken set [_ix,"Del"];
+	_taken = _taken - ["Del"]
 	};
-
+	
 RYD_AmmoCount = 
 	{//[_gp] call RYD_AmmoCount
 	private ["_gp","_ct","_ncVeh"];
@@ -279,6 +365,124 @@ RYD_AmmoCount =
 
 	_ct
 	};
+		
+RYD_AmmoFullCount = 
+	{//[_gp] call RYD_AmmoFullCount
+	private ["_gp","_ct","_ncVeh","_checked","_vh","_magsD","_am","_ctMax","_mCount","_magsM","_tp","_back","_magsB","_mag","_magEntry","_trt"];
+
+	_gp = _this select 0;
+	
+	_ncVeh = [];
+	if ((count _this) > 1) then {_ncVeh = _this select 1};
+	
+	_checked = [];
+
+	_ct = 0;
+	_ctMax = 0;
+	//_ctM = 0;
+	//_ctMMax = 0;
+		
+		{
+		_vh = vehicle _x;
+		_tp = typeOf _x;
+		
+		switch (true) do
+			{
+			case (((typeOf _vh) in _ncVeh) or (_vh == _x)) :
+				{
+				_magsM = getArray (configFile >> "CfgVehicles" >> _tp >> "magazines");
+				
+				//_ctMMax = _ctMMax + ({(getNumber ((configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> _x >> "ammo")) >> "Hit")) > 0)} count _magsM);
+				
+					{
+					if ((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> _x >> "ammo")) >> "Hit")) > 0) then
+						{
+						_mCount = getNumber (configFile >> "CfgMagazines" >> _x >> "count");
+						_ctMax = _ctMax + _mCount;
+						}
+					}
+				foreach _magsM;
+				
+				_back = getText (configFile >> "CfgVehicles" >> _tp >> "backpack");
+				
+				if not (_back in [""]) then
+					{
+					_magsB = (configFile >> "CfgVehicles" >> _back >> "TransportMagazines");
+					
+					for "_i" from 1 to (count _magsB) do
+						{
+						_magEntry = _magsB select (_i - 1);
+						_mag = getText (_magEntry >> "magazine");
+						
+						if ((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> _mag >> "ammo")) >> "Hit")) > 0) then
+							{
+							_am = getNumber (_magEntry >> "count");
+							_mCount = getNumber (configFile >> "CfgMagazines" >> _mag >> "count");
+							_ctMax = _ctMax + (_mCount * _am);
+							//_ctMMax = _ctMMax + _am;
+							}
+						}
+					};
+				
+				_magsD = magazinesAmmoFull _x;
+				
+					{
+					if ((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> (_x select 0) >> "ammo")) >> "Hit")) > 0) then
+						{			
+						_ct = _ct + (_x select 1)
+						}
+					}
+				foreach _magsD;
+				
+				//_ctM = _ctM + ({((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> (_x select 0) >> "ammo")) >> "Hit")) > 0)} count _magsD)
+				};
+				
+			case (not (_vh in _checked)) :
+				{
+				_checked set [(count _checked),_vh];
+				
+				_magsM = 0;
+				
+				_trt = (configFile >> "CfgVehicles" >> (typeOf _vh) >> "Turrets" >> "MainTurret");
+				
+				if (isClass _trt) then
+					{
+					_magsM = (getArray (_trt >> "magazines"));
+					}
+				else
+					{
+					_magsM = (getArray (configFile >> "CfgVehicles" >> (typeOf _vh) >> "magazines"));
+					};
+				
+				//_ctMMax = _ctMMax + ({((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> _x >> "ammo")) >> "Hit")) > 0)} count _magsM);
+
+					{
+					if ((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> _x >> "ammo")) >> "Hit")) > 0) then
+						{
+						_mCount = getNumber (configFile >> "CfgMagazines" >> _x >> "count");
+						_ctMax = _ctMax + _mCount;
+						}
+					}
+				foreach _magsM;
+				
+				_magsD = magazinesAmmo _vh;
+				
+					{
+					if ((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> (_x select 0) >> "ammo")) >> "Hit")) > 0) then
+						{				
+						_ct = _ct + (_x select 1)
+						}
+					}
+				foreach _magsD;
+				
+				//_ctM = _ctM + ({((getNumber (configFile >> "CfgAmmo" >> (getText (configFile >> "CfgMagazines" >> (_x select 0) >> "ammo")) >> "Hit")) > 0)} count _magsD);
+				}
+			}
+		}
+	foreach (units _gp);
+	
+	(_ct/(_ctMax max 1))//(_ct/(_ctMax max 1)) min (_ctM/(_ctMMax max 1))
+	};
 
 RYD_WPdel = 
 	{//[_gp] call RYD_WPdel
@@ -295,8 +499,11 @@ RYD_WPdel =
 
 	[_gp, (currentWaypoint _gp)] setWaypointPosition [position (vehicle (leader _gp)), 0];
 
-	while {(_count >= 0)} do
+	while {not (_count < 0)} do
 		{
+		if (isNull _gp) exitWith {};
+		_count = (count (waypoints _gp)) - 1;
+		if (_count < 0) exitWith {};
 		deleteWaypoint ((waypoints _gp) select _count);
 		_count = (count (waypoints _gp)) - 1
 		}
@@ -346,6 +553,8 @@ RYD_Mark =
 	_i setMarkerSize _sz;
 	_i setMarkerDir _dir;
 	_i setMarkerText _txt;
+	
+	RydxHQ_Markers set [(count RydxHQ_Markers),_i]; 
 
 	_i
 	};
@@ -687,35 +896,112 @@ RYD_GoLaunch =
 
 	_code
 	};
+	
+RYD_FindClosestWithIndex = 
+	{
+	private ["_ref","_objects","_closest","_dstMin","_dstAct","_index","_clIndex","_clst","_act"];
+
+	_ref = _this select 0;
+	_objects = _this select 1;
+	
+	_objects = _objects - ["Del","Delete"];
+
+	_closest = objNull;
+	_clIndex = 0;
+
+	if ((count _objects) > 0) then 
+		{
+		_closest = _objects select 0;
+		_clst = _closest;
+		if ((typeName _clst) == (typename grpNull)) then {_clst = vehicle (leader _clst)};
+		_index = 0;
+		_clIndex = 0;
+		_dstMin = _ref distance _clst;
+
+			{
+			_act = _x;
+			if ((typeName _act) == (typename grpNull)) then {_act = vehicle (leader _act)};
+			_dstAct = _ref distance _act;
+
+			if (_dstAct < _dstMin) then
+				{
+				_closest = _x;
+				_dstMin = _dstAct;
+				_clIndex = _index
+				};
+
+			_index = _index + 1
+			}
+		foreach _objects
+		};
+
+	[_closest,_clIndex]
+	};
+	
+/*RYD_FindClosestWithIndex = 
+	{
+	private ["_ref","_objects","_closest","_dstMin","_dstAct","_index","_clIndex"];
+
+	_ref = _this select 0;
+	_objects = _this select 1;
+
+	_closest = objNull;
+
+	if ((count _objects) > 0) then 
+		{
+		_closest = _objects select 0;
+		_index = 0;
+		_clIndex = 0;
+		_dstMin = _ref distance _closest;
+
+			{
+			_dstAct = _ref distance _x;
+
+			if (_dstAct < _dstMin) then
+				{
+				_closest = _x;
+				_dstMin = _dstAct;
+				_clIndex = _index
+				};
+
+			_index = _index + 1
+			}
+		foreach _objects
+		};
+
+	[_closest,_clIndex]
+	};*/
 
 RYD_DistOrd = 
 	{
-	private ["_array","_first","_point","_dst","_limit","_final","_VL"];
+	private ["_array","_point","_final","_closest","_ix","_limit","_clst"];
 
 	_array = _this select 0;
 	_point = _this select 1;
 	_limit = _this select 2;
 
-	_first = [];
 	_final = [];
 
+	while {(({not ((typeName _x) in [(typeName "")])} count _array) > 0)} do
 		{
-		_VL = vehicle (leader _x);
-		_dst = round (_VL distance _point);
-		if (_dst <= _limit) then {_first set [_dst,_x]}
-		}
-	foreach _array;
+		_closest = [_point,_array] call RYD_FindClosestWithIndex;
+		_ix = _closest select 1;
+		_closest = _closest select 0;
+		_clst = _closest;
+		if ((typeName _clst) == (typename grpNull)) then {_clst = vehicle (leader _clst)};
+		
+		if ((_clst distance _point) < _limit) then
+			{
+			_final set [(count _final),_closest]
+			};
 
-		{
-		if not (isNil "_x") then {_final set [(count _final),_x]}
-		}
-	foreach _first;
-
-	_first = nil;
+		_array set [_ix,"Delete"];
+		_array = _array - ["Delete"];
+		};
 
 	_final
 	};
-
+		
 RYD_Recon = 
 	{
 	private ["_ammo","_gps","_IR","_garrA","_recAv","_flankAv","_AOnlyA","_exhA","_final","_pass","_trg","_lmt","_rcArr","_nCargo","_busy","_isRAir","_NCVeh"];
@@ -802,7 +1088,7 @@ RYD_Recon =
 		}
 	foreach _gps;
 
-	if ((count _final) > 0) then {[_final,_trg,_lmt] call RYD_DistOrd};
+	if ((count _final) > 0) then {_final = [_final,_trg,_lmt] call RYD_DistOrd};
 
 	_final
 	};
@@ -983,7 +1269,23 @@ RYD_Dispatcher =
 					_force = _x select 0;
 					_range = _x select 1;
 
+					_FTFinPool = [];
+					
+					if ((count (_HQ getVariable ["RydHQ_FirstToFight",[]])) > 0) then
+						{
+					
+							{
+							if (_x in (_HQ getVariable ["RydHQ_FirstToFight",[]])) then
+								{
+								_FTFinPool set [(count _FTFinPool),_x]
+								}
+							}
+						foreach _force;
+						};
+
 					_SortedForce = [_force,_tPos,10000*_range] call RYD_DistOrd;
+					
+					_SortedForce = _FTFinPool + (_SortedForce - _FTFinPool);
 
 					_avF = _SortedForce;
 
@@ -1187,7 +1489,8 @@ RYD_Dispatcher =
 							{
 							_chosen setVariable ["Busy" + (str _chosen),true];
 							_HQ setVariable ["RydHQ_AttackAv",(_HQ getVariable ["RydHQ_AttackAv",[]]) - [_chosen]];
-							[_chosen,_trg,_HQ] spawn ([_pattern] call RYD_GoLaunch);
+							//[_chosen,_trg,_HQ] spawn ([_pattern] call RYD_GoLaunch);
+							[[_chosen,_trg,_HQ],([_pattern] call RYD_GoLaunch)] call RYD_Spawn;
 							_limit = _limit - 1
 							};
 
@@ -1365,7 +1668,7 @@ RYD_Wait =
 			case (({alive _x} count (units (_this select 0))) < 1) : {_alive = false};
 			case (isNull _AV) : {_alive = false};
 			case (not (alive _AV)) : {_alive = false};
-			case ((_this select 0) getVariable ["RydHQ_MIA",false]) : {_alive = false;(_this select 0) setVariable ["RydHQ_MIA",false]}
+			case ((_this select 0) getVariable ["RydHQ_MIA",false]) : {_alive = false;(_this select 0) setVariable ["RydHQ_MIA",nil]}
 			};
 
 		if (_alive) then
@@ -1479,12 +1782,28 @@ RYD_Wait =
 
 	[_timer,_alive,_enemy,_busy]
 	};
+	
+RYD_CreateDecoy = 
+	{
+	private ["_class","_pos","_HQ","_gp","_object"];
+	
+	_pos = _this select 0;
+	
+	_class = "Sign_Sphere100cm_F";
+
+	_object = _class createVehicle _pos;
+	_object setPosATL _pos;
+	_object setObjectTexture [0,"#(ARGB,8,8,3)color(1,1,1,0,ca)"];
+	
+	_object
+	};
 
 RYD_Smoke = 
 	{
-	private ["_gp","_lastV","_Scount","_unit","_muzzles","_mags","_sMuzzle","_mag"];	
+	//private ["_gp","_lastV","_Scount","_unit","_muzzles","_mags","_sMuzzle","_mag","_nE"];	
 
 	_gp = _this select 0;
+	_nE = _this select 1;
 
 	_lastV = objNull;
 	_Scount = 0;
@@ -1494,13 +1813,21 @@ RYD_Smoke =
 		if (((vehicle _unit) == _unit) and not (isPlayer _unit)) then 
 			{
 			_muzzles = getArray (configFile >> "CfgWeapons" >> (primaryWeapon _unit) >> "muzzles");
+			_muzzles = _muzzles + (getArray (configFile >> "CfgWeapons" >> (secondaryWeapon _unit) >> "muzzles"));
 			_muzzles = _muzzles + (getArray (configFile >> "CfgWeapons" >> "Throw" >> "muzzles"));
-			_mags = magazines _unit;
 			
-			_sMuzzle = "";
-			_mag = "";
+			_mags = [];
+			_magsR = magazinesAmmoFull _unit;
 			
 				{
+				_mags set [(count _mags),_x select 0]
+				}
+			foreach _magsR;
+			
+				{
+				_sMuzzle = "";
+				_mag = "";
+				
 				if ((_x select 0) in _muzzles) then
 					{
 					_sMuzzle = _x select 0;
@@ -1519,14 +1846,77 @@ RYD_Smoke =
 					
 				if not ("" in [_sMuzzle,_mag]) exitWith
 					{
-					_unit selectWeapon _sMuzzle;
+					_posF = getPosATL _unit;
+					_posT = getPosATL _nE;
+					_dst = _unit distance _nE;
+					_hgt = (_dst min 200) * (0.025 + (random 0.025));
+						
+					_posT = [[(((_posF select 0) + (_posT select 0))/2),(((_posF select 1) + (_posT select 1))/2),0],5 * (_dst/200)] call RYD_RandomAround;
+					
+					_posT set [2,_hgt];
+					
+					_dst2D = [(_posT select 0),(_posT select 1)] distance _posF;
+					
+					_dc = [_posT] call RYD_CreateDecoy;
+					
 					if (_sMuzzle in ["EGLM","GL_3GL_F"]) then
 						{
-						_unit fire [_sMuzzle,_sMuzzle,_mag]
+						[_unit,_posT,_dc,_dst2D,_sMuzzle,_mag] spawn 
+							{
+							_unit = _this select 0;
+							_posT = _this select 1;
+							_dc = _this select 2;
+							_dst2D = _this select 3;
+							_sMuzzle = _this select 4;
+							_mag = _this select 5;
+							
+							_posT = [(_posT select 0) - ((wind select 0) * (sqrt _dst2D) * 0.25),(_posT select 1) - ((wind select 1) * (sqrt _dst2D) * 0.25),_posT select 2];
+								
+							_dc setPosATL _posT;
+												
+							_unit doWatch _dc;
+							sleep 0.1;
+							
+							_unit doTarget _dc;
+							sleep 3;
+							
+							_unit selectWeapon _sMuzzle;
+							sleep 1;
+							
+							_unit fire [_sMuzzle,_sMuzzle,_mag];
+							sleep 1;
+							
+							deleteVehicle _dc;
+							_unit doWatch objNull;
+							}
+
 						}
 					else
 						{
-						_unit fire _sMuzzle
+						[_unit,_posT,_dc,_dst2D,_sMuzzle,_mag] spawn 
+							{
+							_unit = _this select 0;
+							_posT = _this select 1;
+							_dc = _this select 2;
+							_dst2D = _this select 3;
+							_sMuzzle = _this select 4;
+							_mag = _this select 5;	
+												
+							_posT = [(_posT select 0) - ((wind select 0) * _dst2D * 0.25),(_posT select 1) - ((wind select 1) * _dst2D * 0.25),_posT select 2];
+								
+							_dc setPosATL _posT;
+							
+							_unit doWatch _dc;
+							sleep 1;
+							
+							_unit selectWeapon _sMuzzle;
+							_unit fire [_sMuzzle,_sMuzzle,_mag];
+							
+							sleep 0.1;
+						
+							_unit doWatch objNull;
+							deleteVehicle _dc;
+							}
 						};
 						
 					_Scount = _Scount + 1
@@ -1543,16 +1933,19 @@ RYD_Smoke =
 
 RYD_isNight = 
 	{//math by CarlGustaffa
-	private ["_lat","_day","_hour","_sunangle","_isNight"];
+	//private ["_lat","_day","_hour","_sunangle","_isNight"];
+	private ["_isNight"];
+	
+	_isNight = not ((sunOrMoon - ((overcast/2)^(2 - overcast))) > 0.15); 
 
-	_isNight = false;
+	/*_isNight = false;
 
 	_lat = -1 * getNumber(configFile >> "CfgWorlds" >> worldName >> "latitude"); 
 	_day = 360 * (dateToNumber date); 
 	_hour = (daytime / 24) * 360; 
 	_sunangle = ((12 * (cos _day) - 78) * (cos _lat) * (cos _hour)) - (24 * (sin _lat) * (cos _day)); 
 
-	if (_sunangle < -10) then {_isNight = true};
+	if (_sunangle < -10) then {_isNight = true};*/
 
 	_isNight
 	};
@@ -1605,9 +1998,8 @@ RYD_Flares =
 									}
 								};
 
-							if (not (_CFF) and not (isPlayer _UL) and (false)) then//manual flare turned off - fire command bad behavior - firing at own feet
+							if (not (_CFF) and not (isPlayer _UL)) then
 								{
-
 								_Scount = 0;
 								
 									{
@@ -1615,12 +2007,20 @@ RYD_Flares =
 									if (((vehicle _unit) == _unit) and not (isPlayer _unit)) then 
 										{
 										_muzzles = getArray (configFile >> "CfgWeapons" >> (primaryWeapon _unit) >> "muzzles");
-										_mags = magazines _unit;
+										_muzzles = _muzzles + (getArray (configFile >> "CfgWeapons" >> (secondaryWeapon _unit) >> "muzzles"));
 										
-										_sMuzzle = "";
-										_mag = "";
+										_mags = [];
+										_magsR = magazinesAmmoFull _unit;
 										
 											{
+											_mags set [(count _mags),_x select 0];
+											}
+										foreach _magsR;
+															
+											{
+											_sMuzzle = "";
+											_mag = "";
+											
 											if ((_x select 0) in _muzzles) then
 												{
 												_sMuzzle = _x select 0;
@@ -1639,9 +2039,41 @@ RYD_Flares =
 												
 											if not ("" in [_sMuzzle,_mag]) exitWith
 												{
-												_unit selectWeapon _sMuzzle;
-												_unit fire [_sMuzzle,_sMuzzle,_mag];
-												_Scount = _Scount + 1
+												[_unit,_nE,_sMuzzle,_mag] spawn 
+													{
+													_unit = _this select 0;
+													_nE = _this select 1;
+													_sMuzzle = _this select 2;
+													_mag = _this select 3;
+														
+													_posF = getPosATL _unit;
+													_posT = getPosATL _nE;
+													_dst = _unit distance _nE;
+													_hgt = _dst * (0.25 + (random 0.25));
+														
+													_posT = [[((_posF select 0) + (_posT select 0))/2,((_posF select 1) + (_posT select 1))/2,0],20 * (_dst/200)] call RYD_RandomAround;
+													
+													_posT set [2,_hgt];
+
+													_dc = [_posT] call RYD_CreateDecoy;
+													
+													_unit doWatch _dc;
+													sleep 0.1;
+													
+													_unit doTarget _dc;
+													sleep 5;
+													
+													_unit selectWeapon _sMuzzle;
+													sleep 1;
+												
+													_unit fire [_sMuzzle,_sMuzzle,_mag];
+													sleep 0.1;
+																
+													_unit doWatch objNull;
+													deleteVehicle _dc;
+													};
+													
+												_Scount = _Scount + 1;
 												}
 											}
 										foreach RydxHQ_FlareMuzzles;
@@ -1836,7 +2268,7 @@ RYD_CFF_TGT =
 	
 RYD_CFF_Fire = 
 	{
-	private ["_battery","_pos","_ammo","_amount","_guns","_vh","_mags","_amount0","_eta","_alive","_available","_perGun","_rest","_aGuns","_perGun1","_shots","_check","_toFire","_rest0","_bad","_ammoC"];
+	private ["_battery","_pos","_ammo","_amount","_guns","_vh","_mags","_amount0","_eta","_alive","_available","_perGun","_rest","_aGuns","_perGun1","_shots","_check","_toFire","_rest0","_bad","_ammoC","_code"];
 	
 	_battery = _this select 0;
 	_pos = _this select 1;
@@ -1924,6 +2356,38 @@ RYD_CFF_Fire =
 		diag_log format ["Gun: %1 MyShots: %2 ToFire: %3",_x,_x getVariable ["RydHQ_MyShots",0],_x getVariable ["RydHQ_ShotsToFire",0]];
 		}
 	foreach _guns;*/
+	
+	_code =
+		{
+		_vh = _this select 0;
+		_pos = _this select 1;
+		_ammo = _this select 2;
+		
+		if (_pos inRangeOfArtillery [[_vh],_ammo]) then
+			{
+			if (_ammo in (getArtilleryAmmo [_vh])) then
+				{
+				_vh setVariable ["RydHQ_GunFree",false];
+				_vh doArtilleryFire [_pos, _ammo,(_vh getVariable ["RydHQ_ShotsToFire",1])];
+				
+				_ct = 0;
+				
+				waitUntil
+					{
+					sleep 0.1;
+					_ct = _ct + 0.1;
+					(not ((_vh getVariable ["RydHQ_ShotFired2",0]) < (_vh getVariable ["RydHQ_ShotsToFire",1])) or (_ct > 15))
+					};
+				
+				_vh setVariable ["RydHQ_ShotFired",true];
+				_vh setVariable ["RydHQ_ShotFired2",0];
+				
+				sleep 2;
+				
+				_vh setVariable ["RydHQ_GunFree",true]
+				}
+			}
+		};
 		
 		{
 		if not (isNull _x) then
@@ -1954,38 +2418,8 @@ RYD_CFF_Fire =
 						{
 						_eta = _newEta
 						};
-
-					[_vh,_pos,_ammoC] spawn
-						{
-						_vh = _this select 0;
-						_pos = _this select 1;
-						_ammo = _this select 2;
 						
-						if (_pos inRangeOfArtillery [[_vh],_ammo]) then
-							{
-							if (_ammo in (getArtilleryAmmo [_vh])) then
-								{
-								_vh setVariable ["RydHQ_GunFree",false];
-								_vh doArtilleryFire [_pos, _ammo,(_vh getVariable ["RydHQ_ShotsToFire",1])];
-								
-								_ct = 0;
-								
-								waitUntil
-									{
-									sleep 0.1;
-									_ct = _ct + 0.1;
-									(not ((_vh getVariable ["RydHQ_ShotFired2",0]) < (_vh getVariable ["RydHQ_ShotsToFire",1])) or (_ct > 15))
-									};
-								
-								_vh setVariable ["RydHQ_ShotFired",true];
-								_vh setVariable ["RydHQ_ShotFired2",0];
-								
-								sleep 2;
-								
-								_vh setVariable ["RydHQ_GunFree",true]
-								}
-							}
-						}
+					[[_vh,_pos,_ammoC],_code] call RYD_Spawn
 					}
 				}
 			}
@@ -2008,7 +2442,7 @@ RYD_CFF_Fire =
 
 RYD_ArtyMission = 
 	{//_bArr = [_tgtPos,RydHQ_ArtG,"SADARM",6,leaderHQ] call RYD_ArtyMission;
-	private ["_pos","_arty","_ammoG","_amount","_FO","_ammo","_possible","_battery","_agp","_artyAv","_vehs","_gp","_hasAmmo","_checked","_vh","_tp","_inRange","_pX","_pY","_pZ","_ammoArr"];
+	private ["_pos","_arty","_ammoG","_amount","_FO","_ammo","_possible","_battery","_agp","_artyAv","_vehs","_gp","_hasAmmo","_checked","_vh","_tp","_inRange","_pX","_pY","_pZ","_ammoArr","_code"];
 
 	_pos = _this select 0;
 	_arty = _this select 1;
@@ -2143,7 +2577,7 @@ RYD_ArtyMission =
 
 			_pos = [_pX,_pY,_pZ];
 //_i = [_pos,(random 1000),"markArty","ColorRed","ICON","mil_dot",_ammoG,"",[0.75,0.75]] call RYD_Mark;
-			[_battery,_pos,_ammoArr,_FO,_amount,_ammoG] spawn
+			_code =
 				{
 				_battery = _this select 0;
 				_pos = _this select 1;
@@ -2215,7 +2649,9 @@ RYD_ArtyMission =
 						}
 					}
 				foreach _battery
-				}
+				};
+				
+			[[_battery,_pos,_ammoArr,_FO,_amount,_ammoG],_code] call RYD_Spawn
 			}
 		};
 
@@ -2231,7 +2667,7 @@ RYD_CFF_FFE =
 	"_safe","_safecheck","_gauss1","_gauss09","_gauss04","_gauss2","_distance2","_DdistF","_DdamageF","_DweatherF","_DskillF","_anotherD","_Dreduct","_spawndisp","_dispersion","_disp","_RydAccF",
 	"_gauss1b","_gauss2b","_AdistF","_AweatherF","_AdamageF","_AskillF","_Areduct","_spotterF","_anotherA","_acc","_finalimpact","_posX","_posY","_i","_dX","_dY","_angle","_dXb","_dYb","_posX2",
 	"_posY2","_AmmoN","_exDst","_exPX","_exPY","_onRoad","_exPos","_nR","_stRS","_dMin","_dAct","_dSum","_checkedRS","_RSArr","_angle","_rPos","_actRS","_ammocheck","_artyGp","_ammoCount","_dstAct",
-	"_maxRange","_minRange","_isTaken","_batlead","_alive","_waitFor","_UL","_ammoC","_add","_stoper"];	
+	"_maxRange","_minRange","_isTaken","_batlead","_alive","_waitFor","_UL","_ammoC","_add","_stoper","_code"];	
 
 	_battery = _this select 0;
 	_target = _this select 1;
@@ -2558,28 +2994,6 @@ RYD_CFF_FFE =
 
 		if not (_safecheck) exitwith {(group _target) setVariable ["CFF_Taken",false]};
 		
-		_BBusy = false;
-		
-			{
-			if not (isNull _x) then
-				{
-				_BBusy = _x getVariable ["RydHQ_BatteryBusy",false]
-				};
-				
-			if (_BBusy) exitWith {}
-			}
-		foreach _battery;
-		
-		if ((_BBusy) and (_x == 1)) exitWith {(group _target) setvariable ["CFF_Taken",false]};
-		
-			{
-			if not (isNull _x) then
-				{
-				_x setVariable ["RydHQ_BatteryBusy",true]
-				}
-			}
-		foreach _battery;
-		
 		_distance2 = _impactPos distance (getPosATL (vehicle _batlead1));
 		_DweatherF = 1 + overcast;
 		_gauss09 = (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) + (random 0.09) +  (random 0.09) + (random 0.09);
@@ -2645,20 +3059,30 @@ RYD_CFF_FFE =
 		sleep 0.2;
 		_posX = 0;
 		_posY = 0;
+		_distance = _impactPos distance _finalimpact;
+		
 		if (_Debug) then 
 			{
+			_posM1 = getposATL (vehicle _batlead1);
+			_posM1 set [2,0];
+			_impactPosM = +_impactPos;
+			_impactPosM set [2,0];
+			_finalimpactM = +_finalimpact;
+			_finalimpactM set [2,0];
+			
+			_text = getText (configFile >> "CfgVehicles" >> (typeOf (vehicle _batlead1)) >> "displayName");
 			_i = "markBat" + str (_battery1);
-			_i = createMarker [_i,getposATL (vehicle _batlead1)];
+			_i = createMarker [_i,_posM1];
 			_i setMarkerColor "ColorBlack";
 			_i setMarkerShape "ICON";
 			_i setMarkerType "mil_circle";
 			_i setMarkerSize [0.4,0.4];
-			_i setMarkerText (" " + _i + " - " + str (typeOf (vehicle _batlead1)));
+			_i setMarkerText ("Firing battery - " + _text);
 			
 			_markers set [(count _markers),_i];
 			
-			_distance = _impactPos distance _finalimpact;
-			_distance2 = _impactPos distance (getposATL (vehicle _batlead1));
+			_distance = _impactPosM distance _finalimpactM;
+			_distance2 = _impactPosM distance _posM1;
 			_i = "mark0" + str (_battery1);
 			_i = createMarker [_i,_impactPos];
 			_i setMarkerColor "ColorBlue";
@@ -2668,14 +3092,14 @@ RYD_CFF_FFE =
 			
 			_markers set [(count _markers),_i];
 
-			_dX = (_impactPos select 0) - (getposATL (vehicle _batlead1) select 0);
-			_dY = (_impactPos select 1) - (getposATL (vehicle _batlead1) select 1);
+			_dX = (_impactPosM select 0) - (_posM1 select 0);
+			_dY = (_impactPosM select 1) - (_posM1 select 1);
 			_angle = _dX atan2 _dY;
 			if (_angle >= 180) then {_angle = _angle - 180};
 			_dXb = (_distance2/2) * (sin _angle);
 			_dYb = (_distance2/2) * (cos _angle);
-			_posX = (getposATL (vehicle _batlead1) select 0) + _dXb;
-			_posY = (getposATL (vehicle _batlead1) select 1) + _dYb;
+			_posX = (_posM1 select 0) + _dXb;
+			_posY = (_posM1 select 1) + _dYb;
 
 			_i = "mark1" + str (_battery1);
 			_i = createMarker [_i,[_posX,_posY]];
@@ -2687,14 +3111,14 @@ RYD_CFF_FFE =
 			
 			_markers set [(count _markers),_i];
 
-			_dX = (_finalimpact select 0) - (_impactPos select 0);
-			_dY = (_finalimpact select 1) - (_impactPos select 1);
+			_dX = (_finalimpactM select 0) - (_impactPosM select 0);
+			_dY = (_finalimpactM select 1) - (_impactPosM select 1);
 			_angle = _dX atan2 _dY;
 			if (_angle >= 180) then {_angle = _angle - 180};
 			_dXb = (_distance/2) * (sin _angle);
 			_dYb = (_distance/2) * (cos _angle);
-			_posX2 = (_impactPos select 0) + _dXb;
-			_posY2 = (_impactPos select 1) + _dYb;
+			_posX2 = (_impactPosM select 0) + _dXb;
+			_posY2 = (_impactPosM select 1) + _dYb;
 
 			_i = "mark2" + str (_battery1);
 			_i = createMarker [_i,[_posX2,_posY2]];
@@ -2707,7 +3131,7 @@ RYD_CFF_FFE =
 			_markers set [(count _markers),_i];
 
 			_i = "mark3" + str (_battery1);
-			_i = createMarker [_i,_impactPos];
+			_i = createMarker [_i,_impactPosM];
 			_i setMarkerColor "ColorBlack";
 			_i setMarkerShape "ICON";
 			_i setMarkerType "mil_dot";
@@ -2715,112 +3139,119 @@ RYD_CFF_FFE =
 			_markers set [(count _markers),_i];
 
 			_i = "mark4" + str (_battery1);
-			_i = createMarker [_i,_finalimpact];
+			_i = createMarker [_i,_finalimpactM];
 			_i setMarkerColor "ColorRed";
 			_i setMarkerShape "ICON";
 			_i setMarkerType "mil_dot";
 			_i setMarkerText (str (round _distance) + "m" + " - ETA: " + str (round _eta) + " - " + _ammoG);
 			
 			_markers set [(count _markers),_i];
-						
-			[_battery,_distance,_eta,_ammoG,_batlead,_target,_markers] spawn
-				{
-				private ["_mark","_battery","_distance","_eta","_Ammo","_target","_alive","_stoper","_TOF","_batlead","_stoper"];
-
-				_battery = _this select 0;
-				_distance = _this select 1;
-				_eta = _this select 2;
-				_ammoG = _this select 3;
-				_batlead = _this select 4;
-				_target = _this select 5;
-				_markers = _this select 6;
-				
-				_battery1 = _battery select 0;
-				
-				_alive = true;
-				_shot = false;
-				_stoper = time;
-
-				waitUntil 
-					{
-					sleep 0.1;
-					
-					switch (true) do
-						{
-						case (({not (isNull _x)} count _batlead) < 1) : {_alive = false};
-						case (isNull _battery1) : {_alive = false};
-						case (({(alive _x)} count _batlead) < 1) : {_alive = false};
-						case ((time - _stoper) > 60) : {_alive = false};
-						};
-					
-						{
-						if not (isNull _x) then
-							{
-								{
-								if ((vehicle _x) getVariable ["RydHQ_ShotFired",false]) exitWith {_shot = true}
-								}
-							foreach (units _x)
-							};
-						
-						if (_shot) exitWith {}
-						}
-					foreach _battery;
-					
-					((_shot) or not (_alive))
-					};
-					
-					{
-					if not (isNull _x) then
-						{
-							{
-							(vehicle _x) setVariable ["RydHQ_ShotFired",false]
-							}
-						foreach (units _x)
-						};
-					}
-				foreach _battery;
-
-				_stoper = time;
-				_TOF = 0;
-				_rEta = _eta;
-				
-				_mark = _markers select ((count _markers) -1);
-
-				while {(not (_rEta < 5) and not (_TOF > 240) and (_alive))} do
-					{
-					if (({not (isNull _x)} count _batlead) < 1) exitWith {_alive = false};
-					if (isNull _battery1) exitWith {_alive = false};
-					if (({(alive _x)} count _batlead) < 1) exitWith {_alive = false};
-
-					_TOF = (round (10 * (time - _stoper)))/10;
-					_rEta = _eta - _TOF;
-					
-					 if ((_rEta < 5) or (_TOF > 240)) then {_battery1 setVariable ["RydHQ_SPLASH",true]};
-					
-					_mark setMarkerText (str (round _distance) + "m" + " - ETA: " + str (round _rEta) + " - TOF: " + (str _TOF) + " - " + _ammoG);
-					sleep 0.1
-					};
-
-				if not (_alive) exitWith 
-					{
-					(group _target) setvariable ["CFF_Taken",false];
-					
-						{
-						deleteMarker _x;
-						}
-					foreach _markers;
-					};
-
-				_mark setMarkerText (str (round _distance) + "m"  + " - SPLASH!" + " - " + _ammoG);
-				};
-
+			
 			/*_i = "mark5" + str (_battery);
-			_i = createMarker [_i,_finalimpact];
+			_i = createMarker [_i,_finalimpactM];
 			_i setMarkerColor "ColorRedAlpha";
 			_i setMarkerShape "ELLIPSE";
 			_i setMarkerSize [_spawndisp,_spawndisp];*/
 			};
+				
+		_code =
+			{
+			private ["_mark","_battery","_distance","_eta","_Ammo","_target","_alive","_stoper","_TOF","_batlead"];
+
+			_battery = _this select 0;
+			_distance = _this select 1;
+			_eta = _this select 2;
+			_ammoG = _this select 3;
+			_batlead = _this select 4;
+			_target = _this select 5;
+			_markers = _this select 6;
 			
+			_battery1 = _battery select 0;
+
+			_alive = true;
+			_shot = false;
+
+			waitUntil 
+				{
+				sleep 0.1;
+				if (({not (isNull _x)} count _batlead) < 1) then {_alive = false};
+				if (isNull _battery1) then {_alive = false};
+				if (({(alive _x)} count _batlead) < 1) then {_alive = false};
+				
+					{
+					if not (isNull _x) then
+						{
+							{
+							if ((vehicle _x) getVariable ["RydHQ_ShotFired",false]) exitWith {_shot = true}
+							}
+						foreach (units _x)
+						};
+					
+					if (_shot) exitWith {}
+					}
+				foreach _battery;
+				
+				((_shot) or not (_alive))
+				};
+				
+				{
+				if not (isNull _x) then
+					{
+						{
+						(vehicle _x) setVariable ["RydHQ_ShotFired",false]
+						}
+					foreach (units _x)
+					};
+				}
+			foreach _battery;
+
+			_stoper = time;
+			_TOF = 0;
+			_rEta = _eta;
+			_mark = "";
+			
+			if ((count _markers) > 0) then
+				{
+				_mark = _markers select ((count _markers) -1);
+				};
+
+			while {(not (_rEta < 5) and not (_TOF > 200) and (_alive))} do
+				{
+				if (({not (isNull _x)} count _batlead) < 1) exitWith {_alive = false};
+				if (isNull _battery1) exitWith {_alive = false};
+				if (({(alive _x)} count _batlead) < 1) exitWith {_alive = false};
+
+				_TOF = (round (10 * (time - _stoper)))/10;
+				_rEta = _eta - _TOF;
+				
+				if ((count _markers) > 0) then
+					{
+					_mark setMarkerText (str (round _distance) + "m" + " - ETA: " + str (round _rEta) + " - TOF: " + (str _TOF) + " - " + _ammoG);
+					};
+					
+				sleep 0.1
+				};
+
+			if not (_alive) exitWith 
+				{
+				(group _target) setvariable ["CFF_Taken",false];
+				
+					{
+					deleteMarker _x;
+					}
+				foreach _markers;
+				};
+				
+			_battery1 setVariable ["RydHQ_SPLASH",true];
+
+			if ((count _markers) > 0) then
+				{
+				_mark setMarkerText (str (round _distance) + "m"  + " - SPLASH!" + " - " + _ammoG);
+				};
+			};
+			
+		[[_battery,_distance,_eta,_ammoG,_batlead,_target,_markers],_code] call RYD_Spawn;
+						
 		[_battery,_finalimpact,_ammo,_amount] call RYD_CFF_Fire;
 					
 		_UL = _batlead1;
@@ -3010,8 +3441,16 @@ RYD_CFF =
 
 			if (_possible) then
 				{
+					{
+					if not (isNull _x) then
+						{
+						_x setVariable ["RydHQ_BatteryBusy",true]
+						}
+					}
+				foreach (_bArr select 1);
 				if ((random 100) < RydxHQ_AIChatDensity) then {[_ldr,RydxHQ_AIC_ArtAss,"ArtAss"] call RYD_AIChatter};
-				[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
+				//[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
+				[[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt],RYD_CFF_FFE] call RYD_Spawn;
 				}
 			else
 				{
@@ -3026,8 +3465,16 @@ RYD_CFF =
 				_possible = _bArr select 0;
 				if (_possible) then
 					{
+						{
+						if not (isNull _x) then
+							{
+							_x setVariable ["RydHQ_BatteryBusy",true]
+							}
+						}
+					foreach (_bArr select 1);
 					if ((random 100) < RydxHQ_AIChatDensity) then {[_ldr,RydxHQ_AIC_ArtAss,"ArtAss"] call RYD_AIChatter};
-					[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
+					//[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
+					[[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt],RYD_CFF_FFE] call RYD_Spawn;
 					}
 				else
 					{
@@ -3095,6 +3542,7 @@ RYD_DbgMon =
 
 	while {((RydHQ_Debug) or (RydHQB_Debug) or (RydHQC_Debug) or (RydHQD_Debug) or (RydHQE_Debug) or (RydHQF_Debug) or (RydHQG_Debug) or (RydHQH_Debug))} do
 		{
+		if (({(_x getVariable ["RydHQ_KIA",false])} count RydxHQ_AllHQ) == (count RydxHQ_AllHQ)) exitWith {};	
 		_txtArr = [];
 
 			{
@@ -3102,11 +3550,14 @@ RYD_DbgMon =
 				{
 				if not (isNull _x) then
 					{
-					_dbgMon = _x getVariable "DbgMon";
-					if not (isNil "_dbgMon") then 
+					if not (_x getVariable ["RydHQ_KIA",false]) then
 						{
-						_txtArr set [(count _txtArr),_dbgMon];
-						_txtArr set [(count _txtArr),linebreak];
+						_dbgMon = _x getVariable "DbgMon";
+						if not (isNil "_dbgMon") then 
+							{
+							_txtArr set [(count _txtArr),_dbgMon];
+							_txtArr set [(count _txtArr),linebreak];
+							}
 						}
 					}
 				}
@@ -3153,7 +3604,7 @@ RYD_LZ =
 
 	if (_posX > 0) then
 		{
-		_lz = createVehicle ["HeliHEmpty", [_posX,_posY,0], [], 0, "NONE"];
+		_lz = createVehicle ["Land_HelipadEmpty_F", [_posX,_posY,0], [], 0, "NONE"];
 		//_i01 = [[_posX,_posY],str (random 100),"markLZ","ColorRed","ICON","mil_dot","LZ",""] call RYD_Mark
 		};
 
@@ -3167,10 +3618,10 @@ RYD_TimeMachine =
 	_units = _this select 0;
 
 		{
-		_id = _x addAction ["Time: x2", "RYD_HAL\TimeM\TimeFaster.sqf", "", -50, false, true, "", "true"];
-		_id = _x addAction ["Time: x0.5", "RYD_HAL\TimeM\TimeSlower.sqf", "", -60, false, true, "", "true"];
-		_id = _x addAction ["Order pause enabled", "RYD_HAL\TimeM\EnOP.sqf", "", -70, false, true, "", "not RydHQ_GPauseActive"];
-		_id = _x addAction ["Order pause disabled", "RYD_HAL\TimeM\DisOP.sqf", "", -80, false, true, "", "RydHQ_GPauseActive"];
+		_id = _x addAction ["Time: x2", "RYD_HAL\TimeM\TimeFaster.sqf", "", -50, false, true, "", "(_this == _target)"];
+		_id = _x addAction ["Time: x0.5", "RYD_HAL\TimeM\TimeSlower.sqf", "", -60, false, true, "", "(_this == _target)"];
+		_id = _x addAction ["Order pause enabled", "RYD_HAL\TimeM\EnOP.sqf", "", -70, false, true, "", "(not RydHQ_GPauseActive) and (_this == _target)"];
+		_id = _x addAction ["Order pause disabled", "RYD_HAL\TimeM\DisOP.sqf", "", -80, false, true, "", "RydHQ_GPauseActive and (_this == _target)"];
 		}
 	foreach _units;
 
@@ -4633,4 +5084,89 @@ RYD_RHQCheck =
 	diag_log "-------------------------------------------------------------------------";
 
 	"RHQ CHECK" hintC format ["Forgotten classes: %1\nClasses not present in basic categories: %2\n(see RPT file for detailed forgotten classes list)",count _noInTotal,count _noInBasic];
+	};
+
+RYD_LOSCheck = 
+	{
+	private ["_pos1","_pos2","_tint","_lint","_isLOS","_cam","_target","_pX1","_pY1","_pX2","_pY2","_pos1ATL","_pos2ATL","_level1","_level2"];
+
+	_pos1 = _this select 0;
+	_pos2 = _this select 1;
+	_level1 = _this select 2;
+	_level2 = _this select 3;
+
+	_pX1 = _pos1 select 0;
+	_pY1 = _pos1 select 1;
+
+	_pX2 = _pos2 select 0;
+	_pY2 = _pos2 select 1;
+	
+	_pos1 = [_pX1,_pY1,(_pos1 select 2) + _level1];
+	_pos2 = [_pX2,_pY2,(_pos2 select 2) + _level2];
+
+	_pos1ATL = [_pX1,_pY1,_level1];
+	_pos2ATL = [_pX2,_pY2,_level2];
+
+	_cam = objNull;
+
+	if ((count _this) > 3) then {_cam = _this select 4};
+
+	_target = objNull;
+
+	if ((count _this) > 4) then {_target = _this select 5};
+
+	_tint = terrainintersect [_pos1ATL, _pos2ATL]; 
+	_lint = lineintersects [_pos1, _pos2,_cam,_target]; 
+
+	_isLOS = true;
+
+	if ((_tint) or (_lint)) then {_isLOS = false};
+
+	_isLOS
+	};
+	
+RYD_KillHetman = 
+	{
+	RydBB_Active = false;
+	RydBBa_Urgent = true;
+	RydBBb_Urgent = true;
+	
+		{
+		_gps = [];
+		if not (isNull _x) then
+			{
+			_gps = (_x getVariable ["RydHQ_Friends",[]]) + [_x]
+			};
+			
+		_x setVariable ["RydHQ_KIA",true];
+		
+			{
+			_x setVariable ["RydHQ_MIA",true];
+			[_x] call RYD_WPdel;
+			_fEH = (leader _x) getVariable "HAC_FEH";
+
+			if not (isNil "_fEH") then
+				{
+				(leader _x) removeEventHandler ["Fired",_fEH];
+				(leader _x) setVariable ["HAC_FEH",nil]
+				};
+				
+				{
+				(vehicle _x) doMove (position _x)
+				}
+			foreach (units _x)
+			}
+		foreach _gps;		
+		}
+	foreach RydxHQ_AllHQ;
+	
+		{
+		terminate _x
+		}
+	foreach RydxHQ_Handles;
+	
+		{
+		deleteMarker _x
+		}
+	foreach RydxHQ_Markers;
 	};

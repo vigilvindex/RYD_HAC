@@ -196,6 +196,8 @@ RYD_Marker =
 	if not (_shape == "ICON") then {_i setMarkerBrush _brush} else {_i setMarkerType _type};
 	_i setMarkerAlpha _alpha;
 	_i setmarkerText _text;
+	
+	RydxHQ_Markers set [(count RydxHQ_Markers),_i]; 
 
 	_i
 	};
@@ -712,7 +714,7 @@ RYD_ExecutePath =
 	"_frPos","_frDir","_frDim","_chosenPos","_maxTempt","_actTempt","_sectors","_ownKnEn","_ownForce","_ctOwn","_alliedForce","_alliedGarrisons","_alliedExhausted","_inFlank","_Garrisons","_exhausted",
 	"_prop","_enPos","_dst","_val","_profile","_j","_pCnt","_m","_checkPos","_actPos","_indx","_check","_reserve","_garrPool","_fG","_garrison","_chosen","_dstMin","_actG","_actDst","_side",
 	"_AllV","_Civs","_AllV2","_Civs2","_AllV0","_AllV20","_NearAllies","_NearEnemies","_actOPos","_mChange","_marksT","_firstP","_actP","_angleM","_centerPoint","_mr1","_mr2","_lM","_wp",
-	"_varName","_HandledArray","_cSum","_reck","_cons","_limit","_lColor","_alive"];	
+	"_varName","_HandledArray","_cSum","_reck","_cons","_limit","_lColor","_alive","_AAO"];	
 
 	_HQ = _this select 0;//leader group
 	_areas = _this select 1;
@@ -721,6 +723,8 @@ RYD_ExecutePath =
 	_o3 = _this select 4;
 	_o4 = _this select 5;
 	_allied = (_this select 6) - [_HQ];//leader groups
+	
+	_AAO = _HQ getVariable ["RydHQ_ChosenAAO",false];
 
 	_HQpos = _this select 7;
 	_front = _this select 8;
@@ -798,15 +802,21 @@ RYD_ExecutePath =
 			{
 			if (_i == 0) then {_m = [(_actO select 0),_HQ,"markBBCurrent",_lColor,"ICON","mil_triangle","Current target for " + (str (leader _HQ)),"",[0.5,0.5]] call RYD_Mark} else {_m setMarkerPos (_actO select 0)};
 			};
+			
+		_HQ setVariable ["RydHQ_EyeOfBattle",_actOPos];
 
 			{
 			_x setPosATL _actOPos;
-			_x setVariable [("Capturing" + (str _x)),[0,0]];
+			if not (_AAO) then
+				{
+				_x setVariable [("Capturing" + (str _x)),[0,0]];
+				}
 			}
 		foreach [_o1,_o2,_o3,_o4];
 
 		_HQ setVariable ["ObjInit",true];
 		_HQ setVariable ["RydHQ_NObj",1];
+		_HQ setVariable ["RydHQ_Taken",[]]; 
 		
 		_alive = true;
 
@@ -821,6 +831,7 @@ RYD_ExecutePath =
 				case (isNil "_HQ") : {_alive = false};
 				case (isNull _HQ) : {_alive = false};
 				case (({alive _x} count (units _HQ) < 1)) : {_alive = false};
+				case not (RydBB_Active) : {_alive = false};
 				};
 				
 			if (_alive) then
@@ -918,7 +929,7 @@ RYD_ExecutePath =
 							foreach _KnEn;
 
 							if ((count _chosenPos) > 1) then {_chosenPos = [(_chosenPos select 0),(_chosenPos select 1),0]};
-diag_log format ["maxT: %1",_maxTempt];
+
 							if (_maxTempt > (0.1 + (random 2))) then 
 								{
 								_HQ setVariable ["inFlank",true];
@@ -944,6 +955,7 @@ diag_log format ["maxT: %1",_maxTempt];
 										case (isNil "_HQ") : {_alive = false};
 										case (isNull _HQ) : {_alive = false};
 										case (({alive _x} count (units _HQ)) < 1) : {_alive = false};
+										case not (RydBB_Active) : {_alive = false};
 										};
 										
 									if (_alive) then
@@ -1051,7 +1063,7 @@ diag_log format ["maxT: %1",_maxTempt];
 					}
 				foreach _fG;
 				
-				[_chosen,_HQ] spawn
+				_code =
 					{
 					_unitG = _this select 0;
 					_HQ = _this select 1;
@@ -1074,6 +1086,7 @@ diag_log format ["maxT: %1",_maxTempt];
 								case (isNull (_unitG)) : {_alive = false};
 								case (({alive _x} count (units _unitG)) < 1) : {_alive = false};
 								case ((time - _ct) > 60) : {_alive = false};
+								case not (RydBB_Active) : {_alive = false};
 								};
 								
 							_MIApass = false;
@@ -1091,6 +1104,8 @@ diag_log format ["maxT: %1",_maxTempt];
 					_garrison set [(count _garrison),_unitG];
 					_HQ setVariable ["RydHQ_Garrison",_garrison];
 					};
+					
+				[[_chosen,_HQ],_code] call RYD_Spawn
 				}
 			};
 			
@@ -1100,6 +1115,8 @@ diag_log format ["maxT: %1",_maxTempt];
 
 		_HandledArray = _HandledArray - [_cSum];
 		missionNameSpace setVariable [_varName,_HandledArray];
+		
+		if not (RydBB_Active) exitWith {};
 
 		if (RydBB_LRelocating) then
 			{
@@ -1107,6 +1124,8 @@ diag_log format ["maxT: %1",_maxTempt];
 			_wp = [_HQ,_actOPos,"HOLD","AWARE","GREEN","LIMITED",["true",""],true,50,[0,0,0],"FILE"] call RYD_WPadd
 			}
 		};
+		
+	if not (RydBB_Active) exitWith {};
 
 	if (RydBB_Debug) then
 		{
@@ -1148,6 +1167,7 @@ RYD_ReserveExecuting =
 			{
 			case (isNull _HQ) : {_aliveHQ = false};
 			case (({alive _x} count (units _HQ)) < 1) : {_aliveHQ = false};
+			case not (RydBB_Active) : {_alive = false};
 			};
 
 		if (_aliveHQ) then
@@ -1170,25 +1190,12 @@ RYD_ReserveExecuting =
 	_angle = _angle + 180;
 
 	_stancePos = [_frontPos,_angle,_dstF] call RYD_PosTowards2D;
-//diag_log format ["1 sp: %1",_stancePos];
+
 	_stancePos = [(_stancePos select 0),(_stancePos select 1),0];
-//diag_log format ["2 sp: %1",_stancePos];
 	if (surfaceIsWater [(_stancePos select 0),(_stancePos select 1)]) then {_stancePos = _HQpos};
 
-	if ((count _hostileG) == 0) then
-		{
-			{
-			_x setPosATL _stancePos
-			}
-		foreach [_o1,_o2,_o3,_o4]
-		};
+	_AAO = _HQ getVariable ["RydHQ_ChosenAAO",false];
 
-	_HQ setVariable ["ObjInit",true];
-
-	[_HQ] call RYD_WPdel;
-	_wp = [_HQ,_StancePos,"HOLD","AWARE","GREEN","LIMITED",["true",""],true,50,[0,0,0],"FILE"] call RYD_WPadd;
-
-	_HQ setVariable ["RydHQ_NObj",1];
 	_garrison = _HQ getVariable ["RydHQ_Garrison",[]];
 	_fG = (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_Exhausted",[]]) + (_garrison));
 
@@ -1231,7 +1238,7 @@ RYD_ReserveExecuting =
 					_x set [4,true];
 					_fG = _fG - [_forGarr];
 
-					[_forGarr,_garrison,_Wpos] spawn
+					_code =
 						{
 						private ["_unitG","_cause","_timer","_alive","_task","_form","_Wpos","_garrison","_wp"];
 
@@ -1243,7 +1250,7 @@ RYD_ReserveExecuting =
 						if (isPlayer (leader _unitG)) then {_form = formation _unitG};
 						_unitG setVariable ["Busy" + (str _unitG),true];
 
-						if not (isPlayer (leader _unitG)) then {if ((random 100) < RydxHQ_AIChatDensity) then {[(leader _unitG),RydxHQ_AIC_OrdConf,"OrdConf"] spawn RYD_AIChatter}};
+						if not (isPlayer (leader _unitG)) then {if ((random 100) < RydxHQ_AIChatDensity) then {[(leader _unitG),RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
 
 						_task = [(leader _unitG),["Reach the designated position.", "Move", ""],_Wpos] call RYD_AddTask;
 
@@ -1261,12 +1268,17 @@ RYD_ReserveExecuting =
 						if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) removeSimpleTask _task};
 
 						if not (_timer > 30) then {_garrison set [(count _garrison),_unitG]};
-						}
+						};
+						
+					[[_forGarr,_garrison,_Wpos],_code] call RYD_Spawn
 					}
 				}
 			}
 		}
 	foreach _taken;
+	
+	_middlePos = [((_HQpos select 0) + (_StancePos select 0))/2,((_HQpos select 1) + (_StancePos select 1))/2,0];
+	_closeMid = false;
 
 	if ((count _hostileG) > 0) then
 		{
@@ -1286,7 +1298,7 @@ RYD_ReserveExecuting =
 						{
 						_posArr set [(count _posArr),getPosATL _enV2];
 						_assg set [(count _assg),_x];			
-						}
+						}				
 					}
 				foreach _hostileG;
 
@@ -1305,14 +1317,19 @@ RYD_ReserveExecuting =
 					
 					_poss = [[_sX/_nr,_sY/_nr,0],_nr];
 					if not (surfaceIsWater [_sX/_nr,_sY/_nr]) then {_possPos set [(count _possPos),_poss]}
-					}
-				}
+					};
+					
+				if ((_enV distance _middlePos) < 600) then 
+					{
+					_closeMid = true		
+					};	
+				};
 			}
 		foreach _hostileG;
 
 		_stancePos = (_possPos select 0) select 0;
 		_maxT = 0;
-//diag_log format ["3 sp: %1",_stancePos];
+
 			{
 			_dstA = (_x select 0) distance _HQpos;
 			_amnt = _x select 1;
@@ -1329,9 +1346,33 @@ RYD_ReserveExecuting =
 		};
 
 		{
-		_x setPosATL _stancePos
+		_x setPosATL _stancePos;
+		if not (_AAO) then
+			{
+			_x setVariable [("Capturing" + (str _x)),[0,0]];
+			}
 		}
 	foreach [_o1,_o2,_o3,_o4];
+	
+	_HQ setVariable ["RydHQ_NObj",1];
+	_HQ setVariable ["RydHQ_Taken",[]]; 
+	_HQ setVariable ["ObjInit",true];
+	
+	[_HQ] call RYD_WPdel;
+	
+	_HQnewPos = _StancePos;
+	
+	if ((count _hostileG) > 0) then
+		{	
+		_HQnewPos = _middlePos;
+		
+		if (_closeMid) then
+			{
+			_HQnewPos = _HQpos
+			};
+		};
+	
+	_wp = [_HQ,_HQnewPos,"HOLD","AWARE","GREEN","LIMITED",["true",""],true,50,[0,0,0],"FILE"] call RYD_WPadd;
 
 	if (RydBB_Debug) then
 		{
@@ -1362,6 +1403,7 @@ RYD_ObjectivesMon =
 	while {(RydBB_Active)} do
 		{
 		sleep 15;//60
+		if not (RydBB_Active) exitWith {};
 
 			{
 			_isTaken = _x select 2;
@@ -1491,6 +1533,7 @@ RYD_ObjMark =
 	while {((RydBB_Active) and (RydBB_Debug))} do
 		{
 		sleep 10;
+		if not (RydBB_Active) exitWith {};
 		_pos = _obj select 0;
 		_pos = [_pos select 0,_pos select 1,0];
 
@@ -1755,6 +1798,7 @@ RYD_BBSimpleD =
 	while {(({not (isNull _x)} count _HQs) > 0)} do
 		{
 		if (({not (isNull _x)} count _HQs) == 0) exitWith {};
+		if not (RydBB_Active) exitWith {};
 
 		_enPos = [];
 		_frCenters = [];

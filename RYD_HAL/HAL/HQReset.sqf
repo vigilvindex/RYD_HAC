@@ -1,7 +1,9 @@
-private ["_HQ","_Edistance","_LE","_LEvar","_trg","_mLoss","_lastObj","_lost","_AllV20","_Civs20","_AllV2","_Civs20","_Civs2","_NearEnemies","_AllV0","_Civs0","_AllV","_Civs","_NearAllies",
-	"_captLimit","_enRoute","_captDiff","_isC","_amountC","_reserve","_exhausted","_unitvar","_nominal","_current","_ex","_Aex","_unitvarA","_nominalA","_currentA"];
+private ["_HQ","_Edistance","_LE","_LEvar","_trg","_mLoss","_lastObj","_lost","_AllV20","_Civs20","_AllV2","_Civs20","_Civs2","_NearEnemies","_AllV0","_Civs0","_AllV","_Civs","_NearAllies","_objectives",
+	"_captLimit","_enRoute","_captDiff","_isC","_amountC","_reserve","_exhausted","_unitvar","_nominal","_current","_ex","_Aex","_unitvarA","_nominalA","_currentA","_AAO","_taken","_cTaken","_oTaken"];
 
 _HQ = _this select 0;
+
+_AAO = _HQ getVariable ["RydHQ_ChosenAAO",false];
 		
 _Edistance = false;
 
@@ -37,6 +39,8 @@ if (not ((_HQ getVariable ["RydHQ_Order","ATTACK"]) == "DEFEND") or ((random 100
 _trg = _HQ getVariable ["leaderHQ",(leader _HQ)];
 _nObj = _HQ getVariable ["RydHQ_NObj",1];
 
+_objectives = [(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])];
+
 switch (_nObj) do
 	{
 	case (1) : {_trg = _HQ getVariable ["RydHQ_Obj1",(leader _HQ)];_HQ setVariable ["RydHQ_Obj",(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)])]};
@@ -51,6 +55,9 @@ if ((_HQ getVariable ["leaderHQ",(leader _HQ)]) in (RydBBa_HQs + RydBBb_HQs)) th
 _lastObj = _HQ getVariable ["RydHQ_NObj",1];
 
 _lost = ObjNull;
+_taken = _HQ getVariable ["RydHQ_Taken",[]];
+_oTaken = +_taken;
+_cTaken = count _taken;
 
 	{
 	_AllV20 = _x nearEntities [["AllVehicles"],(_HQ getVariable ["RydHQ_ObjRadius1",300])];
@@ -144,21 +151,48 @@ _lost = ObjNull;
 			}
 		};
 
-	if (_NearEnemies > _NearAllies) exitwith {_lost = _x};
+	if ((_NearEnemies > _NearAllies) and not (_AAO)) exitwith {_lost = _x};
+	if (_NearEnemies > _NearAllies) then {_taken = _taken - [_x]};
 	}
-foreach [(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])];
-if (isNull _lost)	then {_HQ setVariable ["RydHQ_NObj",_lastObj]} else {
-	if (_lost == (_HQ getVariable ["RydHQ_Obj1",(leader _HQ)])) then {_HQ setVariable ["RydHQ_NObj",1];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])} else {
-		if ((_lost == (_HQ getVariable ["RydHQ_Obj2",(leader _HQ)])) and ((_HQ getVariable ["RydHQ_NObj",1]) > 2)) then {_HQ setVariable ["RydHQ_NObj",2];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])} else {
-			if ((_lost == (_HQ getVariable ["RydHQ_Obj3",(leader _HQ)])) and ((_HQ getVariable ["RydHQ_NObj",1]) > 3)) then {_HQ setVariable ["RydHQ_NObj",3];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])} else {
-				if ((_lost == (_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])) and ((_HQ getVariable ["RydHQ_NObj",1]) >= 4)) then {_HQ setVariable ["RydHQ_NObj",4];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])}}}}};
+foreach _objectives;
 
-if ((_HQ getVariable ["RydHQ_NObj",1]) < 1) then {_HQ setVariable ["RydHQ_NObj",1]};
-if ((_HQ getVariable ["RydHQ_NObj",1]) > 5) then {_HQ setVariable ["RydHQ_NObj",5]};
+if not ((RydBB_Active) and ((leader _HQ) in (RydBBa_HQs + RydBBb_HQs))) then
+	{
+	_HQ setVariable ["RydHQ_Taken",_taken]; 
 
-_HQ setVariable ["RydHQ_Progress",0];
-if (_lastObj > (_HQ getVariable ["RydHQ_NObj",1])) then {_HQ setVariable ["RydHQ_Progress",-1];_HQ setVariable ["RydHQ_Morale",(_HQ getVariable ["RydHQ_Morale",0]) - _mLoss]};	
-if (_lastObj < (_HQ getVariable ["RydHQ_NObj",1])) then {_HQ setVariable ["RydHQ_Progress",1]};
+	if not (_AAO) then
+		{
+		if (isNull _lost)	then {_HQ setVariable ["RydHQ_NObj",_lastObj]} else {
+			if (_lost == (_HQ getVariable ["RydHQ_Obj1",(leader _HQ)])) then {_HQ setVariable ["RydHQ_NObj",1];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])} else {
+				if ((_lost == (_HQ getVariable ["RydHQ_Obj2",(leader _HQ)])) and ((_HQ getVariable ["RydHQ_NObj",1]) > 2)) then {_HQ setVariable ["RydHQ_NObj",2];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])} else {
+					if ((_lost == (_HQ getVariable ["RydHQ_Obj3",(leader _HQ)])) and ((_HQ getVariable ["RydHQ_NObj",1]) > 3)) then {_HQ setVariable ["RydHQ_NObj",3];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])} else {
+						if ((_lost == (_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])) and ((_HQ getVariable ["RydHQ_NObj",1]) >= 4)) then {_HQ setVariable ["RydHQ_NObj",4];{_x setVariable [("Capturing" + (str _x)),[0,0]]}foreach ([(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])])}}}}};
+		
+		if ((_HQ getVariable ["RydHQ_NObj",1]) < 1) then {_HQ setVariable ["RydHQ_NObj",1]};
+		if ((_HQ getVariable ["RydHQ_NObj",1]) > 5) then {_HQ setVariable ["RydHQ_NObj",5]};
+
+		_HQ setVariable ["RydHQ_Progress",0];
+		if (_lastObj > (_HQ getVariable ["RydHQ_NObj",1])) then {_HQ setVariable ["RydHQ_Progress",-1];_HQ setVariable ["RydHQ_Morale",(_HQ getVariable ["RydHQ_Morale",0]) - _mLoss]};	
+		if (_lastObj < (_HQ getVariable ["RydHQ_NObj",1])) then {_HQ setVariable ["RydHQ_Progress",1]};	
+		}
+	else
+		{
+		_nTaken = count _taken;
+		
+			{
+			if (_x in _oTaken) then
+				{
+				_x setVariable [("Capturing" + (str _x)),[0,0]]
+				}
+			}
+		foreach (_objectives - _taken);
+		
+		if (_nTaken < _cTaken) then
+			{
+			_HQ setVariable ["RydHQ_Morale",(_HQ getVariable ["RydHQ_Morale",0]) - (_mLoss * (_cTaken - _nTaken))]
+			}
+		}
+	};
 
 _reserve = (_HQ getVariable ["RydHQ_Friends",[]]) - ((_HQ getVariable ["RydHQ_ArtG",[]]) + ((_HQ getVariable ["RydHQ_AirG",[]]) - (_HQ getVariable ["RydHQ_SupportG",[]])) + (_HQ getVariable ["RydHQ_NavalG",[]]) + (_HQ getVariable ["RydHQ_StaticG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]));
 

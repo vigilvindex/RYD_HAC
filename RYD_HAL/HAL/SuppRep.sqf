@@ -3,7 +3,7 @@ private ["_HQ","_rep","_noenemy","_repS","_repSG","_damaged","_Sdamaged","_Ldama
 	
 _HQ = _this select 0;
 
-_rep = RHQ_Rep + ["I_Truck_02_box_F","O_Truck_02_box_F","B_APC_Tracked_01_CRV_F","B_Truck_01_Repair_F"] - RHQs_Rep;
+_rep = RHQ_Rep + ["O_Truck_03_repair_F","I_Truck_02_box_F","O_Truck_02_box_F","B_APC_Tracked_01_CRV_F","B_Truck_01_Repair_F"] - RHQs_Rep;
 _noenemy = true;
 
 _repS = [];
@@ -141,7 +141,8 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 				_rtrs = _rtrs - [_x];
 				_SDunits = _SDunits - [_SDunit];
 				_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _SDunit)]];
-				[_rtr,_SDunit,_damaged,_HQ] spawn HAL_GoRepSupp; 
+				//[_rtr,_SDunit,_damaged,_HQ] spawn HAL_GoRepSupp; 
+				[[_rtr,_SDunit,_damaged,_HQ],HAL_GoRepSupp] call RYD_Spawn;
 				}
 			else
 				{
@@ -211,7 +212,8 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 				_rtrs = _rtrs - [_x];
 				_Dunits = _Dunits - [_Dunit];
 				_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _Dunit)]];
-				[_rtr,_Dunit,_damaged,_HQ] spawn HAL_GoRepSupp; 
+				//[_rtr,_Dunit,_damaged,_HQ] spawn HAL_GoRepSupp; 
+				[[_rtr,_Dunit,_damaged,_HQ],HAL_GoRepSupp] call RYD_Spawn;
 				}
 			else
 				{

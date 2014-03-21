@@ -1,4 +1,4 @@
-private ["_HQ","_ne","_is","_count","_dngr","_i","_LCU","_friend","_fCount","_UL","_cV","_danger","_aV","_dstC","_dst","_eCount","_frm"];
+private ["_HQ","_ne","_is","_count","_dngr","_i","_LCU","_friend","_fCount","_UL","_cV","_danger","_aV","_dstC","_dst","_eCount","_frm","_code"];
 
 _HQ = _this select 0;
 
@@ -18,12 +18,14 @@ if ((_HQ getVariable ["RydHQ_DebugII",false])) then
 	
 	if ((_HQ getVariable ["RydHQ_Cyclecount",1]) == 1) then
 		{
-		[_HQ] spawn
+		_code =
 			{
 			_HQ = _this select 0;
 			
 			while {not (isNull _HQ)} do
 				{
+				if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {};
+				
 					{
 					_alive = true;
 					if (isNull _x) then {_alive = false};
@@ -58,7 +60,9 @@ if ((_HQ getVariable ["RydHQ_DebugII",false])) then
 				foreach (_HQ getVariable ["RydHQ_Friends",[]]);
 				sleep 5;
 				}
-			}
+			};
+			
+		[[_HQ],_code] call RYD_Spawn
 		}
 	};
 

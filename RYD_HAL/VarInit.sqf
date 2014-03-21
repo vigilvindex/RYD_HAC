@@ -1,10 +1,18 @@
+if (isNil ("RHQ_SPMortars")) then {RHQ_SPMortars = []};
+if (isNil ("RHQ_Mortars")) then {RHQ_Mortars = []};
+if (isNil ("RHQ_RocketArty")) then {RHQ_RocketArty = []};
+
+if (isNil ("RHQs_SPMortars")) then {RHQs_SPMortars = []};
+if (isNil ("RHQs_Mortars")) then {RHQs_Mortars = []};
+if (isNil ("RHQs_RocketArty")) then {RHQs_RocketArty = []};
+
 RydHQ_Howitzer = ["M119","M119_US_EP1","D30_CDF","D30_Ins","D30_RU","D30_TK_EP1","D30_TK_GUE_EP1","D30_TK_INS_EP1"];
 RydHQ_Mortar = ["M252","M252_US_EP1","2b14_82mm_CDF","2b14_82mm_GUE","2b14_82mm_INS","2b14_82mm_TK_EP1","2b14_82mm_TK_GUE_EP1","2b14_82mm_TK_INS_EP1"];
 RydHQ_Rocket = ["MLRS","MLRS_DES_EP1","GRAD_CDF","GRAD_INS","GRAD_RU","GRAD_TK_EP1"];
 
-RydHQ_Mortar_A3 = ["I_Mortar_01_F","O_Mortar_01_F","B_G_Mortar_01_F","B_Mortar_01_F"];
-RydHQ_SPMortar_A3 = ["O_MBT_02_arty_F","B_MBT_01_arty_F"];
-RydHQ_Rocket_A3 = ["B_MBT_01_mlrs_F"];
+RydHQ_Mortar_A3 = RHQ_Mortars + ["I_Mortar_01_F","O_Mortar_01_F","B_G_Mortar_01_F","B_Mortar_01_F"] - RHQs_Mortars;
+RydHQ_SPMortar_A3 = RHQ_SPMortars + ["O_MBT_02_arty_F","B_MBT_01_arty_F"] - RHQs_SPMortars;
+RydHQ_Rocket_A3 = RHQ_RocketArty + ["B_MBT_01_mlrs_F"] - RHQs_RocketArty;
 
 RydxHQ_SmokeMuzzles = 
 	[
@@ -38,6 +46,9 @@ if (isNil ("RydBB_LRelocating")) then {RydBB_LRelocating = true};
 if (isNil ("RydHQ_PathFinding")) then {RydHQ_PathFinding = 0};
 if (isNil "RydxHQ_SynchroAttack") then {RydxHQ_SynchroAttack = false};
 if (isNil "RydHQ_TimeM") then {RydHQ_TimeM = false};
+if (isNil "RydHQ_CamV") then {RydHQ_CamV = false};
+if (isNil "RydHQ_CamVIncluded") then {RydHQ_CamVIncluded = []};
+if (isNil "RydHQ_CamVExcluded") then {RydHQ_CamVExcluded = []};
 if (isNil "RydxHQ_GPauseActive") then {RydxHQ_GPauseActive = false};
 if (isNil ("RydHQ_DbgMon")) then {RydHQ_DbgMon = true};
 
@@ -135,231 +146,10 @@ if (isNil "RydxHQ_AIChatDensity") then {RydxHQ_AIChatDensity = 10};
 if (isNil "RydxHQ_NEAware") then {RydxHQ_NEAware = 0};
 if (isNil "RydxHQ_MARatio") then {RydxHQ_MARatio = [-1,-1,-1,-1]};
 
-/*RydHQ_Support = [];
-RydHQB_Support = [];
-RydHQC_Support = [];
-RydHQD_Support = [];
-RydHQE_Support = [];
-RydHQF_Support = [];
-RydHQG_Support = [];
-RydHQH_Support = [];
-
-RydHQ_Friends = [];
-RydHQB_Friends = [];
-RydHQC_Friends = [];
-RydHQD_Friends = [];
-RydHQE_Friends = [];
-RydHQF_Friends = [];
-RydHQG_Friends = [];
-RydHQH_Friends = [];
-
-RydHQ_KnEnemies = [];
-RydHQB_KnEnemies = [];
-RydHQC_KnEnemies = [];
-RydHQD_KnEnemies = [];
-RydHQE_KnEnemies = [];
-RydHQF_KnEnemies = [];
-RydHQG_KnEnemies = [];
-RydHQH_KnEnemies = [];
-
-RydHQ_NCrewInfG = [];
-RydHQB_NCrewInfG = [];
-RydHQC_NCrewInfG = [];
-RydHQD_NCrewInfG = [];
-RydHQE_NCrewInfG = [];
-RydHQF_NCrewInfG = [];
-RydHQG_NCrewInfG = [];
-RydHQH_NCrewInfG = [];
-
-RydHQ_CarsG = [];
-RydHQB_CarsG = [];
-RydHQC_CarsG = [];
-RydHQD_CarsG = [];
-RydHQE_CarsG = [];
-RydHQF_CarsG = [];
-RydHQG_CarsG = [];
-RydHQH_CarsG = [];
-
-RydHQ_HArmorG = [];
-RydHQB_HArmorG = [];
-RydHQC_HArmorG = [];
-RydHQD_HArmorG = [];
-RydHQE_HArmorG = [];
-RydHQF_HArmorG = [];
-RydHQG_HArmorG = [];
-RydHQH_HArmorG = [];
-
-RydHQ_LArmorG = [];
-RydHQB_LArmorG = [];
-RydHQC_LArmorG = [];
-RydHQD_LArmorG = [];
-RydHQE_LArmorG = [];
-RydHQF_LArmorG = [];
-RydHQG_LArmorG = [];
-RydHQH_LArmorG = [];
-
-RydHQ_AirG = [];
-RydHQB_AirG = [];
-RydHQC_AirG = [];
-RydHQD_AirG = [];
-RydHQE_AirG = [];
-RydHQF_AirG = [];
-RydHQG_AirG = [];
-RydHQH_AirG = [];
-
-RydHQ_NCAirG = [];
-RydHQB_NCAirG = [];
-RydHQC_NCAirG = [];
-RydHQD_NCAirG = [];
-RydHQE_NCAirG = [];
-RydHQF_NCAirG = [];
-RydHQG_NCAirG = [];
-RydHQH_NCAirG = [];
-
-RydHQ_NCCargoG = [];
-RydHQB_NCCargoG = [];
-RydHQC_NCCargoG = [];
-RydHQD_NCCargoG = [];
-RydHQE_NCCargoG = [];
-RydHQF_NCCargoG = [];
-RydHQG_NCCargoG = [];
-RydHQH_NCCargoG = [];
-
-RydHQ_SupportG = [];
-RydHQB_SupportG = [];
-RydHQC_SupportG = [];
-RydHQD_SupportG = [];
-RydHQE_SupportG = [];
-RydHQF_SupportG = [];
-RydHQG_SupportG = [];
-RydHQH_SupportG = [];
-
-RydHQ_CCurrent = 0;
-RydHQB_CCurrent = 0;
-RydHQC_CCurrent = 0;
-RydHQD_CCurrent = 0;
-RydHQE_CCurrent = 0;
-RydHQF_CCurrent = 0;
-RydHQG_CCurrent = 0;
-RydHQH_CCurrent = 0;
-
-RydHQ_CInitial = 0;
-RydHQB_CInitial = 0;
-RydHQC_CInitial = 0;
-RydHQD_CInitial = 0;
-RydHQE_CInitial = 0;
-RydHQF_CInitial = 0;
-RydHQG_CInitial = 0;
-RydHQH_CInitial = 0;
-
-RydHQ_FValue = 0;
-RydHQB_FValue = 0;
-RydHQC_FValue = 0;
-RydHQD_FValue = 0;
-RydHQE_FValue = 0;
-RydHQF_FValue = 0;
-RydHQG_FValue = 0;
-RydHQH_FValue = 0;
-
-RydHQ_EValue = 0;
-RydHQB_EValue = 0;
-RydHQC_EValue = 0;
-RydHQD_EValue = 0;
-RydHQE_EValue = 0;
-RydHQF_EValue = 0;
-RydHQG_EValue = 0;
-RydHQH_EValue = 0;
-
-RydHQ_Morale = 0;
-RydHQB_Morale = 0;
-RydHQC_Morale = 0;
-RydHQD_Morale = 0;
-RydHQE_Morale = 0;
-RydHQF_Morale = 0;
-RydHQG_Morale = 0;
-RydHQH_Morale = 0;
-
-RydHQ_KnEnemiesG = [];
-RydHQB_KnEnemiesG = [];
-RydHQC_KnEnemiesG = [];
-RydHQD_KnEnemiesG = [];
-RydHQE_KnEnemiesG = [];
-RydHQF_KnEnemiesG = [];
-RydHQG_KnEnemiesG = [];
-RydHQH_KnEnemiesG = [];
-
-RydHQ_EnInfG = [];
-RydHQB_EnInfG = [];
-RydHQC_EnInfG = [];
-RydHQD_EnInfG = [];
-RydHQE_EnInfG = [];
-RydHQF_EnInfG = [];
-RydHQG_EnInfG = [];
-RydHQH_EnInfG = [];
-
-RydHQ_EnCarsG = [];
-RydHQB_EnCarsG = [];
-RydHQC_EnCarsG = [];
-RydHQD_EnCarsG = [];
-RydHQE_EnCarsG = [];
-RydHQF_EnCarsG = [];
-RydHQG_EnCarsG = [];
-RydHQH_EnCarsG = [];
-
-RydHQ_EnHArmorG = [];
-RydHQB_EnHArmorG = [];
-RydHQC_EnHArmorG = [];
-RydHQD_EnHArmorG = [];
-RydHQE_EnHArmorG = [];
-RydHQF_EnHArmorG = [];
-RydHQG_EnHArmorG = [];
-RydHQH_EnHArmorG = [];
-
-RydHQ_EnLArmorG = [];
-RydHQB_EnLArmorG = [];
-RydHQC_EnLArmorG = [];
-RydHQD_EnLArmorG = [];
-RydHQE_EnLArmorG = [];
-RydHQF_EnLArmorG = [];
-RydHQG_EnLArmorG = [];
-RydHQH_EnLArmorG = [];
-
-RydHQ_EnAirG = [];
-RydHQB_EnAirG = [];
-RydHQC_EnAirG = [];
-RydHQD_EnAirG = [];
-RydHQE_EnAirG = [];
-RydHQF_EnAirG = [];
-RydHQG_EnAirG = [];
-RydHQH_EnAirG = [];
-
-RydHQ_EnNCAirG = [];
-RydHQB_EnNCAirG = [];
-RydHQC_EnNCAirG = [];
-RydHQD_EnNCAirG = [];
-RydHQE_EnNCAirG = [];
-RydHQF_EnNCAirG = [];
-RydHQG_EnNCAirG = [];
-RydHQH_EnNCAirG = [];
-
-RydHQ_EnNCCargoG = [];
-RydHQB_EnNCCargoG = [];
-RydHQC_EnNCCargoG = [];
-RydHQD_EnNCCargoG = [];
-RydHQE_EnNCCargoG = [];
-RydHQF_EnNCCargoG = [];
-RydHQG_EnNCCargoG = [];
-RydHQH_EnNCCargoG = [];
-
-RydHQ_EnSupportG = [];
-RydHQB_EnSupportG = [];
-RydHQC_EnSupportG = [];
-RydHQD_EnSupportG = [];
-RydHQE_EnSupportG = [];
-RydHQF_EnSupportG = [];
-RydHQG_EnSupportG = [];
-RydHQH_EnSupportG = [];*/
-
+RydxHQ_Markers = [];
+RydxHQ_Handles = [];
+RydxHQ_LFActive = false; 
+RydHQ_LF = false;
 
 RydxHQ_AIC_OrdConf = 
 	[
@@ -863,6 +653,7 @@ HAL_GoRepSupp = compile preprocessfile "RYD_HAL\HAL\GoRepSupp.sqf";
 HAL_GoRest = compile preprocessfile "RYD_HAL\HAL\GoRest.sqf";
 HAL_GoSFAttack = compile preprocessfile "RYD_HAL\HAL\GoSFAttack.sqf";
 HAL_HQOrders = compile preprocessfile "RYD_HAL\HAL\HQOrders.sqf";
+HAL_HQOrdersEast = compile preprocessfile "RYD_HAL\HAL\HQOrdersEast.sqf";
 HAL_HQOrdersDef = compile preprocessfile "RYD_HAL\HAL\HQOrdersDef.sqf";
 HAL_HQReset = compile preprocessfile "RYD_HAL\HAL\HQReset.sqf";
 HAL_LHQ = compile preprocessfile "RYD_HAL\HAL\LHQ.sqf";

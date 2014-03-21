@@ -10,6 +10,7 @@ while {not (isNull _HQ)} do
 	if (isNil ("_last")) then {_last = ObjNull};
 	sleep 0.2;
 	if (isNull _HQ) exitWith {};
+	if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {}; 
 	_HQ setVariable ["leaderHQ",(leader _HQ)];
 
 	if not (_last == (leader _HQ)) then

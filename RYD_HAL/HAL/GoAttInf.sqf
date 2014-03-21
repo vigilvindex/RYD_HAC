@@ -83,14 +83,48 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then
 	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","mil_dot","Inf " + _signum," - ATTACK"] call RYD_Mark
 	};
 
+_alive = true;
 _CargoCheck = _unitG getvariable ("CC" + _unitvar);
 if (isNil ("_CargoCheck")) then {_unitG setVariable [("CC" + _unitvar), false]};
 _AV = assignedVehicle _UL;
-if (((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) and (isNull _AV) and (([_posX,_posY] distance (vehicle _UL)) > 1000)) then {[_unitG,_HQ] spawn HAL_SCargo } else {_unitG setVariable [("CC" + _unitvar), true]};
-if ((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) then 
+if (((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) and (isNull _AV) and (([_posX,_posY] distance (vehicle _UL)) > 1000)) then 
 	{
-	waituntil {sleep 0.05;(_unitG getvariable ("CC" + _unitvar))};
-	_unitG setVariable [("CC" + _unitvar), false];
+	//[_unitG,_HQ,[_posX,_posY]] spawn HAL_SCargo
+	[[_unitG,_HQ,[_posX,_posY]],HAL_SCargo] call RYD_Spawn;
+	} 
+else 
+	{
+	_unitG setVariable [("CC" + _unitvar), true]
+	};
+	
+if ((_HQ getVariable ["RydHQ_CargoFind",0]) > 0) then 
+	{	
+	waituntil 
+		{
+		sleep 0.05;
+		switch (true) do
+			{
+			case (isNull _unitG) : {_alive = false};
+			case (({alive _x} count (units _unitG)) < 1) : {_alive = false};
+			case ((_this select 0) getVariable ["RydHQ_MIA",false]) : {_alive = false;(_this select 0) setVariable ["RydHQ_MIA",nil]}
+			};
+			
+		_cc = false;
+		if (_alive) then
+			{
+			_cc = (_unitG getvariable ("CC" + _unitvar))
+			};
+			
+		(not (_alive) or (_cc))
+		};
+		
+	if not (isNull _unitG) then {_unitG setVariable [("CC" + _unitvar), false]};
+	};
+
+if not (_alive) exitWith 
+	{
+	if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker ("markAttack" + str (_unitG))};
+	[_Trg,"InfAttacked"] call RYD_VarReductor
 	};
 
 _AV = assignedVehicle _UL;
@@ -100,9 +134,11 @@ _GDV = group _DAV;
 _task = taskNull;
 _timer = 0;
 
+[_unitG] call RYD_WPdel;
+
 if (not (isNull _AV) and ((_HQ getVariable ["RydHQ_CargoFind",0]) > 0)) then
 	{
-	_task = [(leader _unitG),["Wait and get into vehicle.", "GET IN", ""],(getPosATL (leader _unitG))] call RYD_AddTask;
+	//_task = [(leader _unitG),["Wait and get into vehicle.", "GET IN", ""],(getPosATL (leader _unitG))] call RYD_AddTask;
 
 	_wp = [_unitG,_AV,"GETIN"] call RYD_WPadd;
 	_wp waypointAttachVehicle _AV;
@@ -163,7 +199,12 @@ if ((isNull _AV) and (([_posX,_posY] distance _UL) > 1500) and not (isPlayer (le
 
 _task = [(leader _unitG),["Search and destroy enemy.", "S&D", ""],[_posX,_posY]] call RYD_AddTask;
 
-_Ctask = [(leader _GDV),["Disembark group at designated position.", "Move", ""],[(_posX + _LX1)/2,(_posY + _LY1)/2]] call RYD_AddTask;
+_Ctask = taskNull;
+
+if ((isPlayer (leader _GDV)) and not ((leader _GDV) == (leader _unitG))) then
+	{
+	_Ctask = [(leader _GDV),["Disembark group at designated position.", "Move", ""],[(_posX + _LX1)/2,(_posY + _LY1)/2]] call RYD_AddTask;
+	};
 
 _gp = _unitG;
 if not (isNull _AV) then {_gp = _GDV;_posX = (_posX + _LX1)/2;_posY = (_posY + _LY1)/2};
@@ -196,6 +237,43 @@ if ((_nW == 1) and (isNull _AV)) then {_crr = true};
 if not (isNull _AV) then {_crr = true};
 _sts = ["true","deletewaypoint [(group this), 0];"];
 if (((group (assigneddriver _AV)) in (_HQ getVariable ["RydHQ_AirG",[]])) and (_unitG in (_HQ getVariable ["RydHQ_NCrewInfG",[]]))) then {_sts = ["true","(vehicle this) land 'GET OUT';deletewaypoint [(group this), 0]"]};
+
+_EDPos = _GDV getVariable "RydHQ_EDPos";
+_earlyD = false;
+
+if not (isNil "_EDPos") then
+	{
+	_earlyD = true;
+	_EDPos = +_EDPos;
+	_GDV setVariable ["RydHQ_EDPos",nil];
+	
+	if not (_halfway) then
+		{
+		_pos = _EDPos select 1
+		}
+	else
+		{
+		for "_i" from 100 to 600 step 100 do
+			{
+			_nR = _pos nearRoads _i;
+			
+			if ((count _nR) > 0) exitWith
+				{
+				_cR = [_pos,_nR] call RYD_FindClosest;
+				
+				_pos = getPosATL _cR;
+				_ct = 0;
+				
+				while {(isOnRoad _pos)} do
+					{
+					_pos = [_pos,30] call RYD_RandomAround;
+					_ct = _ct + 1;
+					if (_ct > 50) exitWith {}
+					}
+				}
+			}		
+		}
+	};
 
 _wp = [_gp,_pos,_tp,_beh,"YELLOW",_spd,_sts,_crr,0,_TO] call RYD_WPadd;
 
@@ -303,7 +381,7 @@ if (not (isNull _GDV) and (_GDV in (_HQ getVariable ["RydHQ_AirG",[]])) and not 
 
 _GDV setVariable [("CargoM" + _unitvar), false];
 _alive = true;
-if (_halfway) then
+if ((_halfway) or (_earlyD)) then
 	{
 	_frm = formation _unitG;
 	if not (isPlayer (leader _unitG)) then {_frm = "STAG COLUMN"};

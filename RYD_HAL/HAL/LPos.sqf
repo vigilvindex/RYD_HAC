@@ -43,7 +43,7 @@ _HQ = _this select 0;
 								_x getVariable [("Busy" + (str _x)),true];
 								_wp = [_x,_start,"MOVE","CARELESS","GREEN","NORMAL",["true", "{(vehicle _x) land 'LAND'} foreach (units (group this)); deletewaypoint [(group this), 0]"]] call RYD_WPadd;
 
-								[(vehicle (leader _x)),_lz,_x] spawn
+								_code =
 									{
 									_heli = _this select 0;
 									_lz = _this select 1;
@@ -56,24 +56,27 @@ _HQ = _this select 0;
 									if (_alive) then
 										{
 										sleep 5;
-										_ct = 0;
+										_ct = time;
 
 										waitUntil
 											{
 											sleep 1;
-											_ct = _ct + 1;
+
 											if (isNull _gp) then {_alive = false};
 											if not (alive (leader _gp)) then {_alive = false};
-											(not (landResult (vehicle (leader _gp)) in ["NotReady"]) or not (_alive) or (_ct > 60))
+											if (_HQ getVariable ["RydHQ_KIA",false]) then {_alive = false};
+											(not (landResult (vehicle (leader _gp)) in ["NotReady"]) or not (_alive) or ((time - _ct) > 60))
 											};
-
+											
 										sleep 30;
 
 										if (_alive) then {_gp getVariable [("Busy" + (str _gp)),false]}
 										};
 
 									deleteVehicle _lz
-									}
+									};
+									
+								[[(vehicle (leader _x)),_lz,_x],_code] call RYD_Spawn
 								}
 							}
 						}

@@ -20,19 +20,7 @@ private
 
 _BBHQs = (_this select 0) select 0;
 _BBSide = (_this select 0) select 1;
-
-
-_BBHQGrps = [];
-
-	{
-	_BBHQGrps set [(count _BBHQGrps),(group _x)]
-	}
-foreach _BBHQs;
-
-	{
-	_x setVariable ["BBProgress",0]
-	}
-foreach _BBHQGrps;
+_BBHQGrps = _this select 1;
 
 if ((_BBSide == "B") and ((count RydBBa_HQs) > 0)) then 
 	{
@@ -391,7 +379,7 @@ while {(RydBB_Active)} do
 
 	if (_bbCycle == 1) then
 		{
-		[_BBHQs,_BBSide] spawn
+		_code =
 			{
 			private ["_HQg","_side","_HQg0"];
 
@@ -427,8 +415,10 @@ while {(RydBB_Active)} do
 					};
 
 				sleep 10;
-				}
-			}
+				};
+			};
+			
+		[[_BBHQs,_BBSide],_code] call RYD_Spawn
 		};
 
 	_BBHQs = [];
@@ -640,7 +630,8 @@ if ((true) and (true)) then
 				if ((_taken) and (_BBSide == "B")) then {_color = "ColorRed";_alpha = 0.5};
 				_mark = [_mark,_posStr,_color,"ICON",[_valStr/2,_valStr/2],0,_alpha,"mil_dot",(str _valStr)] call RYD_Marker;
 
-				[_x,_mark,_BBSide] spawn RYD_ObjMark
+				//[_x,_mark,_BBSide] spawn RYD_ObjMark
+				[[_x,_mark,_BBSide],RYD_ObjMark] call RYD_Spawn
 				}
 			foreach _strArea;
 			};
@@ -1316,7 +1307,11 @@ if ((true) and (true)) then
 			diag_log format ["Assignment of Big Boss %5 : Left: %1 Right: %2 Front: %3 Reserve: %4",_goingLeft,_goingRight,_goingAhead,_goingReserve,_BBSide];
 			};
 
-		if (((RydBBa_SimpleDebug) and (_BBSide == "A")) or ((RydBBb_SimpleDebug) and (_BBSide == "B"))) then {[_BBHQGrps,_BBSide] spawn RYD_BBSimpleD};
+		if (((RydBBa_SimpleDebug) and (_BBSide == "A")) or ((RydBBb_SimpleDebug) and (_BBSide == "B"))) then 
+			{
+			//[_BBHQGrps,_BBSide] spawn RYD_BBSimpleD
+			[[_BBHQGrps,_BBSide],RYD_BBSimpleD] call RYD_Spawn
+			};
 		};
 
 	if (RydBB_Debug) then
@@ -1786,7 +1781,8 @@ if ((true) and (true)) then
 					
 						[_front,_points,1200] call RYD_LocMultiTransform;
 
-						[_x,_tgtsAround,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQGrps,_HQpos,_front,_secsAround,_goingReserve,_BBSide] spawn RYD_ExecutePath;
+						//[_x,_tgtsAround,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQGrps,_HQpos,_front,_secsAround,_goingReserve,_BBSide] spawn RYD_ExecutePath;
+						[[_x,_tgtsAround,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQGrps,_HQpos,_front,_secsAround,_goingReserve,_BBSide],RYD_ExecutePath] call RYD_Spawn;
 
 						waitUntil
 							{
@@ -1853,7 +1849,8 @@ if ((true) and (true)) then
 	*/
 			[_front,_points,1000] call RYD_LocMultiTransform;
 
-			[_x,_goingAhead,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQs,_front,_takenPoints,_hostileGroups,_BBSide] spawn RYD_ReserveExecuting;
+			//[_x,_goingAhead,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQs,_front,_takenPoints,_hostileGroups,_BBSide] spawn RYD_ReserveExecuting;
+			[[_x,_goingAhead,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQs,_front,_takenPoints,_hostileGroups,_BBSide],RYD_ReserveExecuting] call RYD_Spawn;
 
 			waitUntil
 				{
@@ -1873,7 +1870,11 @@ if ((true) and (true)) then
 
 	if (_BBSide == "A") then {RydBBa_Urgent = false} else {RydBBb_Urgent = false};
 
-	if (_BBCycle == 1) then {[_strArea,_BBSide,(_BBHQGrps select 0),_BBHQGrps] spawn RYD_ObjectivesMon};
+	if (_BBCycle == 1) then 
+		{
+		//[_strArea,_BBSide,(_BBHQGrps select 0),_BBHQGrps] spawn RYD_ObjectivesMon
+		[[_strArea,_BBSide,(_BBHQGrps select 0),_BBHQGrps],RYD_ObjectivesMon] call RYD_Spawn;
+		};
 
 	if ((_BBSide == "A") and (_BBCycle == 1)) then {RydBBa_Init = true};
 
@@ -1883,7 +1884,7 @@ if ((true) and (true)) then
 		diag_log format ["For Big Boss %3 cycle is completed: %1 (mission time: %2)",_BBCycle,time,_BBSide]
 		};
 
-	_ctWait = 0;
+	_ctWait = time;
 	_ctVal = 20;
 	if not (isNil "RydBB_MainInterval") then {_ctVal = RydBB_MainInterval};
 
@@ -1896,27 +1897,29 @@ if ((true) and (true)) then
 	waitUntil
 		{
 		sleep 60;
-		_ctWait = _ctWait + 1;
+
 		if (_BBSide == "A") then 
 			{
 			if (RydBBa_Urgent) then 
 				{
-				_ctWait = _ctVal
+				_ctVal = 0
 				}
 			}
 		else 
 			{
 			if (RydBBb_Urgent) then 
 				{
-				_ctWait = _ctVal
+				_ctVal = 0
 				}
 			};
 
-		if not (RydBB_Active) then {_ctWait = _ctVal};
+		if not (RydBB_Active) then {_ctVal = 0};
 
-		(_ctWait >= _ctVal)
+		((time - _ctWait) >= (_ctVal * 60))
 		};
-
+		
+	if not (RydBB_Active) exitWith {};
+		
 	_urgent = RydBBa_Urgent;
 	if (_BBSide == "B") then {_urgent = RydBBb_Urgent};
 
@@ -1968,102 +1971,3 @@ if ((true) and (true)) then
 			}
 		};
 	};
-
-/*
-//kto gdzie: ilosc sektorow, celow i obecnosc wroga -> liczebnosc, topografia i ilosc sektorów oraz celów, sklad sil wroga -> sklad armii
-
-
-
-//to do
-
-
-	//nasi
-
-		//ilu liderow mamy
-
-		//czym kazdy dysponuje
-
-		//rozmieszczenie sil wzgledem osi natarcia
-
-
-	//wrog
-
-		//liczebnosc
-
-		//sklad
-
-		//rozmieszczenie wzgledem osi natarcia
-
-		//przewidywane kierunki natarcia wroga
-
-	
-	//dotychczasowy bilans
-
-		//straty
-
-		//morale
-
-		//zasoby
-
-
-//decyzja
-
-	//strategia
-
-		//stosunek sil i bilans strat
-
-		//co zostalo do zdobycia
-
-		//pelna obrona, pelny atak czy kombinacja
-
-
-	//zarzadzanie rezerwami
-
-		//czy zachowac lidera w rezerwie
-
-		//czy uzyc rezerwy
-
-			//do zabezpieczenia flanki
-
-			//do oflankowania
-
-			//do wzmocnienia odcinka
-
-			//na garnizony
-
-			//przeniesc sily do innego Lidera
-
-
-	//garnizony punktow zdobytych
-
-		//ile grup
-
-		//komu odebrac - zdobywcy czy rezerwie
-
-
-	//wybor kolejnych punktow docelowych dla Liderow
-
-		//punkt strategiczny
-
-		//flanka
-
-		//oflankowanie
-
-		//rezerwa
-
-
-//wykonanie
-
-	//przydzielenie frontow i celow
-
-	//monitorowanie sytuacji, czy nie wymaga naglej interwencji
-
-		//wrog na tylach/flance
-
-		//wrog blisko sztabu
-
-		//utrata waznych pozycji
-
-		//zniszczenie sztabu
-
-		//nagly wzrost strat

@@ -99,9 +99,10 @@ if not (isNull _nE) then
 		else
 			{
 			if ((_HQ getVariable ["RydHQ_ArtyShells",1]) > 0) then {if ((random 100) < RydxHQ_AIChatDensity) then {[(leader _HQ),RydxHQ_AIC_ArtDen,"ArtDen"] call RYD_AIChatter}};
-			[_unitG] call RYD_Smoke;
+			//[_unitG,_nE] spawn RYD_Smoke;
+			[[_unitG,_nE],RYD_Smoke] call RYD_Spawn;
 			sleep 10;
-			if ((vehicle _UL) == _UL) then {sleep 20}
+			if ((vehicle _UL) == _UL) then {sleep 25}
 			}
 		}
 	};
@@ -169,7 +170,8 @@ _unitG setFormDir _dir;
 
 _UL = leader _unitG;if not (isPlayer _UL) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdFinal,"OrdFinal"] call RYD_AIChatter}};
 
-[_unitG,(_HQ getVariable ["RydHQ_Flare",true]),(_HQ getVariable ["RydHQ_ArtG",[]]),(_HQ getVariable ["RydHQ_ArtyShells",1]),(leader _HQ)] spawn RYD_Flares;
+//[_unitG,(_HQ getVariable ["RydHQ_Flare",true]),(_HQ getVariable ["RydHQ_ArtG",[]]),(_HQ getVariable ["RydHQ_ArtyShells",1]),(leader _HQ)] spawn RYD_Flares;
+[[_unitG,(_HQ getVariable ["RydHQ_Flare",true]),(_HQ getVariable ["RydHQ_ArtG",[]]),(_HQ getVariable ["RydHQ_ArtyShells",1]),(leader _HQ)],RYD_Flares] call RYD_Spawn;
 
 _alive = true;
 

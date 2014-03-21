@@ -3,7 +3,7 @@ private ["_HQ","_med","_noenemy","_medS","_medSG","_medASG","_airMedAv","_landMe
 
 _HQ = _this select 0;
 
-_med = RHQ_Med + ["I_Truck_02_medical_F","O_Truck_02_medical_F","B_Truck_01_medical_F"] - RHQs_Med;
+_med = RHQ_Med + ["O_Truck_03_medical_F","I_Truck_02_medical_F","O_Truck_02_medical_F","B_Truck_01_medical_F"] - RHQs_Med;
 _noenemy = true;
 	
 _medS = [];
@@ -171,7 +171,8 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 				_ambulances = _ambulances - [_x];
 				_SWunits = _SWunits - [_SWunit];
 				_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _SWunit)]];
-				[_ambulance,_SWunit,_wounded,_HQ] spawn HAL_GoMedSupp; 
+				//[_ambulance,_SWunit,_wounded,_HQ] spawn HAL_GoMedSupp; 
+				[[_ambulance,_SWunit,_wounded,_HQ],HAL_GoMedSupp] call RYD_Spawn;
 				}
 			else
 				{
@@ -244,7 +245,8 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 				_ambulances = _ambulances - [_x];
 				_Wunits = _Wunits - [_Wunit];
 				_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _Wunit)]];
-				[_ambulance,_Wunit,_wounded,_HQ] spawn HAL_GoMedSupp; 
+				//[_ambulance,_Wunit,_wounded,_HQ] spawn HAL_GoMedSupp; 
+				[[_ambulance,_Wunit,_wounded,_HQ],HAL_GoMedSupp] call RYD_Spawn;
 				}
 			else
 				{

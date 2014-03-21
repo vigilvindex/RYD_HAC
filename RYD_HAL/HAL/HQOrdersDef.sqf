@@ -1,7 +1,7 @@
 private ["_HQ","_LMCU","_airDef","_recDef","_allInDef","_goodSpots","_inDef","_default","_Epos0","_Epos1","_nObj","_default","_Epos0Max","_Epos0Min","_EposA","_Epos1Max","_Epos1Min",
 	"_sel1Max","_sel1Min","_EposB","_PosMid0","_PosMid1","_defRes","_defPoints","_ct","_cl","_clr","_closest","_friend","_dstM","_dstAct","_defPoints0","_defArray","_Lenght1","_Width1",
 	"_Lenght2","_Width2","_FreeLOS","_PrimDir","_SecDir","_randomPrimDir","_randomSecDir","_DN","_defPoint","_dX","_dY","_Angle","_dXb","_dYb","_posX","_posY","_Center","_lng","_wdt",
-	"_defFront","_goodmark","_spotsN","_goodSpotsRec","_angleV","_Spot","_GS","_recDefSpot","_isDef","_closestArr","_friend","_dstM","_arrP",
+	"_defFront","_goodmark","_spotsN","_goodSpotsRec","_angleV","_Spot","_GS","_recDefSpot","_isDef","_closestArr","_friend","_dstM","_arrP","_AAO",
 	"_dstAct","_aa","_Spot","_defSpot","_def","_bb","_SpotB","_radius","_position","_precision","_sourcesCount","_expression","_NR","_cnt","_Rpoint","_ammo","_dL","_d1","_d2","_d3","_d4"];
 
 _HQ = _this select 0;
@@ -38,6 +38,8 @@ _default = [];
 _Epos0 = [];
 _Epos1 = [];
 
+_AAO = _HQ getVariable ["RydHQ_ChosenAAO",false];
+
 _nObj = _HQ getVariable ["RydHQ_NObj",1];
 
 switch (_nObj) do
@@ -48,27 +50,18 @@ switch (_nObj) do
 	default {_HQ setVariable ["RydHQ_Obj",(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])]};
 	};
 		
-if (isNil ("RydHQ_Obj")) then 
+_default = getPosATL (_HQ getVariable ["RydHQ_Obj",(leader _HQ)]);
+
+if (_AAO) then
 	{
-	if not (isNull (leader _HQ)) then 
-		{
-		_default = position (leader _HQ)
-		}
-	else 
-		{
-		_default = position (leader ((_HQ getVariable ["RydHQ_Friends",[]]) select (random (floor (count (_HQ getVariable ["RydHQ_Friends",[]]))))))
-		}
-	}
- else 
-	{
-	_default = position (_HQ getVariable ["RydHQ_Obj",(leader _HQ)])
+	_default = _HQ getVariable ["RydHQ_EyeOfBattle",getPosATL (vehicle (leader _HQ))]
 	};
 
 if not ((count (_HQ getVariable ["RydHQ_KnEnPos",[]])) == 0) then 
 	{
 		{
-		_Epos0 = _Epos0 + [(_x select 0)];
-		_Epos1 = _Epos1 + [(_x select 1)]
+		_Epos0 set [(count _Epos0),(_x select 0)];
+		_Epos1 set [(count _Epos1),(_x select 1)]
 		}
 	foreach (_HQ getVariable ["RydHQ_KnEnPos",[]])
 	}
@@ -131,14 +124,16 @@ _defPoints = [(leader _HQ)];
 
 if ((_HQ getVariable ["RydHQ_DefendObjectives",0]) > 0) then 
 	{
-	switch (_HQ getVariable ["RydHQ_NObj",(leader _HQ)]) do
+	_defPoints = _defPoints + (_HQ getVariable ["RydHQ_Taken",[]]); 
+	
+	/*switch (_HQ getVariable ["RydHQ_NObj",(leader _HQ)]) do
 		{
 		case (2) : {_defPoints = [(leader _HQ),(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)])]};
 		case (3) : {_defPoints = [(leader _HQ),(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)])]};
 		case (4) : {_defPoints = [(leader _HQ),(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)])]};
 		case (5) : {_defPoints = [(leader _HQ),(_HQ getVariable ["RydHQ_Obj1",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj2",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj3",(leader _HQ)]),(_HQ getVariable ["RydHQ_Obj4",(leader _HQ)])]};
 		default {_defPoints = [(leader _HQ)]};
-		}
+		}*/
 	};
 
 _ct = 1;
@@ -406,7 +401,8 @@ _recDefSpot = _HQ getVariable ["RydHQ_RecDefSpot",[]];
 								_goodSpots set [_aa,0]; 
 								_goodSpots = _goodSpots - [0];
 								_closestArr set [1,_goodSpots];
-								[_x,_Spot,_angleV,_HQ] spawn HAL_GoDefRecon;
+								//[_x,_Spot,_angleV,_HQ] spawn HAL_GoDefRecon;
+								[[_x,_Spot,_angleV,_HQ],HAL_GoDefRecon] call RYD_Spawn;
 								_recDefSpot set [(count _recDefSpot),_x];
 								_HQ setVariable ["RydHQ_RecDefSpot",_recDefSpot];
 								}
@@ -476,7 +472,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 										_goodSpots set [_bb,0]; 
 										_goodSpots = _goodSpots - [0];
 										_closestArr set [2,_goodSpots];
-										[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
+										//[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
+										[[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ],HAL_GoDef] call RYD_Spawn;
 										_defSpot set [(count _defSpot),_x];
 										_HQ setVariable ["RydHQ_DefSpot",_defSpot];
 										};
@@ -531,7 +528,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 									_HQ setVariable ["RydHQ_AirInDef",_AirInDef];	
 
 									_x setVariable [("Busy" + (str _x)), false];
-									[_x,_Spot,_HQ] spawn HAL_GoDefAir;
+									//[_x,_Spot,_HQ] spawn HAL_GoDefAir;
+									[[_x,_Spot,_HQ],HAL_GoDefAir] call RYD_Spawn;
 									}
 								}
 							}
@@ -618,7 +616,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 												};
 											};
 
-										[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
+										//[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
+										[[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ],HAL_GoDef] call RYD_Spawn;
 										_def set [(count _def),_x];
 										_HQ setVariable ["RydHQ_Def",_def]
 										};
@@ -703,7 +702,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 												};
 											};
 										
-										[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
+										//[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
+										[[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ],HAL_GoDef] call RYD_Spawn;
 										_def set [(count _def),_x];
 										_HQ setVariable ["RydHQ_Def",_def]
 										}
@@ -751,7 +751,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 									_HQ setVariable ["RydHQ_AirInDef",_AirInDef];
 									
 									_x setVariable [("Busy" + (str _x)), false];
-									[_x,_Spot,_HQ] spawn HAL_GoDefAir
+									//[_x,_Spot,_HQ] spawn HAL_GoDefAir
+									[[_x,_Spot,_HQ],HAL_GoDefAir] call RYD_Spawn;
 									}
 								}
 							}
@@ -786,7 +787,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 								_posX = ((position (leader _HQ)) select 0) + (random 400) - 200;
 								_posY = ((position (leader _HQ)) select 1) + (random 400) - 200;
 								_Spot = [_posX,_posY];
-								[_x,_Spot,_HQ] spawn HAL_GoDefRes;
+								//[_x,_Spot,_HQ] spawn HAL_GoDefRes;
+								[[_x,_Spot,_HQ],HAL_GoDefRes] call RYD_Spawn;
 								_def set [(count _def),_x];
 								_HQ setVariable ["RydHQ_Def",_def]
 								}

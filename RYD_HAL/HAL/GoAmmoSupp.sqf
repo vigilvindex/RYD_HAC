@@ -103,7 +103,8 @@ if (_drop) then
 			else
 				{
 				_UL = leader _unitG;if not (isPlayer _UL) then {if (_timer <= 24) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdFinal,"OrdFinal"] call RYD_AIChatter}}};
-				[_unit,_ammoBox,(group _Trg)] spawn RYD_AmmoDrop;
+				//[_unit,_ammoBox,(group _Trg)] spawn RYD_AmmoDrop;
+				[[_unit,_ammoBox,(group _Trg)],RYD_AmmoDrop] call RYD_Spawn;
 				_boxed = (_HQ getVariable ["RydHQ_Boxed",[]]);
 				_boxed set [(count _boxed),(group _Trg)];
 				_HQ setVariable ["RydHQ_Boxed",_boxed];
@@ -185,7 +186,7 @@ else
 					}
 				else
 					{
-					[_task,(leader _unitG),["Provide support to nearby units. Stay in this area.", "Support", ""],[_posX,_posY],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;;
+					[_task,(leader _unitG),["Provide support to nearby units. Stay in this area.", "Support", ""],[_posX,_posY],"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 					}
 				}
 			};
