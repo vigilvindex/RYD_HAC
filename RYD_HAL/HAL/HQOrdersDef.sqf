@@ -1,7 +1,7 @@
 private ["_HQ","_LMCU","_airDef","_recDef","_allInDef","_goodSpots","_inDef","_default","_Epos0","_Epos1","_nObj","_default","_Epos0Max","_Epos0Min","_EposA","_Epos1Max","_Epos1Min",
 	"_sel1Max","_sel1Min","_EposB","_PosMid0","_PosMid1","_defRes","_defPoints","_ct","_cl","_clr","_closest","_friend","_dstM","_dstAct","_defPoints0","_defArray","_Lenght1","_Width1",
 	"_Lenght2","_Width2","_FreeLOS","_PrimDir","_SecDir","_randomPrimDir","_randomSecDir","_DN","_defPoint","_dX","_dY","_Angle","_dXb","_dYb","_posX","_posY","_Center","_lng","_wdt",
-	"_defFront","_goodmark","_spotsN","_goodSpotsRec","_angleV","_Spot","_GS","_recDefSpot","_isDef","_closestArr","_friend","_dstM","_arrP","_AAO",
+	"_defFront","_goodmark","_spotsN","_goodSpotsRec","_angleV","_Spot","_GS","_recDefSpot","_isDef","_closestArr","_friend","_dstM","_arrP","_AAO","_ad",
 	"_dstAct","_aa","_Spot","_defSpot","_def","_bb","_SpotB","_radius","_position","_precision","_sourcesCount","_expression","_NR","_cnt","_Rpoint","_ammo","_dL","_d1","_d2","_d3","_d4"];
 
 _HQ = _this select 0;
@@ -490,53 +490,49 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 			}
 		foreach ((_LMCU - ((_HQ getVariable ["RydHQ_RecDefSpot",[]]) + (_HQ getVariable ["RydHQ_DefRes",[]]))) - (_HQ getVariable ["RydHQ_NoDef",[]]));
 
-		while {((count _airDef) > (count (_HQ getVariable ["RydHQ_AirInDef",[]])))} do
+		for "_k" from 1 to ((count _airDef) - 1) do
 			{
-			
-
+			_ad = _airDef select _k;
+			if not (isNull _ad) then
 				{
-				if not (isNull _x) then
+				if (({alive _x} count (units _ad)) > 0) then
 					{
-					if (({alive _x} count (units _x)) > 0) then
+					_isDef = _ad getVariable "Defending";
+					if (isNil "_isDef") then {_isDef = false};
+
+					if not (_isDef) then
 						{
-						_isDef = _x getVariable "Defending";
-						if (isNil "_isDef") then {_isDef = false};
-
-						if not (_isDef) then
+						_ammo = [_ad,(_HQ getVariable ["RydHQ_NCVeh",[]])] call RYD_AmmoCount;
+						
+						if (_ammo > 0) then
 							{
-							_ammo = [_x,(_HQ getVariable ["RydHQ_NCVeh",[]])] call RYD_AmmoCount;
-							
-							if (_ammo > 0) then
+							if not ((_ad getVariable ["Busy" + (str _ad),false]) and (_ad in (_HQ getVariable ["RydHQ_AirInDef",[]]))) then
 								{
-								if not ((_x getVariable ["Busy" + (str _x),false]) and (_x in (_HQ getVariable ["RydHQ_AirInDef",[]]))) then
-									{
-									_closestArr = _defArray select 0;
-									_friend =  vehicle (leader _x);
-									_dstM = _friend distance (_closestArr select 0);
-										
-										{
-										_arrP = _x select 0;
-										_dstAct = _arrP distance _friend;
-										if (_dstAct < _dstM) then {_dstM = _dstAct;_closestArr = _x}
-										}
-									foreach _defArray;
-
-									_Spot = _closestArr select 0;
+								_closestArr = _defArray select 0;
+								_friend =  vehicle (leader _ad);
+								_dstM = _friend distance (_closestArr select 0);
 									
-									_AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
-									_AirInDef set [(count _AirInDef),_x];
-									_HQ setVariable ["RydHQ_AirInDef",_AirInDef];	
-
-									_x setVariable [("Busy" + (str _x)), false];
-									//[_x,_Spot,_HQ] spawn HAL_GoDefAir;
-									[[_x,_Spot,_HQ],HAL_GoDefAir] call RYD_Spawn;
+									{
+									_arrP = _x select 0;
+									_dstAct = _arrP distance _friend;
+									if (_dstAct < _dstM) then {_dstM = _dstAct;_closestArr = _x}
 									}
+								foreach _defArray;
+
+								_Spot = _closestArr select 0;
+								
+								_AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
+								_AirInDef set [(count _AirInDef),_ad];
+								_HQ setVariable ["RydHQ_AirInDef",_AirInDef];	
+
+								_ad setVariable [("Busy" + (str _ad)), false];
+								//[_ad,_Spot,_HQ] spawn HAL_GoDefAir;
+								[[_ad,_Spot,_HQ],HAL_GoDefAir] call RYD_Spawn;
 								}
 							}
 						}
 					}
 				}
-			foreach _airDef;
 			};
 
 
@@ -716,51 +712,49 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 			}
 		foreach ((_LMCU - ((_HQ getVariable ["RydHQ_RecDefSpot",[]]) + (_HQ getVariable ["RydHQ_DefRes",[]])) + (_HQ getVariable ["RydHQ_NCCargoG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]])) - (_HQ getVariable ["RydHQ_NoDef",[]]));
 
-		while {((count _airDef) > (count (_HQ getVariable ["RydHQ_AirInDef",[]])))} do
+		for "_k" from 0 to ((count _airDef) - 1) do
 			{
+			_ad = _airDef select _k;
+			if not (isNull _ad) then
 				{
-				if not (isNull _x) then
+				if (({alive _x} count (units _ad)) > 0) then
 					{
-					if (({alive _x} count (units _x)) > 0) then
+					_isDef = _ad getVariable "Defending";
+					if (isNil "_isDef") then {_isDef = false};
+
+					if not (_isDef) then
 						{
-						_isDef = _x getVariable "Defending";
-						if (isNil "_isDef") then {_isDef = false};
-
-						if not (_isDef) then
+						_ammo = [_ad,(_HQ getVariable ["RydHQ_NCVeh",[]])] call RYD_AmmoCount;
+						
+						if (_ammo > 0) then
 							{
-							_ammo = [_x,(_HQ getVariable ["RydHQ_NCVeh",[]])] call RYD_AmmoCount;
-							
-							if (_ammo > 0) then
+							if not ((_ad getVariable ["Busy" + (str _ad),false]) and (_ad in (_HQ getVariable ["RydHQ_AirInDef",[]]))) then
 								{
-								if not ((_x getVariable ["Busy" + (str _x),false]) and (_x in (_HQ getVariable ["RydHQ_AirInDef",[]]))) then
-									{
-									_closestArr = _defArray select 0;
-									_friend =  vehicle (leader _x);
-									_dstM = _friend distance (_closestArr select 0);
-										
-										{
-										_arrP = _x select 0;
-										_dstAct = _arrP distance _friend;
-										if (_dstAct < _dstM) then {_dstM = _dstAct;_closestArr = _x}
-										}
-									foreach _defArray;
-
-									_Spot = _closestArr select 0;
-									_AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
-									_AirInDef set [(count _AirInDef),_x];
-									_HQ setVariable ["RydHQ_AirInDef",_AirInDef];
+								_closestArr = _defArray select 0;
+								_friend =  vehicle (leader _ad);
+								_dstM = _friend distance (_closestArr select 0);
 									
-									_x setVariable [("Busy" + (str _x)), false];
-									//[_x,_Spot,_HQ] spawn HAL_GoDefAir
-									[[_x,_Spot,_HQ],HAL_GoDefAir] call RYD_Spawn;
+									{
+									_arrP = _x select 0;
+									_dstAct = _arrP distance _friend;
+									if (_dstAct < _dstM) then {_dstM = _dstAct;_closestArr = _x}
 									}
+								foreach _defArray;
+
+								_Spot = _closestArr select 0;
+								_AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
+								_AirInDef set [(count _AirInDef),_ad];
+								_HQ setVariable ["RydHQ_AirInDef",_AirInDef];
+								
+								_ad setVariable [("Busy" + (str _ad)), false];
+								//[_ad,_Spot,_HQ] spawn HAL_GoDefAir
+								[[_ad,_Spot,_HQ],HAL_GoDefAir] call RYD_Spawn;
 								}
 							}
 						}
 					}
 				}
-			foreach _airDef;
-			};
+			}
 		};
 	};
 	

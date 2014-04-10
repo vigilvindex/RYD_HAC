@@ -1073,7 +1073,7 @@ RYD_StatusQuo =
 						{
 						case (1) : 
 							{
-							_Lpos = (_HQ setVariable ["RydHQ_Fpos",_Lpos]);
+							_Lpos = (_HQ getVariable ["RydHQ_Fpos",_Lpos]);
 							if ((_HQ getVariable ["leaderHQ",(leader _HQ)]) in (RydBBa_HQs + RydBBb_HQs)) then 
 								{
 								_Lpos = position (_HQ getVariable ["leaderHQ",(leader _HQ)])
@@ -1082,9 +1082,9 @@ RYD_StatusQuo =
 							_rds = 0
 							};
 							
-						case (2) : {_Lpos = position RydHQ_Obj1};
-						case (3) : {_Lpos = position RydHQ_Obj2};
-						default {_Lpos = position RydHQ_Obj3};
+						case (2) : {_Lpos = position (_HQ getVariable ["RydHQ_Obj1",(leader _HQ)])};
+						case (3) : {_Lpos = position (_HQ getVariable ["RydHQ_Obj2",(leader _HQ)])};
+						default {_Lpos = position (_HQ getVariable ["RydHQ_Obj3",(leader _HQ)])};
 						};
 					};
 
@@ -1103,7 +1103,7 @@ RYD_StatusQuo =
 
 				if not (_enemyN) then 
 					{
-					_wp = [_HQ,_Lpos,"HOLD","AWARE","GREEN",_spd,["true",""],true,_rds,[0,0,0],"FILE"] call RYD_WPadd;
+					_wp = [_HQ,_Lpos,"MOVE","AWARE","GREEN",_spd,["true",""],true,_rds,[0,0,0],"FILE"] call RYD_WPadd;
 					if (isNull (assignedVehicle (_HQ getVariable ["leaderHQ",(leader _HQ)]))) then
 						{
 						if ((_HQ getVariable ["RydHQ_GetHQInside",false])) then {[_wp] call RYD_GoInside}
@@ -1173,7 +1173,7 @@ RYD_StatusQuo =
 
 								_spd = "NORMAL";
 								if not (((vehicle (_HQ getVariable ["leaderHQ",(leader _HQ)])) distance _LPos) < 50) then {_spd = "FULL"};
-								_wp = [_HQ,_Lpos,"HOLD","AWARE","GREEN",_spd,["true",""],true,_rds,[0,0,0],"FILE"] call RYD_WPadd;
+								_wp = [_HQ,_Lpos,"MOVE","AWARE","GREEN",_spd,["true",""],true,_rds,[0,0,0],"FILE"] call RYD_WPadd;
 								if (isNull (assignedVehicle (_HQ getVariable ["leaderHQ",(leader _HQ)]))) then
 									{
 									if (_HQ getVariable ["RydHQ_GetHQInside",false]) then {[_wp] call RYD_GoInside}

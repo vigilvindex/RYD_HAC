@@ -4326,7 +4326,7 @@ RYD_FlatLandNoRoad =
 
 RYD_GoInside = 
 	{
-	private ["_wp","_pos","_nHouses","_nHouse","_posAll","_posAct","_chosen","_enterable","_stat","_oldStat"];
+	private ["_wp","_pos","_nHouses","_nHouse","_posAll","_posAct","_chosen","_enterable","_stat","_oldStat","_isRoof"];
 
 	_wp = _this select 0;
 	_pos = waypointPosition _wp;
@@ -4342,7 +4342,7 @@ RYD_GoInside =
 		_nHouses = _nHouses - [_nHouse];
 
 		_enterable = true;
-		if ((str (_nHouse buildingpos 0)) == "[0,0,0]") then {_enterable = false};
+		if not (((_nHouse buildingpos 0) distance [0,0,0]) > 1) then {_enterable = false};
 
 		if not (_enterable) then
 			{
@@ -4352,7 +4352,7 @@ RYD_GoInside =
 				_nHouses = _nHouses - [_nHouse];
 
 				_enterable = true;
-				if ((str (_nHouse buildingpos 0)) == "[0,0,0]") then {_enterable = false};
+				if not (((_nHouse buildingpos 0) distance [0,0,0]) > 1) then {_enterable = false};
 				if (_enterable) exitWith {}
 				}
 			};
@@ -4362,13 +4362,15 @@ RYD_GoInside =
 			_posAct = [1,1,1];
 
 			_i = 0;
-			while {not ((str _posAct) == "[0,0,0]")} do
+			while {((_posAct distance [0,0,0]) > 0)} do
 				{
 				_posAct = _nHouse buildingpos _i;
 				_i = _i + 1;
-				if not ((str _posAct) == "[0,0,0]") then 
+				if ((_posAct distance [0,0,0]) > 0) then 
 					{
-					if not (_posAct in _posAll) then 
+					_isRoof = [ATLtoASL _posAct,20] call RYD_RoofOver;
+
+					if (_isRoof) then
 						{
 						_posAll set [(count _posAll),_posAct]
 						}
@@ -4377,14 +4379,13 @@ RYD_GoInside =
 			};
 
 		if ((count _posAll) > 0) then
-			{
+			{	
 			_chosen = _posAll select (floor (random (count _posAll)));
+						
 			_wp setWaypointPosition [_chosen,0];
 			_stat = "this doMove " + (str _chosen);
-
 			_oldStat = (waypointStatements _wp) select 1;
 			_stat = _stat + ";" + _oldStat;
-
 			_wp setWaypointStatements ["true",_stat];
 			}
 		};
@@ -4392,6 +4393,33 @@ RYD_GoInside =
 	[_nHouse,_chosen]
 	};
 	
+RYD_RoofOver = 
+	{
+	private ["_pos","_cam","_target","_pX","_pY","_pZ","_pos1","_pos2","_level","_roofed"];
+
+	_pos = _this select 0;
+	_level = _this select 1;
+
+	_pX = _pos select 0;
+	_pY = _pos select 1;
+	_pZ = (_pos select 2) + 1;
+
+	_pos1 = [_pX,_pY,_pZ];
+	_pos2 = [_pX,_pY,_pZ + _level];
+
+	_cam = objNull;
+
+	if ((count _this) > 2) then {_cam = _this select 2};
+
+	_target = objNull;
+
+	if ((count _this) > 3) then {_target = _this select 3};
+
+	_roofed = lineintersects [_pos1, _pos2,_cam,_target]; 
+
+	_roofed
+	};
+		
 RYD_RHQCheck = 
 	{
 	private ["_type","_noInTotal","_noInAdditional","_noInBasic","_civF","_total","_basicrhq","_Additionalrhq","_Inf","_Art","_HArmor","_LArmor","_Cars","_Air","_Naval","_Static","_Other","_specFor",
