@@ -1,3 +1,5 @@
+_SCRname = "SpotScan";
+
 private ["_spotsneeded","_windroseOne","_windroseTwo","_scanRange","_sectorLenght","_sectorWidth","_markscan","_HQ","_step","_isdone","_true","_goodSpots","_isGood","_X","_Y","_scannedSpot",
 	"_steepnessInitial","_probeStep","_steepnessActual","_centralSpot","_probeNorth","_probeSouth","_probeEast","_probeWest","_goodmark"];
 

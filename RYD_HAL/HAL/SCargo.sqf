@@ -1,3 +1,5 @@
+_SCRname = "SCargo";
+
 _unitG = _this select 0;
 _HQ = _this select 1;
 _posT = _this select 2;

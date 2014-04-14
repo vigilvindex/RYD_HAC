@@ -1,3 +1,5 @@
+_SCRname = "GoAttSniper";
+
 _i = "";
 
 _unitG = _this select 0;

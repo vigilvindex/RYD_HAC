@@ -1,3 +1,4 @@
+_SCRname = "Garrison";
 
 _HQ = _this select 0;
 _recArr = _this select 1;

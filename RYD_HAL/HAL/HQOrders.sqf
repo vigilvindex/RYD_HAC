@@ -4,6 +4,8 @@
 //dodatkowo dywizja rezerwowa dla wzmocnienia ataku najbardziej udanego i oskrzydlenia reszty frontu
 //wsparcie strategicznie - lotnictwo i artyleria
 
+_SCRname = "Orders";
+
 private ["_HQ","_nObj","_Trg","_vHQ","_landE","_dstMin","_dstAct","_dstMin","_PosObj1","_ReconAv","_onlyL","_unitvar","_busy","_vehready","_solready","_effective","_ammo","_Gdamage",
 	"_nominal","_current","_veh","_forRRes","_RRp","_AttackAv","_FlankAv","_exhausted","_inD","_ResC","_stages","_rcheckArr","_gps","_LMCUA","_reserve","_recvar","_resting","_allT",
 	"_deployed","_capturing","_reconthreat","_FOthreat","_snipersthreat","_ATinfthreat","_AAinfthreat","_Infthreat","_Artthreat","_HArmorthreat","_LArmorthreat","_Carsthreat","_reconNr",

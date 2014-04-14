@@ -113,6 +113,8 @@ RYD_PosTowards2D =
 
 RYD_GarrP = 
 	{
+	_SCRname = "GarrP";
+	
 	private ["_gp","_points","_nHouse","_frm","_wp","_i","_posAll","_posAct","_sum","_sumAct","_added","_HQ","_code"];
 
 	_gp = _this select 0;
@@ -1095,6 +1097,8 @@ RYD_Recon =
 
 RYD_Dispatcher =
 	{
+	_SCRname = "Dispatcher";
+	
 	private ["_threat","_kind","_pool","_cars","_air","_Fpool","_HQ","_force","_range","_pattern","_SortedForce","_tPos","_limit","_avF","_trg","_ix","_infEnough","_armEnough","_airEnough","_sum","_handled",
 	"_SnipersG","_NCrewInfG","_LArmorG","_HArmorG","_LArmorATG","_ATInfG","_AAInfG","_chosen","_ammo","_reck","_topo","_sCity","_sForest","_sHills","_sMeadow","_sGr","_sVal","_mpl","_attackAv","_garrison",
 	"_garrR","_flankAv","_busy","_positive","_ATriskResign1","_ATriskResign2","_AAriskResign","_AAthreat","_ATthreat","_allAir","_armorATthreat","_ATRR1","_ATRR2","_thRep","_isClose","_enDst","_thFct","_chVP",
@@ -1490,6 +1494,7 @@ RYD_Dispatcher =
 							_chosen setVariable ["Busy" + (str _chosen),true];
 							_HQ setVariable ["RydHQ_AttackAv",(_HQ getVariable ["RydHQ_AttackAv",[]]) - [_chosen]];
 							//[_chosen,_trg,_HQ] spawn ([_pattern] call RYD_GoLaunch);
+							
 							[[_chosen,_trg,_HQ],([_pattern] call RYD_GoLaunch)] call RYD_Spawn;
 							_limit = _limit - 1
 							};
@@ -2268,6 +2273,8 @@ RYD_CFF_TGT =
 	
 RYD_CFF_Fire = 
 	{
+	_SCRname = "CFF_Fire";
+	
 	private ["_battery","_pos","_ammo","_amount","_guns","_vh","_mags","_amount0","_eta","_alive","_available","_perGun","_rest","_aGuns","_perGun1","_shots","_check","_toFire","_rest0","_bad","_ammoC","_code"];
 	
 	_battery = _this select 0;
@@ -2418,7 +2425,7 @@ RYD_CFF_Fire =
 						{
 						_eta = _newEta
 						};
-						
+
 					[[_vh,_pos,_ammoC],_code] call RYD_Spawn
 					}
 				}
@@ -2442,6 +2449,8 @@ RYD_CFF_Fire =
 
 RYD_ArtyMission = 
 	{//_bArr = [_tgtPos,RydHQ_ArtG,"SADARM",6,leaderHQ] call RYD_ArtyMission;
+	_SCRname = "ArtyMission";
+	
 	private ["_pos","_arty","_ammoG","_amount","_FO","_ammo","_possible","_battery","_agp","_artyAv","_vehs","_gp","_hasAmmo","_checked","_vh","_tp","_inRange","_pX","_pY","_pZ","_ammoArr","_code"];
 
 	_pos = _this select 0;
@@ -2662,6 +2671,8 @@ RYD_ArtyMission =
 
 RYD_CFF_FFE = 
 	{//[_battery,_tgt,_batlead,"SADARM",RydHQ_Friends,RydHQ_Debug] spawn RYD_CFF_FFE
+	_SCRname = "CFF_FFE";
+	
 	private ["_battery","_target","_batlead","_Ammo","_friends","_Debug","_ammoG","_batname","_first","_phaseF","_targlead","_againF","_dispF","_accF","_amount","_Rate","_FMType","_againcheck","_Aunit",
 	"_RydAccF","_TTI","_amount1","_amount2","_template","_targetPos","_X0","_Y0","_X1","_Y1","_X2","_Y2","_Xav","_Yav","_transspeed","_transdir","_Xhd","_Yhd","_impactpos","_safebase","_distance",
 	"_safe","_safecheck","_gauss1","_gauss09","_gauss04","_gauss2","_distance2","_DdistF","_DdamageF","_DweatherF","_DskillF","_anotherD","_Dreduct","_spawndisp","_dispersion","_disp","_RydAccF",
@@ -3249,7 +3260,7 @@ RYD_CFF_FFE =
 				_mark setMarkerText (str (round _distance) + "m"  + " - SPLASH!" + " - " + _ammoG);
 				};
 			};
-			
+		
 		[[_battery,_distance,_eta,_ammoG,_batlead,_target,_markers],_code] call RYD_Spawn;
 						
 		[_battery,_finalimpact,_ammo,_amount] call RYD_CFF_Fire;
@@ -3411,6 +3422,7 @@ RYD_CFF_FFE =
 
 RYD_CFF = 
 	{//[RydHQ_ArtG,RydHQ_KnEnemies,(RydHQ_EnHArmor + RydHQ_EnMArmor + RydHQ_EnLArmor),RydHQ_Friends,RydHQ_Debug] call RYD_CFF;
+	_SCRname = "CFF";
 	private ["_amnt","_artG","_knEnemies","_enArmor","_friends","_Debug","_CFFMissions","_tgt","_ammo","_bArr","_possible","_UL","_ldr"];
 
 	_artG = _this select 0;
@@ -3450,6 +3462,7 @@ RYD_CFF =
 				foreach (_bArr select 1);
 				if ((random 100) < RydxHQ_AIChatDensity) then {[_ldr,RydxHQ_AIC_ArtAss,"ArtAss"] call RYD_AIChatter};
 				//[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
+
 				[[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt],RYD_CFF_FFE] call RYD_Spawn;
 				}
 			else
@@ -3474,6 +3487,7 @@ RYD_CFF =
 					foreach (_bArr select 1);
 					if ((random 100) < RydxHQ_AIChatDensity) then {[_ldr,RydxHQ_AIC_ArtAss,"ArtAss"] call RYD_AIChatter};
 					//[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt] spawn RYD_CFF_FFE
+					
 					[[_bArr select 1,_tgt,_bArr select 2,_bArr select 3,_friends,_Debug,_ammo,_amnt],RYD_CFF_FFE] call RYD_Spawn;
 					}
 				else
@@ -3527,6 +3541,8 @@ RYD_WPSync =
 
 RYD_DbgMon = 
 	{
+	_SCRname = "DbgMon";
+	
 	private ["_txtArr","_dbgMon","_txt"];
 
 	if (RydBB_Active) then

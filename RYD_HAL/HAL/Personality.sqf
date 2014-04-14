@@ -1,3 +1,5 @@
+_SCRname = "Personality";
+
 private ["_HQ","_rnd","_MAtt","_pers","_signum","_Recklessness","_Consistency","_Activity","_Reflex","_Circumspection","_Fineness"];
 
 _HQ = _this select 0;

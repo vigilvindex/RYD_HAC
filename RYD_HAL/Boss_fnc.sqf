@@ -710,6 +710,8 @@ RYD_Itinerary =
 
 RYD_ExecutePath = 
 	{
+	_SCRname = "ExecutePath";
+	
 	private ["_HQ","_areas","_o1","_o2","_o3","_o4","_allied","_HQpos","_sortedA","_i","_nObj","_actO","_nObj","_KnEn","_KnEnAct","_VLpos","_enX","_enY","_ct","_VHQpos","_front","_afront",
 	"_frPos","_frDir","_frDim","_chosenPos","_maxTempt","_actTempt","_sectors","_ownKnEn","_ownForce","_ctOwn","_alliedForce","_alliedGarrisons","_alliedExhausted","_inFlank","_Garrisons","_exhausted",
 	"_prop","_enPos","_dst","_val","_profile","_j","_pCnt","_m","_checkPos","_actPos","_indx","_check","_reserve","_garrPool","_fG","_garrison","_chosen","_dstMin","_actG","_actDst","_side",
@@ -1140,6 +1142,8 @@ RYD_ExecutePath =
 
 RYD_ReserveExecuting = 
 	{
+	_SCRname = "ReserveExecuting";
+	
 	private ["_HQ","_ahead","_frontPos","_o1","_o2","_o3","_o4","_allied","_HQpos","_front","_angle","_dst","_dstF","_dDst","_stancePos","_taken","_fG","_val","_forGarr","_ct","_ct2",
 	"_garrison","_task","_hMany","_busy","_Wpos","_mark","_wp","_aheadL","_aliveHQ","_hostileG","_assg","_possPos","_enV","_posArr","_enV2","_nr","_sX","_sY","_dstA","_amnt","_actT",
 	"_maxT","_poss","_m","_side","_rColor"];
@@ -1240,6 +1244,8 @@ RYD_ReserveExecuting =
 
 					_code =
 						{
+						_SCRname = "ReserveExecutingC1";
+						
 						private ["_unitG","_cause","_timer","_alive","_task","_form","_Wpos","_garrison","_wp"];
 
 						_unitG = _this select 0;
@@ -1393,6 +1399,8 @@ RYD_ReserveExecuting =
 
 RYD_ObjectivesMon = 
 	{
+	_SCRName = "ObjectivesMon";
+	
 	private ["_area","_BBSide","_isTaken","_HQ","_AllV","_Civs","_AllV2","_Civs2","_NearAllies","_NearEnemies","_trg","_AllV0","_AllV20","_mChange","_HQs","_enArea","_enPos","_BBProg"];
 
 	_area = _this select 0;
@@ -1524,34 +1532,48 @@ RYD_ObjectivesMon =
 
 RYD_ObjMark = 
 	{
-	private ["_obj","_mark","_taken","_color","_txt","_AllV","_pos","_side","_alpha"];
-
-	_obj = _this select 0;
-	_mark = _this select 1;
-	_side = _this select 2;
+	_SCRName = "ObjMark";
 	
+	_strArea = _this select 0;
+	_BBSide = _this select 1;
+	
+	_markers = [];
+
+		{
+		_posStr = _x select 0;
+		_valStr = _x select 1;
+		_taken = _x select 2;
+		_mark = "StrArea" + (str (random 1000));
+		_color = "ColorYellow";
+		_alpha = 0.1;
+		if ((_taken) and (_BBSide == "A")) then {_color = "ColorBlue";_alpha = 0.5};
+		if ((_taken) and (_BBSide == "B")) then {_color = "ColorRed";_alpha = 0.5};
+		_mark = [_mark,_posStr,_color,"ICON",[_valStr/2,_valStr/2],0,_alpha,"mil_dot",(str _valStr)] call RYD_Marker;
+		_markers set [(count _markers),_mark]			
+		}
+	foreach _strArea;
+
 	while {((RydBB_Active) and (RydBB_Debug))} do
 		{
 		sleep 10;
 		if not (RydBB_Active) exitWith {};
-		_pos = _obj select 0;
-		_pos = [_pos select 0,_pos select 1,0];
 
-		_taken = _obj select 2;
-		_color = "ColorYellow";
-		_alpha = 0.1;
+			{
+			_obj = _x;
+			_taken = _obj select 2;
+			_color = "ColorYellow";
+			_alpha = 0.1;
 
-		if ((_taken) and (_side == "A")) then {_color = "ColorBlue";_alpha = 0.5};
-		if ((_taken) and (_side == "B")) then {_color = "ColorRed";_alpha = 0.5};
-//_AllV = _pos nearEntities [["AllVehicles"],300];
-//diag_log format ["obj: %1 col: %2",_obj,_color];
-		//_txt = format [" status: %1",count _AllV];
+			if ((_taken) and (_BBSide == "A")) then {_color = "ColorBlue";_alpha = 0.5};
+			if ((_taken) and (_BBSide == "B")) then {_color = "ColorRed";_alpha = 0.5};
 
-		_mark setMarkerColor _color;
+			_mark = _markers select _foreachIndex;
 
-		_mark setMarkerAlpha _alpha;
-		//_mark setMarkerText _txt;
-		}
+			_mark setMarkerColor _color;
+			_mark setMarkerAlpha _alpha;			
+			}
+		foreach _strArea;
+		};
 	};
 
 RYD_ClusterA = 

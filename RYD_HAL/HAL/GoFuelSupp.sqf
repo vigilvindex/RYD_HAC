@@ -1,3 +1,5 @@
+_SCRname = "GoFuelSupp";
+
 _i = "";
 
 _unit = _this select 0;

@@ -1,5 +1,7 @@
+_SCRname = "SuppFuel";
+
 private ["_HQ","_fuel","_noenemy","_fuelS","_fuelSG","_dried","_ZeroF","_av","_cisterns","_cis","_unitvar","_busy","_cisterns2","_Zunits","_a","_cistern","_Zunit","_noenemy","_halfway","_distT",
-	"_eClose1","_eClose2","_UL","_Dunits","_Dunit"];
+	"_eClose1","_eClose2","_UL","_Dunits","_Dunit","_supported"];
 
 _HQ = _this select 0;
 
@@ -103,7 +105,6 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 	{
 		{
 		_cistern = assignedvehicle (leader _x);
-		if (isNil ("_busy")) then {_busy = false};
 
 		for [{_b = 0},{_b < (count _ZeroF)},{_b = _b + 1}] do 
 			{
@@ -114,7 +115,10 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					{
 					if not ((group _Zunit) in (_HQ getVariable ["RydHQ_FSupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Zunit)]]
+						_supported = _HQ getVariable ["RydHQ_FSupportedG",[]];
+						_supported set [(count _supported),(group _Zunit)];
+						_HQ setVariable ["RydHQ_FSupportedG",_supported];
+						//_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Zunit)]]
 						}
 					};
 				}
@@ -125,7 +129,10 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					{
 					if not ((group _Zunit) in (_HQ getVariable ["RydHQ_FSupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Zunit)]]
+						_supported = _HQ getVariable ["RydHQ_FSupportedG",[]];
+						_supported set [(count _supported),(group _Zunit)];
+						_HQ setVariable ["RydHQ_FSupportedG",_supported];
+						//_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Zunit)]]
 						}
 					};
 				}
@@ -149,7 +156,12 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 				if ((random 100) < RydxHQ_AIChatDensity) then {[(leader _HQ),RydxHQ_AIC_SuppAss,"SuppAss"] call RYD_AIChatter};
 				_cisterns = _cisterns - [_x];
 				_Zunits = _Zunits - [_Zunit];
-				_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Zunit)]];
+				
+				_supported = _HQ getVariable ["RydHQ_FSupportedG",[]];
+				_supported set [(count _supported),(group _Zunit)];
+				_HQ setVariable ["RydHQ_FSupportedG",_supported];
+				
+				//_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Zunit)]];
 				//[_cistern,_Zunit,_dried,_HQ] spawn HAL_GoFuelSupp;
 				[[_cistern,_Zunit,_dried,_HQ],HAL_GoFuelSupp] call RYD_Spawn;
 				}
@@ -164,8 +176,8 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 			
 			if (((count _cisterns) == 0) or ((count _Zunits) == 0)) exitwith {};
 			};
+			
 		if (((count _cisterns) == 0) or ((count _Zunits) == 0)) exitwith {};
-		sleep 0.1;
 		}
 	foreach _cisterns2;
 	};
@@ -185,7 +197,10 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 					{
 					if not ((group _Dunit) in (_HQ getVariable ["RydHQ_FSupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Dunit)]]
+						_supported = _HQ getVariable ["RydHQ_FSupportedG",[]];
+						_supported set [(count _supported),(group _Dunit)];
+						_HQ setVariable ["RydHQ_FSupportedG",_supported];
+						//_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Dunit)]]
 						}
 					};
 				}
@@ -196,7 +211,10 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 					{
 					if not ((group _Dunit) in (_HQ getVariable ["RydHQ_FSupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Dunit)]]
+						_supported = _HQ getVariable ["RydHQ_FSupportedG",[]];
+						_supported set [(count _supported),(group _Dunit)];
+						_HQ setVariable ["RydHQ_FSupportedG",_supported];
+						//_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Dunit)]]
 						}
 					};
 				}
@@ -220,7 +238,12 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 				if ((random 100) < RydxHQ_AIChatDensity) then {[(leader _HQ),RydxHQ_AIC_SuppAss,"SuppAss"] call RYD_AIChatter};
 				_cisterns = _cisterns - [_x];
 				_Dunits = _Dunits - [_Dunit];
-				_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Dunit)]];
+				
+				_supported = _HQ getVariable ["RydHQ_FSupportedG",[]];
+				_supported set [(count _supported),(group _Dunit)];
+				_HQ setVariable ["RydHQ_FSupportedG",_supported];
+				
+				//_HQ setVariable ["RydHQ_FSupportedG",(_HQ getVariable ["RydHQ_FSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_FSupportedG",[]])),(group _Dunit)]];
 				//[_cistern,_Dunit,_dried,_HQ] spawn HAL_GoFuelSupp; 
 				[[_cistern,_Dunit,_dried,_HQ],HAL_GoFuelSupp] call RYD_Spawn;
 				}
@@ -235,8 +258,8 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 			
 			if (((count _cisterns) == 0) or ((count _Dunits) == 0)) exitwith {};
 			};
+			
 		if (((count _cisterns) == 0) or ((count _Dunits) == 0)) exitwith {};
-		sleep 0.1;
 		}
 	foreach _cisterns2;
 	};

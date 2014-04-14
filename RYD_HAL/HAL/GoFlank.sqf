@@ -1,3 +1,5 @@
+_SCRname = "GoFlank";
+
 _i1 = "";
 _i2 = "";
 _i3 = "";

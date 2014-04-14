@@ -1,3 +1,5 @@
+_SCRname = "Desperado";
+
 private ["_HQ","_rInit","_reck","_ally","_enemy","_leader","_distAllyS","_dist","_cAlly","_midD","_distEnemyS","_nearE","_distE","_distEnemyS","_cEnemy","_midDE"];
 
 _HQ = _this select 0;

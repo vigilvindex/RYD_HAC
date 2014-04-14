@@ -1,5 +1,6 @@
 RYD_StatusQuo = 
 	{
+	_SCRname = "SQ";
 	_orderFirst = _HQ getVariable "RydHQ_Orderfirst";
 	
 	if (isNil ("_orderFirst")) then 
@@ -1396,6 +1397,8 @@ RYD_LiveFeed =
 
 RYD_LF = 
 	{
+	_SCRname = "RYD_LF";
+	
 	private ["_src","_dc","_leader","_posS"];
 	
 	_src = _this select 0;
@@ -1805,14 +1808,87 @@ RYD_Spawn =
 	RydxHQ_Handles set [(count RydxHQ_Handles),_handle];
 	
 		{
-		if (scriptDone _x) then
+		if not (_x isEqualTo 0) then
 			{
-			RydxHQ_Handles set [_foreachIndex,0]
+			if (scriptDone _x) then
+				{
+				RydxHQ_Handles set [_foreachIndex,0]
+				}
 			}
 		}
 	foreach RydxHQ_Handles;
 		
 	RydxHQ_Handles = RydxHQ_Handles - [0];
 	
-	//diag_log format ["New Handle - time: %1 count: %2",time,count RydxHQ_Handles];
+	/*diag_log format ["New Handle - time: %1 count: (%2 - %3)",time,{not ((str _x) in ["<NULL-script>"])} count RydxHQ_Handles,{((str _x) in ["<NULL-script>"])} count RydxHQ_Handles];
+	
+	private ["_arr","_ix"];
+	
+	_arr = toArray (str _script);
+	_ix = _arr find 59;
+	_arr resize _ix;
+	
+	if not ((_arr select 1) in [83]) then
+		{
+		_arr resize 32
+		}
+	else
+		{
+		_arr = _arr - [34];
+		_arr = [_arr] call RYD_ReverseArr;
+		_arr resize ((_arr find 61) - 1);
+		_arr = [_arr] call RYD_ReverseArr;
+		};
+		
+	_string = toString _arr;
+	
+	if (isNil "RYD_Array") then {RYD_Array = []};
+	
+	if ((count RYD_Array) < 1) then
+		{
+		RYD_Array = [[_string,1]]
+		}
+	else
+		{
+		_inside = false;
+		
+			{
+			if (_string in _x) exitWith 
+				{
+				_x set [1,(_x select 1) + 1];
+				_inside = true
+				}
+			}
+		foreach RYD_Array;
+		
+		if not (_inside) then
+			{
+			RYD_Array set [(count RYD_Array),[_string,1]]
+			}
+		};
+	
+	diag_log "--------------------------------------------------------------------------------";
+	
+		{
+		diag_log format ["%1",_x];
+		}
+	foreach RYD_Array*/
+	};
+	
+RYD_ReverseArr = 
+	{
+	private ["_arr","_final","_amnt"];
+	
+	_arr = _this select 0;
+	_amnt = count _arr;
+	
+	_final = [];
+	
+		{
+		_amnt = _amnt - 1;
+		_final set [_amnt,_x]
+		}
+	foreach _arr;
+	
+	_final
 	};

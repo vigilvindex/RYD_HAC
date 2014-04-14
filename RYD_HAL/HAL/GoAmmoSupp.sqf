@@ -1,3 +1,5 @@
+_SCRname = "GoAmmoSupp";
+
 _i = "";
 
 _unit = _this select 0;

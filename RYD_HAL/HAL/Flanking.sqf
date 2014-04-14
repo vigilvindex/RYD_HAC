@@ -1,3 +1,5 @@
+_SCRname = "Flanking";
+
 private ["_HQ","_ldr","_Fineness","_obj","_KnEnemies","_FlankAv","_Epos0","_Epos1","_default","_Epos0Max","_Epos0Min","_sel0Max","_sel0Min","_Epos1Max","_Epos1Min","_sel1Max","_sel1Min",
 	"_EposA","_EposB","_max0Enemy","_min0Enemy","_max1Enemy","_min1Enemy","_PosMid0","_PosMid1","_dX","_dY","_angle0","_BEnemyPosA","_BEnemyPosB","_BEnemyPos","_rnd1","_rnd2","_minF",
 	"_maxF","_bothF","_FlankU","_AAO"];

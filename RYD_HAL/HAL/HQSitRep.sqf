@@ -1,4 +1,4 @@
-
+_SCRname = "SitRep";
 _HQ = _this select 0;
 
 _HQ setVariable ["leaderHQ",(leader _HQ)];

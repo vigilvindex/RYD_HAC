@@ -1,5 +1,7 @@
+_SCRname = "SuppMed";
+
 private ["_HQ","_med","_noenemy","_medS","_medSG","_medASG","_airMedAv","_landMedAv","_busy","_wounded","_Swounded","_Lwounded","_ambulances","_amb","_unitvar","_ambulances2","_SWunits","_a",
-	"_SWunit","_halfway","_distT","_eClose1","_eClose2","_UL","_Wunits","_ambulance","_WUnit"];
+	"_SWunit","_halfway","_distT","_eClose1","_eClose2","_UL","_Wunits","_ambulance","_WUnit","_supported"];
 
 _HQ = _this select 0;
 
@@ -121,7 +123,6 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 	{
 		{
 		_ambulance = assignedvehicle (leader _x);
-		if (isNil ("_busy")) then {_busy = false};
 
 		for [{_b = 0},{_b < (count _Swounded)},{_b = _b + 1}] do 
 			{
@@ -132,7 +133,10 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					{
 					if not ((group _SWunit) in (_HQ getVariable ["RydHQ_SupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _SWunit)]]
+						_supported = _HQ getVariable ["RydHQ_SupportedG",[]];
+						_supported set [(count _supported),(group _SWunit)];
+						_HQ setVariable ["RydHQ_SupportedG",_supported];
+						//_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _SWunit)]]
 						}
 					};
 				}
@@ -143,7 +147,10 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					{
 					if not ((group _SWunit) in (_HQ getVariable ["RydHQ_SupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _SWunit)]]
+						_supported = _HQ getVariable ["RydHQ_SupportedG",[]];
+						_supported set [(count _supported),(group _SWunit)];
+						_HQ setVariable ["RydHQ_SupportedG",_supported];
+						//_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _SWunit)]]
 						}
 					};
 				}
@@ -170,7 +177,12 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 				if (_x in _airMedAv) then {_airMedAv = _airMedAv - [_x]} else {_landMedAv = _landMedAv - [_x]};
 				_ambulances = _ambulances - [_x];
 				_SWunits = _SWunits - [_SWunit];
-				_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _SWunit)]];
+				
+				_supported = _HQ getVariable ["RydHQ_SupportedG",[]];
+				_supported set [(count _supported),(group _SWunit)];
+				_HQ setVariable ["RydHQ_SupportedG",_supported];
+				
+				//_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _SWunit)]];
 				//[_ambulance,_SWunit,_wounded,_HQ] spawn HAL_GoMedSupp; 
 				[[_ambulance,_SWunit,_wounded,_HQ],HAL_GoMedSupp] call RYD_Spawn;
 				}
@@ -185,8 +197,8 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 			
 			if (((count _ambulances) == 0) or ((count _SWunits) == 0)) exitwith {};
 			};
+			
 		if (((count _ambulances) == 0) or ((count _SWunits) == 0)) exitwith {};
-		sleep 0.1;
 		}
 	foreach _ambulances2;
 	};
@@ -206,7 +218,10 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 					{
 					if not ((group _Wunit) in (_HQ getVariable ["RydHQ_SupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _Wunit)]]
+						_supported = _HQ getVariable ["RydHQ_SupportedG",[]];
+						_supported set [(count _supported),(group _Wunit)];
+						_HQ setVariable ["RydHQ_SupportedG",_supported];
+						//_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _Wunit)]]
 						}
 					};
 				}
@@ -217,7 +232,10 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 					{
 					if not ((group _Wunit) in (_HQ getVariable ["RydHQ_SupportedG",[]])) then 
 						{
-						_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _Wunit)]]
+						_supported = _HQ getVariable ["RydHQ_SupportedG",[]];
+						_supported set [(count _supported),(group _Wunit)];
+						_HQ setVariable ["RydHQ_SupportedG",_supported];
+						//_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _Wunit)]]
 						}
 					};
 				}
@@ -244,7 +262,12 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 				if (_x in _airMedAv) then {_airMedAv = _airMedAv - [_x]} else {_landMedAv = _landMedAv - [_x]};
 				_ambulances = _ambulances - [_x];
 				_Wunits = _Wunits - [_Wunit];
-				_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _Wunit)]];
+				
+				_supported = _HQ getVariable ["RydHQ_SupportedG",[]];
+				_supported set [(count _supported),(group _Wunit)];
+				_HQ setVariable ["RydHQ_SupportedG",_supported];
+				
+				//_HQ setVariable ["RydHQ_SupportedG",(_HQ getVariable ["RydHQ_SupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_SupportedG",[]])),(group _Wunit)]];
 				//[_ambulance,_Wunit,_wounded,_HQ] spawn HAL_GoMedSupp; 
 				[[_ambulance,_Wunit,_wounded,_HQ],HAL_GoMedSupp] call RYD_Spawn;
 				}
@@ -259,8 +282,8 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 			
 			if (((count _ambulances) == 0) or ((count _Wunits) == 0)) exitwith {};
 			};
+			
 		if (((count _ambulances) == 0) or ((count _Wunits) == 0)) exitwith {};
-		sleep 0.1;
 		}
 	foreach _ambulances2;
 	};

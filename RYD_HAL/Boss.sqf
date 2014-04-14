@@ -1,3 +1,5 @@
+_SCRname = "Boss";
+
 private 
 	[
 	"_cntr","_lng","_nmbr","_sectors","_markers","_mark","_secpos","_sPosX","_sPosY","_sUrban","_sForest","_sHills","_sFlat","_sSea","_samplePos","_topArr","_sRoads","_bbCycle",
@@ -381,6 +383,8 @@ while {(RydBB_Active)} do
 		{
 		_code =
 			{
+			_SCRName = "BossC1";
+			
 			private ["_HQg","_side","_HQg0"];
 
 			_HQg = _this select 0;
@@ -615,27 +619,12 @@ while {(RydBB_Active)} do
 		//_mark = [_mark,_mainPos,"ColorRed","ICON",[1,1],0,1,"mil_triangle",""] call RYD_Marker;
 
 		_attackAxis = [_ArmyPos,_mainPos,10] call RYD_AngTowards;
-if ((true) and (true)) then
-	{
-		if (RydBB_Debug) then
-			{
-				{
-				_posStr = _x select 0;
-				_valStr = _x select 1;
-				_taken = _x select 2;
-				_mark = "StrArea" + (str (random 1000));
-				_color = "ColorYellow";
-				_alpha = 0.1;
-				if ((_taken) and (_BBSide == "A")) then {_color = "ColorBlue";_alpha = 0.5};
-				if ((_taken) and (_BBSide == "B")) then {_color = "ColorRed";_alpha = 0.5};
-				_mark = [_mark,_posStr,_color,"ICON",[_valStr/2,_valStr/2],0,_alpha,"mil_dot",(str _valStr)] call RYD_Marker;
 
-				//[_x,_mark,_BBSide] spawn RYD_ObjMark
-				[[_x,_mark,_BBSide],RYD_ObjMark] call RYD_Spawn
-				}
-			foreach _strArea;
+		if (RydBB_Debug) then
+			{			
+			[[_strArea,_BBSide],RYD_ObjMark] call RYD_Spawn
 			};
-};
+			
 		if (RydBB_Debug) then
 			{
 			RydBBa_SAL globalChat format ["Big Boss %1 orients the flanks.",_BBSide];
@@ -1782,6 +1771,7 @@ if ((true) and (true)) then
 						[_front,_points,1200] call RYD_LocMultiTransform;
 
 						//[_x,_tgtsAround,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQGrps,_HQpos,_front,_secsAround,_goingReserve,_BBSide] spawn RYD_ExecutePath;
+
 						[[_x,_tgtsAround,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQGrps,_HQpos,_front,_secsAround,_goingReserve,_BBSide],RYD_ExecutePath] call RYD_Spawn;
 
 						waitUntil
@@ -1850,6 +1840,7 @@ if ((true) and (true)) then
 			[_front,_points,1000] call RYD_LocMultiTransform;
 
 			//[_x,_goingAhead,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQs,_front,_takenPoints,_hostileGroups,_BBSide] spawn RYD_ReserveExecuting;
+
 			[[_x,_goingAhead,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQs,_front,_takenPoints,_hostileGroups,_BBSide],RYD_ReserveExecuting] call RYD_Spawn;
 
 			waitUntil

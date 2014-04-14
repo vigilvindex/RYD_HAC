@@ -1,3 +1,5 @@
+_SCRname = "GoAttInf";
+
 _i = "";
 
 _unitG = _this select 0;

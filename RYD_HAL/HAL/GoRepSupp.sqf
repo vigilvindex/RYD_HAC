@@ -1,3 +1,5 @@
+_SCRname = "GoRepSupp";
+
 _i = "";
 
 _unit = _this select 0;

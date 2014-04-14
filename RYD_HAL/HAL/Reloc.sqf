@@ -1,3 +1,5 @@
+_SCRname = "Reloc";
+
 private ["_HQ","_expression","_radius","_precision","_sourcesCount","_LU","_lastpos","_position","_Spot","_posX","_posY","_isWater","_AAO","_obj"];
 
 _HQ = _this select 0;

@@ -1,3 +1,5 @@
+_SCRname = "Rev";
+
 private ["_HQ","_players","_KnU","_ldr","_dst","_friends","_enemies"];
 
 _HQ = _this select 0;

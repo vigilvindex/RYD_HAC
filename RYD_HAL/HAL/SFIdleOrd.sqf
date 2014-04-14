@@ -1,3 +1,5 @@
+_SCRname = "SFIdleOrd";
+
 private [];
 
 _HQ = _this select 0;

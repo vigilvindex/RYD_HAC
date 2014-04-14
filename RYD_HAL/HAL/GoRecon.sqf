@@ -1,3 +1,5 @@
+_SCRname = "GoRecon";
+
 _i = "";
 
 _timer = 0;

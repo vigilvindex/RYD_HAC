@@ -1,3 +1,5 @@
+_SCRname = "LHQ";
+
 _cycle = 0;
 
 _HQ = _this select 0;

@@ -1,3 +1,5 @@
+_SCRname = "Front";
+
 private ["_front","_pos","_att","_XAxis","_YAxis","_dir","_isRec","_code","_code2"];
 
 _code = 
@@ -66,7 +68,7 @@ _code2 =
 		_ia setMarkerDir _dir;
 		_ia setMarkerBrush "Border";
 		_ia setMarkerColor "ColorKhaki";
-							
+		_SCRname = "Front2";				
 		[[_HQ,_front,_ia],_code] call RYD_Spawn
 		}
 	};
