@@ -1890,7 +1890,7 @@ RYD_BBSimpleD =
 
 						if (_arrow == "") then 
 							{
-							_arrow = [_frCenter,(group _x),"markArrow",_colorArr,"ICON","Arrow","","",[({(({alive _x} count (units _x)) > 0)} count _frs)/10,_lng/500],_angle] call RYD_Mark;
+							_arrow = [_frCenter,_x,"markArrow",_colorArr,"ICON","mil_arrow","","",[({(({alive _x} count (units _x)) > 0)} count _frs)/10,_lng/500],_angle] call RYD_Mark;
 							_x setVariable ["ArrowMark",_arrow];
 							}
 						else
@@ -1906,7 +1906,7 @@ RYD_BBSimpleD =
 				if (_HQPosMark == "") then
 					{
 					_HQPosMark = [(getPosATL (vehicle (leader _x))),_x,"HQMark",_colorArr,"ICON","mil_box","Position of " + (str (leader _x)),"",[0.5,0.5]] call RYD_Mark;
-					(group _x) setVariable ["HQPosMark",_HQPosMark]
+					_x setVariable ["HQPosMark",_HQPosMark]
 					}
 				else
 					{

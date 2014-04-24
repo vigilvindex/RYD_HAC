@@ -148,29 +148,30 @@ if not (_emptyV) then
 			{
 				{
 				_cR = objNull;
-				_pos = _x;
+				_pos0 = _x;
 
-					for "_i" from 100 to 600 step 100 do
+				for "_i" from 100 to 600 step 100 do
+					{
+					_nR = _pos0 nearRoads _i;
+					
+					if ((count _nR) > 0) exitWith
 						{
-						_nR = _pos nearRoads _i;
+						_cR = [_pos0,_nR] call RYD_FindClosest;
 						
-						if ((count _nR) > 0) exitWith
+						_pos0 = getPosATL _cR;
+						_pos = +_pos0;
+						_ct = 0;
+						
+						while {(isOnRoad _pos)} do
 							{
-							_cR = [_pos,_nR] call RYD_FindClosest;
-							
-							_pos = getPosATL _cR;
-							_ct = 0;
-							
-							while {(isOnRoad _pos)} do
-								{
-								_pos = [_pos,30] call RYD_RandomAround;
-								_ct = _ct + 1;
-								if (_ct > 50) exitWith {}
-								};
-							
-							_EDpositions set [(count _EDpositions),_pos];
-							}
+							_pos = [_pos0,30 + _ct] call RYD_RandomAround;
+							_ct = _ct + 1;
+							if (_ct > 50) exitWith {}
+							};
+						
+						_EDpositions set [(count _EDpositions),_pos];
 						}
+					}
 					
 				}
 			foreach [_posS,_posT];
@@ -196,6 +197,7 @@ if not (_emptyV) then
 	if ((count _EDpositions) > 1) then 
 		{
 		_Lpos = _EDpositions select 0;
+
 		_wp = [_unitG,([_Lpos,30] call RYD_RandomAround)] call RYD_WPadd;
 		};
 		

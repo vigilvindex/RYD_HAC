@@ -1088,9 +1088,9 @@ while {true} do
 	_HQ setVariable ["RydHQ_AirEvac",RydHQE_AirEvac]; 
 	
 	if (isNil "RydHQE_AAO") then {RydHQE_AAO = false};
-	_HQ setVariable ["RydHQ_AAO",RydHQ_AAO]; 
+	_HQ setVariable ["RydHQ_AAO",RydHQE_AAO]; 
 	if (isNil "RydHQE_ForceAAO") then {RydHQE_ForceAAO = false};
-	_HQ setVariable ["RydHQ_ForceAAO",RydHQ_ForceAAO];
+	_HQ setVariable ["RydHQ_ForceAAO",RydHQE_ForceAAO];
 	
 	if (isNil "RydHQE_Taken") then {RydHQE_Taken = []};
 	_HQ setVariable ["RydHQ_Taken",RydHQE_Taken];
