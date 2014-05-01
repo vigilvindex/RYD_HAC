@@ -10,6 +10,10 @@ RydHQ_Howitzer = ["M119","M119_US_EP1","D30_CDF","D30_Ins","D30_RU","D30_TK_EP1"
 RydHQ_Mortar = ["M252","M252_US_EP1","2b14_82mm_CDF","2b14_82mm_GUE","2b14_82mm_INS","2b14_82mm_TK_EP1","2b14_82mm_TK_GUE_EP1","2b14_82mm_TK_INS_EP1"];
 RydHQ_Rocket = ["MLRS","MLRS_DES_EP1","GRAD_CDF","GRAD_INS","GRAD_RU","GRAD_TK_EP1"];
 
+if (isNil "RydHQ_Add_OtherArty") then {RydHQ_Add_OtherArty = []};
+
+RydHQ_OtherArty = [] + RydHQ_Add_OtherArty;
+
 RydHQ_Mortar_A3 = RHQ_Mortars + ["I_Mortar_01_F","O_Mortar_01_F","B_G_Mortar_01_F","B_Mortar_01_F"] - RHQs_Mortars;
 RydHQ_SPMortar_A3 = RHQ_SPMortars + ["O_MBT_02_arty_F","B_MBT_01_arty_F"] - RHQs_SPMortars;
 RydHQ_Rocket_A3 = RHQ_RocketArty + ["B_MBT_01_mlrs_F"] - RHQs_RocketArty;
@@ -32,7 +36,8 @@ RydxHQ_FlareMuzzles =
 	["EGLM",["UGL_FlareWhite_F","UGL_FlareGreen_F","UGL_FlareRed_F","UGL_FlareYellow_F","UGL_FlareCIR_F"]],
 	["GL_3GL_F",["UGL_FlareWhite_F","UGL_FlareGreen_F","UGL_FlareRed_F","UGL_FlareYellow_F","UGL_FlareCIR_F","3Rnd_UGL_FlareWhite_F","3Rnd_UGL_FlareGreen_F","3Rnd_UGL_FlareRed_F","3Rnd_UGL_FlareYellow_F","3Rnd_UGL_FlareCIR_F"]]
 	];
-
+	
+if (isNil ("RydART_Amount")) then {RydART_Amount = 6};
 if (isNil ("RydBB_Active")) then {RydBB_Active = false};
 if (isNil ("RydBBa_HQs")) then {RydBBa_HQs = []};
 if (isNil ("RydBBb_HQs")) then {RydBBb_HQs = []};
@@ -43,6 +48,9 @@ if (isNil ("RydBB_BBOnMap")) then {RydBB_BBOnMap = false};
 if (isNil ("RydBB_CustomObjOnly")) then {RydBB_CustomObjOnly = false};
 if (isNil ("RydBB_LRelocating")) then {RydBB_LRelocating = true};
 
+
+if (isNil ("RydHQ_GroupMarks")) then {RydHQ_GroupMarks = []};
+if (isNil ("RydHQ_ChatDebug")) then {RydHQ_ChatDebug = false};
 if (isNil ("RydHQ_PathFinding")) then {RydHQ_PathFinding = 0};
 if (isNil "RydxHQ_SynchroAttack") then {RydxHQ_SynchroAttack = false};
 if (isNil "RydHQ_TimeM") then {RydHQ_TimeM = false};

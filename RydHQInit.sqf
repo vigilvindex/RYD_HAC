@@ -7,7 +7,7 @@ sleep RydHQ_Wait;
 
 waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
-_hi = "HAL 1.14 is here";
+_hi = "HAL 1.15 is here";
 
 if ((random 100) < 1) then {_hi = "Good morning, Dave."};
 
@@ -79,4 +79,9 @@ if not (isNull leaderHQD) then {[[(group leaderHQD)],D_HQSitRep] call RYD_Spawn;
 if not (isNull leaderHQE) then {[[(group leaderHQE)],E_HQSitRep] call RYD_Spawn;sleep 5};
 if not (isNull leaderHQF) then {[[(group leaderHQF)],F_HQSitRep] call RYD_Spawn;sleep 5};
 if not (isNull leaderHQG) then {[[(group leaderHQG)],G_HQSitRep] call RYD_Spawn;sleep 5};
-if not (isNull leaderHQH) then {[[(group leaderHQH)],H_HQSitRep] call RYD_Spawn};
+if not (isNull leaderHQH) then {[[(group leaderHQH)],H_HQSitRep] call RYD_Spawn;sleep 5};
+
+if ((count RydHQ_GroupMarks) > 0) then
+	{
+	[RydHQ_GroupMarks,RYD_GroupMarkerLoop] call RYD_Spawn
+	};
