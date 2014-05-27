@@ -7,15 +7,17 @@ sleep RydHQ_Wait;
 
 waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
-_hi = "HAL 1.15 is here";
+_hi = "HAL 1.16 is here";
 
 if ((random 100) < 1) then {_hi = "Good morning, Dave."};
 
-leaderHQ sidechat _hi;
+leaderHQ globalchat _hi;
 
-call compile preprocessfile "RYD_HAL\VarInit.sqf";
-call compile preprocessfile "RYD_HAL\HAC_fnc.sqf";
-call compile preprocessfile "RYD_HAL\HAC_fnc2.sqf";
+if (isNil "RYD_Path") then {RYD_Path = "RYD_HAL\"};
+
+call compile preprocessfile (RYD_Path + "VarInit.sqf");
+call compile preprocessfile (RYD_Path + "HAC_fnc.sqf");
+call compile preprocessfile (RYD_Path + "HAC_fnc2.sqf");
 
 publicVariable "RYD_MP_Sidechat";
 
@@ -33,7 +35,7 @@ if not (isNull leaderHQF) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders)
 if not (isNull leaderHQG) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQG];RydxHQ_AllHQ set [(count RydxHQ_AllHQ),(group leaderHQG)];(group leaderHQG) setVariable ["RydHQ_CodeSign","G"];if not (isNil ("HET_FG")) then {(group leaderHQG) setVariable ["RydHQ_Front",HET_FG]}};
 if not (isNull leaderHQH) then {RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),leaderHQH];RydxHQ_AllHQ set [(count RydxHQ_AllHQ),(group leaderHQH)];(group leaderHQH) setVariable ["RydHQ_CodeSign","H"];if not (isNil ("HET_FH")) then {(group leaderHQH) setVariable ["RydHQ_Front",HET_FH]}};
 
-[] call compile preprocessfile "RYD_HAL\Front.sqf";
+[] call compile preprocessfile (RYD_Path + "Front.sqf");
 
 if (RydHQ_TimeM) then 
 	{
@@ -42,7 +44,7 @@ if (RydHQ_TimeM) then
 	
 if (RydBB_Active) then 
 	{
-	call compile preprocessfile "RYD_HAL\Boss_fnc.sqf";
+	call compile preprocessfile (RYD_Path + "Boss_fnc.sqf");
 	RydBBa_InitDone = false;
 	RydBBb_InitDone = false;
 

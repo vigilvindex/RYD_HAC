@@ -1768,7 +1768,7 @@ while {(RydBB_Active)} do
 							}
 						foreach [_HQpos,_acT];
 					
-						[_front,_points,1200] call RYD_LocMultiTransform;
+						[_front,+_points,1200] call RYD_LocMultiTransform;
 
 						//[_x,_tgtsAround,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQGrps,_HQpos,_front,_secsAround,_goingReserve,_BBSide] spawn RYD_ExecutePath;
 
@@ -1803,6 +1803,17 @@ while {(RydBB_Active)} do
 		_HQpoints set [(count _HQpoints),getPosATL (vehicle (leader _x))]
 		}
 	foreach _BBHQGrps;
+	
+	_takenPoints = _points;
+
+	_points = [];
+
+		{
+		_points set [(count _points),(_x select 0)]
+		}
+	foreach _takenPoints;
+
+	_points = _points + _HQpoints;
 
 		{
 		_aliveHQ = true;
@@ -1821,23 +1832,13 @@ while {(RydBB_Active)} do
 			_tObj3 = _HQ getVariable ["RydHQ_Obj3",objNull];
 			_tObj4 = _HQ getVariable ["RydHQ_Obj4",objNull];
 
-			_takenPoints = _points;
-
-			_points = [];
-
-				{
-				_points set [(count _points),(_x select 0)]
-				}
-			foreach _takenPoints;
-
-			_points = _points + _HQpoints;
 	/*
 				{
 				_mark = [(str (random 1000)),_x,"ColorOrange","ICON",[0.5,0.5],0,1,"DOT","R"] call RYD_Marker;
 				}
 			foreach _points;
 	*/
-			[_front,_points,1000] call RYD_LocMultiTransform;
+			[_front,+_points,1000] call RYD_LocMultiTransform;
 
 			//[_x,_goingAhead,_tObj1,_tObj2,_tObj3,_tObj4,_BBHQs,_front,_takenPoints,_hostileGroups,_BBSide] spawn RYD_ReserveExecuting;
 

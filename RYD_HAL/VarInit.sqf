@@ -148,7 +148,7 @@ if (isNil ("RydHQ_ACRLib")) then {RydHQ_ACRLib = false};
 if (isNil ("RydHQ_BAFLib")) then {RydHQ_BAFLib = false};
 if (isNil ("RydHQ_PMCLib")) then {RydHQ_PMCLib = false};
 
-call compile preprocessfile "RYD_HAL\RHQLibrary.sqf";
+call compile preprocessfile (RYD_Path + "RHQLibrary.sqf");
 
 if (isNil "RydxHQ_AIChatDensity") then {RydxHQ_AIChatDensity = 10};
 if (isNil "RydxHQ_NEAware") then {RydxHQ_NEAware = 0};
@@ -636,48 +636,48 @@ if (RydHQ_PMCLib) then
 	RHQ_Crew = RHQ_Crew + RHQ_Crew_PMC;
 	};
 
-Boss = compile preprocessfile "RYD_HAL\Boss.sqf";
-Desperado = compile preprocessfile "RYD_HAL\Desperation.sqf";
+Boss = compile preprocessfile (RYD_Path + "Boss.sqf");
+Desperado = compile preprocessfile (RYD_Path + "Desperation.sqf");
 
-HAL_EnemyScan = compile preprocessfile "RYD_HAL\HAL\EnemyScan.sqf";
-HAL_Flanking = compile preprocessfile "RYD_HAL\HAL\Flanking.sqf";
-HAL_Garrison = compile preprocessfile "RYD_HAL\HAL\Garrison.sqf";
-HAL_GoAmmoSupp = compile preprocessfile "RYD_HAL\HAL\GoAmmoSupp.sqf";
-HAL_GoAttAir = compile preprocessfile "RYD_HAL\HAL\GoAttAir.sqf";
-HAL_GoAttArmor = compile preprocessfile "RYD_HAL\HAL\GoAttArmor.sqf";
-HAL_GoAttInf = compile preprocessfile "RYD_HAL\HAL\GoAttInf.sqf";
-HAL_GoAttSniper = compile preprocessfile "RYD_HAL\HAL\GoAttSniper.sqf";
-HAL_GoCapture = compile preprocessfile "RYD_HAL\HAL\GoCapture.sqf";
-HAL_GoDef = compile preprocessfile "RYD_HAL\HAL\GoDef.sqf";
-HAL_GoDefAir = compile preprocessfile "RYD_HAL\HAL\GoDefAir.sqf";
-HAL_GoDefRecon = compile preprocessfile "RYD_HAL\HAL\GoDefRecon.sqf";
-HAL_GoDefRes = compile preprocessfile "RYD_HAL\HAL\GoDefRes.sqf";
-HAL_GoFlank = compile preprocessfile "RYD_HAL\HAL\GoFlank.sqf";
-HAL_GoFuelSupp = compile preprocessfile "RYD_HAL\HAL\GoFuelSupp.sqf";
-HAL_GoIdle = compile preprocessfile "RYD_HAL\HAL\GoIdle.sqf";
-HAL_GoMedSupp = compile preprocessfile "RYD_HAL\HAL\GoMedSupp.sqf";
-HAL_GoRecon = compile preprocessfile "RYD_HAL\HAL\GoRecon.sqf";
-HAL_GoRepSupp = compile preprocessfile "RYD_HAL\HAL\GoRepSupp.sqf";
-HAL_GoRest = compile preprocessfile "RYD_HAL\HAL\GoRest.sqf";
-HAL_GoSFAttack = compile preprocessfile "RYD_HAL\HAL\GoSFAttack.sqf";
-HAL_HQOrders = compile preprocessfile "RYD_HAL\HAL\HQOrders.sqf";
-HAL_HQOrdersEast = compile preprocessfile "RYD_HAL\HAL\HQOrdersEast.sqf";
-HAL_HQOrdersDef = compile preprocessfile "RYD_HAL\HAL\HQOrdersDef.sqf";
-HAL_HQReset = compile preprocessfile "RYD_HAL\HAL\HQReset.sqf";
-HAL_LHQ = compile preprocessfile "RYD_HAL\HAL\LHQ.sqf";
-HAL_LPos = compile preprocessfile "RYD_HAL\HAL\LPos.sqf";
-HAL_Personality = compile preprocessfile "RYD_HAL\HAL\Personality.sqf";
-HAL_Reloc = compile preprocessfile "RYD_HAL\HAL\Reloc.sqf";
-HAL_Rev = compile preprocessfile "RYD_HAL\HAL\Rev.sqf";
-HAL_SCargo = compile preprocessfile "RYD_HAL\HAL\SCargo.sqf";
-HAL_SFIdleOrd = compile preprocessfile "RYD_HAL\HAL\SFIdleOrd.sqf";
-HAL_Spotscan = compile preprocessfile "RYD_HAL\HAL\SpotScan.sqf";
-HAL_SuppAmmo = compile preprocessfile "RYD_HAL\HAL\SuppAmmo.sqf";
-HAL_SuppFuel = compile preprocessfile "RYD_HAL\HAL\SuppFuel.sqf";
-HAL_SuppMed = compile preprocessfile "RYD_HAL\HAL\SuppMed.sqf";
-HAL_SuppRep = compile preprocessfile "RYD_HAL\HAL\SuppRep.sqf";
+HAL_EnemyScan = compile preprocessfile (RYD_Path + "HAL\EnemyScan.sqf");
+HAL_Flanking = compile preprocessfile (RYD_Path + "HAL\Flanking.sqf");
+HAL_Garrison = compile preprocessfile (RYD_Path + "HAL\Garrison.sqf");
+HAL_GoAmmoSupp = compile preprocessfile (RYD_Path + "HAL\GoAmmoSupp.sqf");
+HAL_GoAttAir = compile preprocessfile (RYD_Path + "HAL\GoAttAir.sqf");
+HAL_GoAttArmor = compile preprocessfile (RYD_Path + "HAL\GoAttArmor.sqf");
+HAL_GoAttInf = compile preprocessfile (RYD_Path + "HAL\GoAttInf.sqf");
+HAL_GoAttSniper = compile preprocessfile (RYD_Path + "HAL\GoAttSniper.sqf");
+HAL_GoCapture = compile preprocessfile (RYD_Path + "HAL\GoCapture.sqf");
+HAL_GoDef = compile preprocessfile (RYD_Path + "HAL\GoDef.sqf");
+HAL_GoDefAir = compile preprocessfile (RYD_Path + "HAL\GoDefAir.sqf");
+HAL_GoDefRecon = compile preprocessfile (RYD_Path + "HAL\GoDefRecon.sqf");
+HAL_GoDefRes = compile preprocessfile (RYD_Path + "HAL\GoDefRes.sqf");
+HAL_GoFlank = compile preprocessfile (RYD_Path + "HAL\GoFlank.sqf");
+HAL_GoFuelSupp = compile preprocessfile (RYD_Path + "HAL\GoFuelSupp.sqf");
+HAL_GoIdle = compile preprocessfile (RYD_Path + "HAL\GoIdle.sqf");
+HAL_GoMedSupp = compile preprocessfile (RYD_Path + "HAL\GoMedSupp.sqf");
+HAL_GoRecon = compile preprocessfile (RYD_Path + "HAL\GoRecon.sqf");
+HAL_GoRepSupp = compile preprocessfile (RYD_Path + "HAL\GoRepSupp.sqf");
+HAL_GoRest = compile preprocessfile (RYD_Path + "HAL\GoRest.sqf");
+HAL_GoSFAttack = compile preprocessfile (RYD_Path + "HAL\GoSFAttack.sqf");
+HAL_HQOrders = compile preprocessfile (RYD_Path + "HAL\HQOrders.sqf");
+HAL_HQOrdersEast = compile preprocessfile (RYD_Path + "HAL\HQOrdersEast.sqf");
+HAL_HQOrdersDef = compile preprocessfile (RYD_Path + "HAL\HQOrdersDef.sqf");
+HAL_HQReset = compile preprocessfile (RYD_Path + "HAL\HQReset.sqf");
+HAL_LHQ = compile preprocessfile (RYD_Path + "HAL\LHQ.sqf");
+HAL_LPos = compile preprocessfile (RYD_Path + "HAL\LPos.sqf");
+HAL_Personality = compile preprocessfile (RYD_Path + "HAL\Personality.sqf");
+HAL_Reloc = compile preprocessfile (RYD_Path + "HAL\Reloc.sqf");
+HAL_Rev = compile preprocessfile (RYD_Path + "HAL\Rev.sqf");
+HAL_SCargo = compile preprocessfile (RYD_Path + "HAL\SCargo.sqf");
+HAL_SFIdleOrd = compile preprocessfile (RYD_Path + "HAL\SFIdleOrd.sqf");
+HAL_Spotscan = compile preprocessfile (RYD_Path + "HAL\SpotScan.sqf");
+HAL_SuppAmmo = compile preprocessfile (RYD_Path + "HAL\SuppAmmo.sqf");
+HAL_SuppFuel = compile preprocessfile (RYD_Path + "HAL\SuppFuel.sqf");
+HAL_SuppMed = compile preprocessfile (RYD_Path + "HAL\SuppMed.sqf");
+HAL_SuppRep = compile preprocessfile (RYD_Path + "HAL\SuppRep.sqf");
 
-A_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRep.sqf";
+A_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRep.sqf");
 
 if (isNil ("RydHQ_Obj1")) then {RydHQ_Obj1 = vehicle leaderHQ};
 if (isNil ("RydHQ_Obj2")) then {RydHQ_Obj2 = RydHQ_Obj1};
@@ -686,7 +686,7 @@ if (isNil ("RydHQ_Obj4")) then {RydHQ_Obj4 = RydHQ_Obj3};
 
 if not (isNil ("leaderHQB")) then 
 	{
-	B_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRepB.sqf";	
+	B_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRepB.sqf");	
 	if (isNil ("RydHQB_Obj1")) then {RydHQB_Obj1 = vehicle leaderHQB};
 	if (isNil ("RydHQB_Obj2")) then {RydHQB_Obj2 = RydHQB_Obj1};
 	if (isNil ("RydHQB_Obj3")) then {RydHQB_Obj3 = RydHQB_Obj2};
@@ -695,7 +695,7 @@ if not (isNil ("leaderHQB")) then
 
 if not (isNil ("leaderHQC")) then 
 	{
-	C_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRepC.sqf";
+	C_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRepC.sqf");
 	if (isNil ("RydHQC_Obj1")) then {RydHQC_Obj1 = vehicle leaderHQC};
 	if (isNil ("RydHQC_Obj2")) then {RydHQC_Obj2 = RydHQC_Obj1};
 	if (isNil ("RydHQC_Obj3")) then {RydHQC_Obj3 = RydHQC_Obj2};
@@ -704,7 +704,7 @@ if not (isNil ("leaderHQC")) then
 
 if not (isNil ("leaderHQD")) then 
 	{
-	D_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRepD.sqf";
+	D_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRepD.sqf");
 	if (isNil ("RydHQD_Obj1")) then {RydHQD_Obj1 = vehicle leaderHQD};
 	if (isNil ("RydHQD_Obj2")) then {RydHQD_Obj2 = RydHQD_Obj1};
 	if (isNil ("RydHQD_Obj3")) then {RydHQD_Obj3 = RydHQD_Obj2};
@@ -713,7 +713,7 @@ if not (isNil ("leaderHQD")) then
 
 if not (isNil ("leaderHQE")) then 
 	{
-	E_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRepE.sqf";
+	E_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRepE.sqf");
 	if (isNil ("RydHQE_Obj1")) then {RydHQE_Obj1 = vehicle leaderHQE};
 	if (isNil ("RydHQE_Obj2")) then {RydHQE_Obj2 = RydHQE_Obj1};
 	if (isNil ("RydHQE_Obj3")) then {RydHQE_Obj3 = RydHQE_Obj2};
@@ -722,7 +722,7 @@ if not (isNil ("leaderHQE")) then
 
 if not (isNil ("leaderHQF")) then 
 	{
-	F_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRepF.sqf";
+	F_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRepF.sqf");
 	if (isNil ("RydHQF_Obj1")) then {RydHQF_Obj1 = vehicle leaderHQF};
 	if (isNil ("RydHQF_Obj2")) then {RydHQF_Obj2 = RydHQF_Obj1};
 	if (isNil ("RydHQF_Obj3")) then {RydHQF_Obj3 = RydHQF_Obj2};
@@ -731,7 +731,7 @@ if not (isNil ("leaderHQF")) then
 
 if not (isNil ("leaderHQG")) then 
 	{
-	G_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRepG.sqf";
+	G_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRepG.sqf");
 	if (isNil ("RydHQG_Obj1")) then {RydHQG_Obj1 = vehicle leaderHQG};
 	if (isNil ("RydHQG_Obj2")) then {RydHQG_Obj2 = RydHQG_Obj1};
 	if (isNil ("RydHQG_Obj3")) then {RydHQG_Obj3 = RydHQG_Obj2};
@@ -740,7 +740,7 @@ if not (isNil ("leaderHQG")) then
 
 if not (isNil ("leaderHQH")) then 
 	{
-	H_HQSitRep = compile preprocessfile "RYD_HAL\HAL\HQSitRepH.sqf";
+	H_HQSitRep = compile preprocessfile (RYD_Path + "HAL\HQSitRepH.sqf");
 	if (isNil ("RydHQH_Obj1")) then {RydHQH_Obj1 = vehicle leaderHQH};
 	if (isNil ("RydHQH_Obj2")) then {RydHQH_Obj2 = RydHQH_Obj1};
 	if (isNil ("RydHQH_Obj3")) then {RydHQH_Obj3 = RydHQH_Obj2};
