@@ -7,7 +7,7 @@ sleep RydHQ_Wait;
 
 waituntil {sleep 1;not (isNil ("leaderHQ"))};
 
-_hi = "HAL 1.16 is here";
+_hi = "HAL 1.161 is here";
 
 if ((random 100) < 1) then {_hi = "Good morning, Dave."};
 

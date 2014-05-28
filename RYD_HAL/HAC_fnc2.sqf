@@ -1116,6 +1116,8 @@ RYD_StatusQuo =
 						_code =
 							{
 							_Lpos = _this select 0;
+							_HQ = _this select 1;
+							_knownEG = _this select 2;
 						
 							_eDst = 1000;
 							_onPlace = false;
@@ -1185,7 +1187,7 @@ RYD_StatusQuo =
 								}
 							};
 							
-						[[_Lpos],_code] call RYD_Spawn
+						[[_Lpos,_HQ,_knownEG],_code] call RYD_Spawn
 						}
 					}
 				}
