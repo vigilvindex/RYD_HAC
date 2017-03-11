@@ -22,7 +22,7 @@ _HQ = _this select 0;
 			_wp = [_x,_start,"MOVE","CARELESS","GREEN","NORMAL",["true", "{(vehicle _x) land 'LAND'} foreach (units (group this)); deletewaypoint [(group this), 0]"]] call RYD_WPadd;
 
 			_exh = (_HQ getVariable ["RydHQ_Exhausted",[]]);
-			_exh set [(count _exh),_x];
+			_exh pushBack _x;
 			_HQ setVariable ["RydHQ_Exhausted",_exh];
 			}
 		else

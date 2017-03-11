@@ -2,7 +2,15 @@ _SCRname = "SitRepE";
 _HQ = _this select 0;
 
 _HQ setVariable ["leaderHQ",(leader _HQ)];
+_csN = +RydHQ_CallSignsN;
 
+	{
+	_nouns = [_x] call RYD_RandomOrdB;
+	_csN set [_foreachIndex,_nouns]
+	}
+foreach _csN;
+
+_HQ setVariable ["RydHQ_CallSignsN",_csN];
 _HQ setVariable ["RydHQ_Cyclecount",0];
 _cycleC = 0;
 
@@ -44,642 +52,57 @@ if (isNil ("RydHQE_AmmoBoxes")) then
 	
 _HQ setVariable ["RydHQ_AmmoBoxes",RydHQE_AmmoBoxes];
 
-_specFor_class = RHQ_SpecFor + 
-	[
-	] - RHQs_SpecFor;
+_specFor_class = RHQ_SpecFor + RYD_WS_specFor_class - RHQs_SpecFor;
 
-_recon_class = RHQ_Recon + 
-	[
-	"O_recon_exp_F",
-	"O_recon_F",
-	"O_recon_JTAC_F",
-	"O_recon_LAT_F",
-	"O_recon_M_F",
-	"O_recon_medic_F",
-	"O_recon_TL_F",
-	"B_recon_exp_F",
-	"B_recon_F",
-	"B_recon_JTAC_F",
-	"B_recon_LAT_F",
-	"B_recon_M_F",
-	"B_recon_medic_F",
-	"B_recon_TL_F",
-	"I_UAV_AI",
-	"O_UAV_AI",
-	"B_UAV_AI",
-	"I_UAV_01_F",
-	"I_UAV_02_CAS_F",
-	"I_UAV_02_F",
-	"I_UGV_01_F",
-	"I_UGV_01_rcws_F",
-	"O_UAV_01_F",
-	"O_UAV_02_CAS_F",
-	"O_UAV_02_F",
-	"O_UGV_01_F",
-	"O_UGV_01_rcws_F",
-	"B_UAV_01_F",
-	"B_UAV_02_CAS_F",
-	"B_UAV_02_F",
-	"B_UGV_01_F",
-	"B_UGV_01_rcws_F"
-	] - RHQs_Recon;
+_recon_class = RHQ_Recon + RYD_WS_recon_class - RHQs_Recon;
 	
-_FO_class = RHQ_FO + 
-	[
-	"I_Spotter_F",
-	"O_spotter_F",
-	"B_spotter_F",
-	"O_recon_JTAC_F",
-	"B_recon_JTAC_F"
-	] - RHQs_FO;
+_FO_class = RHQ_FO + RYD_WS_FO_class - RHQs_FO;
 	
-_snipers_class = RHQ_Snipers + 
-	[
-	"I_Sniper_F",
-	"O_sniper_F",
-	"B_sniper_F",
-	"I_Soldier_M_F",
-	"O_soldier_M_F",
-	"B_G_Soldier_M_F",
-	"B_soldier_M_F",
-	"O_recon_M_F",
-	"B_recon_M_F",
-	"O_soldierU_M_F"
-	] - RHQs_Snipers;
+_snipers_class = RHQ_Snipers + RYD_WS_snipers_class - RHQs_Snipers;
 	
-_ATinf_class = RHQ_ATInf + 
-	[
-	"I_Soldier_AT_F",
-	"I_Soldier_LAT_F",
-	"O_Soldier_AT_F",
-	"O_Soldier_LAT_F",
-	"B_soldier_AT_F",
-	"B_soldier_LAT_F",
-	"B_G_Soldier_LAT_F",
-	"O_soldierU_AT_F",
-	"O_soldierU_LAT_F",
-	"O_recon_LAT_F",
-	"B_CTRG_soldier_GL_LAT_F",
-	"B_recon_LAT_F"
-	] - RHQs_ATInf;
+_ATinf_class = RHQ_ATInf + RYD_WS_ATinf_class - RHQs_ATInf;
 	
-_AAinf_class = RHQ_AAInf + 
-	[
-	"I_Soldier_AA_F",
-	"B_soldier_AA_F",
-	"O_Soldier_AA_F",
-	"O_APC_Tracked_02_AA_F",
-	"B_APC_Tracked_01_AA_F",
-	"O_soldierU_AA_F"
-	] - RHQs_AAInf;
+_AAinf_class = RHQ_AAInf + RYD_WS_AAinf_class - RHQs_AAInf;
 
-_Inf_class = RHQ_Inf + 
-	[
-	"I_crew_F",
-	"I_engineer_F",
-	"I_helicrew_F",
-	"I_helipilot_F",
-	"I_medic_F",
-	"I_officer_F",
-	"I_pilot_F",
-	"I_Soldier_A_F",
-	"I_Soldier_AA_F",
-	"I_Soldier_AR_F",
-	"I_Soldier_AT_F",
-	"I_Soldier_exp_F",
-	"I_soldier_F",
-	"I_Soldier_GL_F",
-	"I_Soldier_LAT_F",
-	"I_Soldier_lite_F",
-	"I_Soldier_M_F",
-	"I_Soldier_repair_F",
-	"I_Soldier_SL_F",
-	"I_Soldier_TL_F",
-	"I_soldier_UAV_F",
-	"O_crew_F",
-	"O_engineer_F",
-	"O_helicrew_F",
-	"O_helipilot_F",
-	"O_medic_F",
-	"O_officer_F",
-	"O_Pilot_F",
-	"O_Soldier_A_F",
-	"O_Soldier_AA_F",
-	"O_Soldier_AR_F",
-	"O_Soldier_AT_F",
-	"O_soldier_exp_F",
-	"O_Soldier_F",
-	"O_Soldier_GL_F",
-	"O_Soldier_LAT_F",
-	"O_Soldier_lite_F",
-	"O_soldier_M_F",
-	"O_soldier_PG_F",
-	"O_soldier_repair_F",
-	"O_Soldier_SL_F",
-	"O_Soldier_TL_F",
-	"O_soldier_UAV_F",
-	"B_G_engineer_F",
-	"B_G_medic_F",
-	"B_G_officer_F",
-	"B_G_Soldier_A_F",
-	"B_G_Soldier_AR_F",
-	"B_G_Soldier_exp_F",
-	"B_G_Soldier_F",
-	"B_G_Soldier_GL_F",
-	"B_G_Soldier_LAT_F",
-	"B_G_Soldier_lite_F",
-	"B_G_Soldier_M_F",
-	"B_G_Soldier_SL_F",
-	"B_G_Soldier_TL_F",
-	"B_crew_F",
-	"B_engineer_F",
-	"B_helicrew_F",
-	"B_Helipilot_F",
-	"B_medic_F",
-	"B_officer_F",
-	"B_Pilot_F",
-	"B_Soldier_A_F",
-	"B_soldier_AA_F",
-	"B_soldier_AR_F",
-	"B_soldier_AT_F",
-	"B_soldier_exp_F",
-	"B_Soldier_F",
-	"B_Soldier_GL_F",
-	"B_soldier_LAT_F",
-	"B_Soldier_lite_F",
-	"B_soldier_M_F",
-	"B_soldier_PG_F",
-	"B_soldier_repair_F",
-	"B_Soldier_SL_F",
-	"B_Soldier_TL_F",
-	"B_soldier_UAV_F",
-	"O_recon_exp_F",
-	"O_recon_F",
-	"O_recon_JTAC_F",
-	"O_recon_LAT_F",
-	"O_recon_M_F",
-	"O_recon_medic_F",
-	"O_recon_TL_F",
-	"B_recon_exp_F",
-	"B_recon_F",
-	"B_recon_JTAC_F",
-	"B_recon_LAT_F",
-	"B_recon_M_F",
-	"B_recon_medic_F",
-	"B_recon_TL_F",
-	"I_Sniper_F",
-	"I_Spotter_F",
-	"O_sniper_F",
-	"O_spotter_F",
-	"B_sniper_F",
-	"B_spotter_F",
-	"O_engineer_U_F",
-	"O_soldierU_A_F",
-	"O_soldierU_AA_F",
-	"O_soldierU_AAA_F",
-	"O_soldierU_AAR_F",
-	"O_soldierU_AAT_F",
-	"O_soldierU_AR_F",
-	"O_soldierU_AT_F",
-	"O_soldierU_exp_F",
-	"O_soldierU_F",
-	"O_SoldierU_GL_F",
-	"O_soldierU_LAT_F",
-	"O_soldierU_M_F",
-	"O_soldierU_medic_F",
-	"O_soldierU_repair_F",
-	"O_SoldierU_SL_F",
-	"O_soldierU_TL_F",
-	"I_Soldier_AAA_F",
-	"I_Soldier_AAR_F",
-	"I_Soldier_AAT_F",
-	"I_support_AMG_F",
-	"I_support_AMort_F",
-	"I_support_GMG_F",
-	"I_support_MG_F",
-	"I_support_Mort_F",
-	"O_Soldier_AAA_F",
-	"O_Soldier_AAR_F",
-	"O_Soldier_AAT_F",
-	"O_support_AMG_F",
-	"O_support_AMort_F",
-	"O_support_GMG_F",
-	"O_support_MG_F",
-	"O_support_Mort_F",
-	"B_soldier_AAA_F",
-	"B_soldier_AAR_F",
-	"B_soldier_AAT_F",
-	"B_support_AMG_F",
-	"B_support_AMort_F",
-	"B_support_GMG_F",
-	"B_support_MG_F",
-	"B_support_Mort_F",
-	"I_diver_exp_F",
-	"I_diver_F",
-	"I_diver_TL_F",
-	"O_diver_exp_F",
-	"O_diver_F",
-	"O_diver_TL_F",
-	"B_diver_exp_F",
-	"B_diver_F",
-	"B_diver_TL_F",
-	"I_Story_Colonel_F",
-	"O_Story_CEO_F",
-	"O_Story_Colonel_F",
-	"I_G_Story_Protagonist_F",
-	"B_Competitor_F",
-	"B_RangeMaster_F",
-	"B_Story_Colonel_F",
-	"B_Story_Engineer_F",
-	"B_Story_Pilot_F",
-	"B_Story_Protagonist_F",
-	"B_Story_SF_Captain_F",
-	"B_Story_Tank_Commander_F",
-	"B_CTRG_soldier_engineer_exp_F",
-	"B_CTRG_soldier_M_medic_F",
-	"B_CTRG_soldier_AR_A_F",
-	"B_CTRG_soldier_GL_LAT_F",
-	"I_G_Story_SF_Captain_F",
-	"I_G_resistanceCommander_F",
-	"I_G_resistanceLeader_F"
-	] - RHQs_Inf;
+_Inf_class = RHQ_Inf + RYD_WS_Inf_class - RHQs_Inf;
 	
-_Art_class = RHQ_Art + 
-	[
-	"B_MBT_01_arty_F",
-	"O_MBT_02_arty_F",
-	"B_MBT_01_mlrs_F",
-	"I_Mortar_01_F",
-	"O_Mortar_01_F",
-	"B_G_Mortar_01_F",
-	"B_Mortar_01_F"
-	] - RHQs_Art;
+_Art_class = RHQ_Art + RYD_WS_Art_class - RHQs_Art;
 	
-_HArmor_class = RHQ_HArmor + 
-	[
-	"B_MBT_01_cannon_F",
-	"B_MBT_01_TUSK_F",
-	"O_MBT_02_cannon_F",
-	"I_MBT_03_cannon_F"
-	] - RHQs_HArmor;
+_HArmor_class = RHQ_HArmor + RYD_WS_HArmor_class - RHQs_HArmor;
 	
-_MArmor_class = RHQ_MArmor + 
-	[
-	] - RHQs_MArmor;
+_MArmor_class = RHQ_MArmor + RYD_WS_MArmor_class - RHQs_MArmor;
 
-_LArmor_class = RHQ_LArmor + 
-	[
-	"I_APC_Wheeled_03_cannon_F",
-	"O_APC_Tracked_02_AA_F",
-	"O_APC_Tracked_02_cannon_F",
-	"O_APC_Wheeled_02_rcws_F",
-	"B_APC_Tracked_01_AA_F",
-	"B_APC_Tracked_01_rcws_F",
-	"B_APC_Wheeled_01_cannon_F",
-	"I_APC_tracked_03_cannon_F"
-	] - RHQs_LArmor;
+_LArmor_class = RHQ_LArmor + RYD_WS_LArmor_class - RHQs_LArmor;
 	
-_LArmorAT_class = RHQ_LArmorAT + 
-	[
-	"B_APC_Wheeled_01_cannon_F",
-	"I_APC_Wheeled_03_cannon_F",
-	"O_APC_Tracked_02_cannon_F",
-	"I_APC_tracked_03_cannon_F"
-	] - RHQs_LArmorAT;
+_LArmorAT_class = RHQ_LArmorAT + RYD_WS_LArmorAT_class - RHQs_LArmorAT;
 
-_Cars_class = RHQ_Cars + 
-	[
-	"I_MRAP_03_F",
-	"I_MRAP_03_gmg_F",
-	"I_MRAP_03_hmg_F",
-	"I_Quadbike_01_F",
-	"I_Truck_02_covered_F",
-	"I_Truck_02_transport_F",
-	"O_MRAP_02_F",
-	"O_MRAP_02_gmg_F",
-	"O_MRAP_02_hmg_F",
-	"O_Quadbike_01_F",
-	"O_Truck_02_covered_F",
-	"O_Truck_02_transport_F",
-	"O_Truck_03_device_F",
-	"O_Truck_03_transport_F",
-	"O_Truck_03_covered_F",
-	"B_G_Offroad_01_armed_F",
-	"B_G_Offroad_01_F",
-	"B_G_Quadbike_01_F",
-	"B_G_Van_01_transport_F",
-	"B_MRAP_01_F",
-	"B_MRAP_01_gmg_F",
-	"B_MRAP_01_hmg_F",
-	"B_Quadbike_01_F",
-	"B_Truck_01_box_F",
-	"B_Truck_01_covered_F",
-	"B_Truck_01_mover_F",
-	"B_Truck_01_transport_F",
-	"I_Truck_02_ammo_F",
-	"I_Truck_02_box_F",
-	"I_Truck_02_fuel_F",
-	"I_Truck_02_medical_F",
-	"O_Truck_02_Ammo_F",
-	"O_Truck_02_box_F",
-	"O_Truck_02_fuel_F",
-	"O_Truck_02_medical_F",
-	"B_G_Van_01_fuel_F",
-	"B_Truck_01_ammo_F",
-	"B_Truck_01_Repair_F",
-	"B_Truck_01_fuel_F",
-	"B_Truck_01_medical_F",
-	"O_Truck_03_ammo_F",
-	"O_Truck_03_fuel_F",
-	"O_Truck_03_medical_F",
-	"O_Truck_03_repair_F",
-	"I_UGV_01_F",
-	"I_UGV_01_rcws_F",
-	"O_UGV_01_F",
-	"O_UGV_01_rcws_F",
-	"B_UGV_01_F",
-	"B_UGV_01_rcws_F"
-	] - RHQs_Cars;
+_Cars_class = RHQ_Cars + RYD_WS_Cars_class - RHQs_Cars;
 	
-_Air_class = RHQ_Air + 
-	[
-	"I_Heli_Transport_02_F",
-	"I_Plane_Fighter_03_AA_F",
-	"I_Plane_Fighter_03_CAS_F",
-	"B_Plane_CAS_01_F",
-	"O_Plane_CAS_02_F",
-	"O_Heli_Attack_02_black_F",
-	"O_Heli_Attack_02_F",
-	"O_Heli_Light_02_F",
-	"O_Heli_Light_02_unarmed_F",
-	"B_Heli_Attack_01_F",
-	"B_Heli_Light_01_armed_F",
-	"B_Heli_Light_01_F",
-	"B_Heli_Transport_01_camo_F",
-	"B_Heli_Transport_01_F",
-	"I_UAV_AI",
-	"O_UAV_AI",
-	"B_UAV_AI",
-	"I_UAV_01_F",
-	"I_UAV_02_CAS_F",
-	"I_UAV_02_F",
-	"O_UAV_01_F",
-	"O_UAV_02_CAS_F",
-	"O_UAV_02_F",
-	"B_UAV_01_F",
-	"B_UAV_02_CAS_F",
-	"B_UAV_02_F",
-	"I_Heli_light_03_F",
-	"I_Heli_light_03_unarmed_F"
-	] - RHQs_Air;
+_Air_class = RHQ_Air + RYD_WS_Air_class - RHQs_Air;
 	
-_BAir_class = RHQ_BAir + 
-	[
-	"I_Plane_Fighter_03_CAS_F",
-	"B_Plane_CAS_01_F",
-	"O_Plane_CAS_02_F"
-	] - RHQs_BAir;
+_BAir_class = RHQ_BAir + RYD_WS_BAir_class - RHQs_BAir;
 	
-_RAir_class = RHQ_RAir + 
-	[
-	"I_UAV_01_F",
-	"I_UAV_02_CAS_F",
-	"I_UAV_02_F",
-	"O_UAV_01_F",
-	"O_UAV_02_CAS_F",
-	"O_UAV_02_F",
-	"B_UAV_01_F",
-	"B_UAV_02_CAS_F",
-	"B_UAV_02_F"
-	] - RHQs_RAir;
+_RAir_class = RHQ_RAir + RYD_WS_RAir_class - RHQs_RAir;
 	
-_NCAir_class = RHQ_NCAir + 
-	[
-	"I_Heli_Transport_02_F",
-	"O_Heli_Light_02_unarmed_F",
-	"B_Heli_Light_01_F",
-	"B_Heli_Transport_01_camo_F",
-	"B_Heli_Transport_01_F",
-	"I_Heli_light_03_unarmed_F",
-	"I_UAV_01_F",
-	"I_UAV_02_F",
-	"O_UAV_01_F",
-	"O_UAV_02_F",
-	"B_UAV_01_F",
-	"B_UAV_02_F"	
-	] - RHQs_NCAir;
+_NCAir_class = RHQ_NCAir + RYD_WS_NCAir_class - RHQs_NCAir;
 
-_Naval_class = RHQ_Naval + 
-	[
-	"I_Boat_Armed_01_minigun_F",
-	"I_Boat_Transport_01_F",
-	"O_Boat_Armed_01_hmg_F",
-	"O_Boat_Transport_01_F",
-	"O_Lifeboat",
-	"B_G_Boat_Transport_01_F",
-	"B_Boat_Armed_01_minigun_F",
-	"B_Boat_Transport_01_F",
-	"B_Lifeboat",
-	"I_SDV_01_F",
-	"O_SDV_01_F",
-	"B_SDV_01_F"	
-	] - RHQs_Naval;
+_Naval_class = RHQ_Naval + RYD_WS_Naval_class - RHQs_Naval;
 
-_Static_class = RHQ_Static + 
-	[
-	"I_GMG_01_A_F",
-	"I_GMG_01_F",
-	"I_GMG_01_high_F",
-	"I_HMG_01_A_F",
-	"I_HMG_01_F",
-	"I_HMG_01_high_F",
-	"I_Mortar_01_F",
-	"I_static_AA_F",
-	"I_static_AT_F",
-	"O_GMG_01_A_F",
-	"O_GMG_01_F",
-	"O_GMG_01_high_F",
-	"O_HMG_01_A_F",
-	"O_HMG_01_F",
-	"O_HMG_01_high_F",
-	"O_Mortar_01_F",
-	"O_static_AA_F",
-	"O_static_AT_F",
-	"B_G_Mortar_01_F",
-	"B_GMG_01_A_F",
-	"B_GMG_01_F",
-	"B_GMG_01_high_F",
-	"B_HMG_01_A_F",
-	"B_HMG_01_F",
-	"B_HMG_01_high_F",
-	"B_Mortar_01_F",
-	"B_static_AA_F",
-	"B_static_AT_F"
-	] - RHQs_Static;
+_Static_class = RHQ_Static + RYD_WS_Static_class - RHQs_Static;
 	
-_StaticAA_class = RHQ_StaticAA + 
-	[
-	"I_static_AA_F",
-	"O_static_AA_F",
-	"B_static_AA_F"
-	] - RHQs_StaticAA;
+_StaticAA_class = RHQ_StaticAA + RYD_WS_StaticAA_class - RHQs_StaticAA;
 	
-_StaticAT_class = RHQ_StaticAT + 
-	[
-	"I_static_AT_F",
-	"O_static_AT_F",
-	"B_static_AT_F"
-	] - RHQs_StaticAT;
+_StaticAT_class = RHQ_StaticAT + RYD_WS_StaticAT_class - RHQs_StaticAT;
 	
-_Support_class = RHQ_Support + 
-	[
-	"I_Truck_02_ammo_F",
-	"I_Truck_02_box_F",
-	"I_Truck_02_fuel_F",
-	"I_Truck_02_medical_F",
-	"O_Truck_02_Ammo_F",
-	"O_Truck_02_box_F",
-	"O_Truck_02_fuel_F",
-	"O_Truck_02_medical_F",
-	"O_Truck_03_ammo_F",
-	"O_Truck_03_fuel_F",
-	"O_Truck_03_medical_F",
-	"O_Truck_03_repair_F",
-	"B_G_Van_01_fuel_F",
-	"B_APC_Tracked_01_CRV_F",
-	"B_Truck_01_ammo_F",
-	"B_Truck_01_Repair_F",
-	"B_Truck_01_fuel_F",
-	"B_Truck_01_medical_F"
-	] - RHQs_Support;
+_Support_class = RHQ_Support + RYD_WS_Support_class - RHQs_Support;
 	
-_Cargo_class = RHQ_Cargo + 
-	[
-	"I_Heli_Transport_02_F",
-	"O_Heli_Attack_02_black_F",
-	"O_Heli_Attack_02_F",
-	"O_Heli_Light_02_F",
-	"O_Heli_Light_02_unarmed_F",
-	"B_Heli_Light_01_F",
-	"B_Heli_Transport_01_camo_F",
-	"B_Heli_Transport_01_F",
-	"I_Truck_02_medical_F",
-	"O_Truck_02_medical_F",
-	"B_Truck_01_medical_F",
-	"O_Truck_03_medical_F",
-	"I_Boat_Armed_01_minigun_F",
-	"I_Boat_Transport_01_F",
-	"O_Boat_Armed_01_hmg_F",
-	"O_Boat_Transport_01_F",
-	"O_Lifeboat",
-	"B_G_Boat_Transport_01_F",
-	"B_Boat_Armed_01_minigun_F",
-	"B_Boat_Transport_01_F",
-	"B_Lifeboat",
-	"I_SDV_01_F",
-	"O_SDV_01_F",
-	"B_SDV_01_F",
-	"B_MBT_01_cannon_F",
-	"I_APC_Wheeled_03_cannon_F",
-	"O_APC_Tracked_02_cannon_F",
-	"O_APC_Wheeled_02_rcws_F",
-	"B_APC_Tracked_01_rcws_F",
-	"B_APC_Wheeled_01_cannon_F",
-	"I_MRAP_03_F",
-	"I_MRAP_03_gmg_F",
-	"I_MRAP_03_hmg_F",
-	"I_Quadbike_01_F",
-	"I_Truck_02_covered_F",
-	"I_Truck_02_transport_F",
-	"O_MRAP_02_F",
-	"O_MRAP_02_gmg_F",
-	"O_MRAP_02_hmg_F",
-	"O_Quadbike_01_F",
-	"O_Truck_02_covered_F",
-	"O_Truck_02_transport_F",
-	"O_Truck_03_device_F",
-	"O_Truck_03_transport_F",
-	"O_Truck_03_covered_F",
-	"B_G_Offroad_01_armed_F",
-	"B_G_Offroad_01_F",
-	"B_G_Quadbike_01_F",
-	"B_G_Van_01_transport_F",
-	"B_MRAP_01_F",
-	"B_MRAP_01_gmg_F",
-	"B_MRAP_01_hmg_F",
-	"B_Quadbike_01_F",
-	"B_Truck_01_box_F",
-	"B_Truck_01_covered_F",
-	"B_Truck_01_mover_F",
-	"B_Truck_01_transport_F",
-	"I_Heli_light_03_F",
-	"I_Heli_light_03_unarmed_F",
-	"I_APC_tracked_03_cannon_F"	
-	] - RHQs_Cargo;
+_Cargo_class = RHQ_Cargo + RYD_WS_Cargo_class - RHQs_Cargo;
 	
-_NCCargo_class = RHQ_NCCargo + 
-	[
-	"I_Heli_Transport_02_F",
-	"O_Heli_Light_02_unarmed_F",
-	"B_Heli_Light_01_F",
-	"B_Heli_Transport_01_camo_F",
-	"B_Heli_Transport_01_F",
-	"I_Heli_light_03_unarmed_F",
-	"I_Truck_02_medical_F",
-	"O_Truck_02_medical_F",
-	"B_Truck_01_medical_F",
-	"O_Truck_03_medical_F",
-	"I_Boat_Transport_01_F",
-	"O_Boat_Transport_01_F",
-	"O_Lifeboat",
-	"B_G_Boat_Transport_01_F",
-	"B_Boat_Transport_01_F",
-	"B_Lifeboat",
-	"I_MRAP_03_F",
-	"I_Quadbike_01_F",
-	"I_Truck_02_covered_F",
-	"I_Truck_02_transport_F",
-	"O_MRAP_02_F",
-	"O_Quadbike_01_F",
-	"O_Truck_02_covered_F",
-	"O_Truck_02_transport_F",
-	"O_Truck_03_device_F",
-	"O_Truck_03_transport_F",
-	"O_Truck_03_covered_F",
-	"B_G_Offroad_01_F",
-	"B_G_Quadbike_01_F",
-	"B_G_Van_01_transport_F",
-	"B_MRAP_01_F",
-	"B_Quadbike_01_F",
-	"B_Truck_01_box_F",
-	"B_Truck_01_covered_F",
-	"B_Truck_01_mover_F",
-	"B_Truck_01_transport_F"	
-	] - RHQs_NCCargo;
+_NCCargo_class = RHQ_NCCargo + RYD_WS_NCCargo_class - RHQs_NCCargo;
 	
-_Crew_class = RHQ_Crew + 
-	[
-	"I_crew_F",
-	"I_helicrew_F",
-	"I_helipilot_F",
-	"I_pilot_F",
-	"O_crew_F",
-	"O_helicrew_F",
-	"O_helipilot_F",
-	"O_Pilot_F",
-	"B_crew_F",
-	"B_helicrew_F",
-	"B_Helipilot_F",
-	"B_Pilot_F",
-	"B_Story_Pilot_F"
-	] - RHQs_Crew;
+_Crew_class = RHQ_Crew + RYD_WS_Crew_class - RHQs_Crew;
 	
-_Other_class = RHQ_Other + 
-	[
-	"I_UAV_AI",
-	"O_UAV_AI",
-	"B_UAV_AI"	
-	];
+_Other_class = RHQ_Other + RYD_WS_Other_class;
 		
 _NCrewInf_class = _Inf_class - _Crew_class;
 _Cargo_class = _Cargo_class - (_Support_class - ["MH60S"]);
@@ -1095,10 +518,41 @@ while {true} do
 	if (isNil "RydHQE_Taken") then {RydHQE_Taken = []};
 	_HQ setVariable ["RydHQ_Taken",RydHQE_Taken];
 	
+	if (isNil ("RydHQE_MoraleConst")) then {RydHQE_MoraleConst = 1};
+	_HQ setVariable ["RydHQ_MoraleConst",RydHQE_MoraleConst];
+	
+	if (isNil ("RydHQE_OffTend")) then {RydHQE_OffTend = 1};
+	_HQ setVariable ["RydHQ_OffTend",RydHQE_OffTend];
+	
 	if (isNil "RydHQE_EBDoctrine") then {RydHQE_EBDoctrine = false};
 	_HQ setVariable ["RydHQ_EBDoctrine",RydHQE_EBDoctrine]; 
 	if (isNil "RydHQE_ForceEBDoctrine") then {RydHQE_ForceEBDoctrine = false};
-	_HQ setVariable ["RydHQ_ForceEBDoctrine",RydHQE_ForceEBDoctrine]; 
+	_HQ setVariable ["RydHQ_ForceEBDoctrine",RydHQE_ForceEBDoctrine];
+
+	if (isNil "RydHQE_DefRange") then {RydHQE_DefRange = 1};
+	_HQ setVariable ["RydHQ_DefRange",RydHQ_DefRange];
+	if (isNil "RydHQE_GarrRange") then {RydHQE_GarrRange = 1};
+	_HQ setVariable ["RydHQ_GarrRange",RydHQ_GarrRange];
+	
+	if (isNil "RydHQE_NoCapt") then {RydHQE_NoCapt = []};
+	_HQ setVariable ["RydHQ_NoCapt",RydHQ_NoCapt];
+	
+	if (isNil "RydHQE_AttInfDistance") then {RydHQE_AttInfDistance = 1};
+	_HQ setVariable ["RydHQ_AttInfDistance",RydHQE_AttInfDistance];
+	if (isNil "RydHQE_AttArmDistance") then {RydHQE_AttArmDistance = 1};
+	_HQ setVariable ["RydHQ_AttArmDistance",RydHQE_AttArmDistance];
+	if (isNil "RydHQE_AttSnpDistance") then {RydHQE_AttSnpDistance = 1};
+	_HQ setVariable ["RydHQ_AttSnpDistance",RydHQE_AttSnpDistance];
+	if (isNil "RydHQE_CaptureDistance") then {RydHQE_CaptureDistance = 1};
+	_HQ setVariable ["RydHQ_CaptureDistance",RydHQE_CaptureDistance];	
+	if (isNil "RydHQE_FlankDistance") then {RydHQE_FlankDistance = 1};
+	_HQ setVariable ["RydHQ_FlankDistance",RydHQE_FlankDistance];
+	if (isNil "RydHQE_AttSFDistance") then {RydHQE_AttSFDistance = 1};
+	_HQ setVariable ["RydHQ_AttSFDistance",RydHQE_AttSFDistance];
+	if (isNil "RydHQE_ReconDistance") then {RydHQE_ReconDistance = 1};
+	_HQ setVariable ["RydHQ_ReconDistance",RydHQE_ReconDistance];
+	if (isNil "RydHQE_UAVAlt") then {RydHQE_UAVAlt = 150};
+	_HQ setVariable ["RydHQ_UAVAlt",RydHQE_UAVAlt];
 	
 	_HQ setVariable ["RydHQ_Obj1",RydHQE_Obj1];
 	_HQ setVariable ["RydHQ_Obj2",RydHQE_Obj2];

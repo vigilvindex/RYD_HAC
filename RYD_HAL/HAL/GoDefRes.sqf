@@ -46,6 +46,8 @@ _isWater = surfaceIsWater _DefPos;
 
 if (_isWater) then {_DefPos = getPosATL (vehicle (leader _unitG))};
 
+[_unitG,[_posX,_posY,0],"HQ_ord_defendR",_HQ] call RYD_OrderPause;
+
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
 _UL = leader _unitG;
@@ -130,7 +132,7 @@ _getOut = false;
 
 if ((_unitG in ((_HQ getVariable ["RydHQ_CargoG",[]]) - ((_HQ getVariable ["RydHQ_HArmorG",[]]) + (_HQ getVariable ["RydHQ_LArmorG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]]) + ((_HQ getVariable ["RydHQ_CarsG",[]]) - (_HQ getVariable ["RydHQ_NCCargoG",[]]))))) or (not (isNull _AV) and not (_unitG == (group (assigneddriver _AV))))) then 
 	{
-	(units _unitG) orderGetIn false;
+	//(units _unitG) orderGetIn false;
 	_getOut = true
 	};
 
@@ -141,11 +143,11 @@ _wp = [_unitG,_DefPos,"SENTRY","COMBAT","YELLOW","NORMAL",["true","deletewaypoin
 
 _TED = getPosATL (leader _HQ);
 
-_dX = 2000 * (sin (_HQ getVariable ["RydHQ_Angle",0]));
-_dY = 2000 * (cos (_HQ getVariable ["RydHQ_Angle",0]));
+_dX = 2000 * (sin (_HQ getVariable ["RydHQ_AngleR",0]));
+_dY = 2000 * (cos (_HQ getVariable ["RydHQ_AngleR",0]));
 
-_posX = ((getPosATL (leader _HQ)) select 0) + _dX + (random 2000) - 1000;
-_posY = ((getPosATL (leader _HQ)) select 1) + _dY + (random 2000) - 1000;
+_posX = ((getPosATL (leader _unitG)) select 0) + _dX + (random 2000) - 1000;
+_posY = ((getPosATL (leader _unitG)) select 1) + _dY + (random 2000) - 1000;
 
 _TED = [_posX,_posY];
 
@@ -157,6 +159,8 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then
 
 _dir = [(getPosATL (vehicle (leader _unitG))),_TED,10] call RYD_AngTowards;
 if (_dir < 0) then {_dir = _dir + 360};
+
+//_i2 = [(getPosATL (vehicle (leader _unitG))),_unitG,"markDir","ColorYellow","ICON","hd_arrow","R","R",[1,1],_dir] call RYD_Mark;
 
 _unitG setFormDir _dir;
 
@@ -201,7 +205,7 @@ waituntil
 
 		{
 		_VLdr = vehicle (leader _x);
-		if ((_VLdr distance _HQpos) < _dstAv) then {_tooClose set [(count _tooClose),_x]}
+		if ((_VLdr distance _HQpos) < _dstAv) then {_tooClose pushBack _x}
 		}
 	foreach (_HQ getVariable ["RydHQ_KnEnemiesG",[]]);
 
@@ -334,7 +338,7 @@ waituntil
 		
 		if (_getOut) then
 			{
-			_sts = "(units (group this)) orderGetIn false;deletewaypoint [(group this), 0]";
+			_sts = "(units (group this)) allowGetIn false;(units (group this)) orderGetIn false;deletewaypoint [(group this), 0]";
 			};
 		
 		_wp = [_unitG,_RnfP,_tp,"AWARE","YELLOW","NORMAL",["true",_sts]] call RYD_WPadd;
@@ -372,6 +376,7 @@ if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) re
 if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker ("markDef" + (str _unitG));deleteMarker ("markWatch" + (str _unitG));deleteMarker ("markReinf" + (str _unitG))};
 
 (units _unitG) doWatch ObjNull;
+(units _unitG) allowGetIn true;
 (units _unitG) orderGetIn true;
 _def = _HQ getVariable ["RydHQ_Def",[]];
 _def = _def - [_unitG];

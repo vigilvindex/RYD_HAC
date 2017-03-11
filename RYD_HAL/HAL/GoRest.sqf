@@ -5,6 +5,8 @@ _pos = getPosATL (leader _unitG);
 _UL = leader _unitG;
 _VLU = vehicle _UL;
 _HQ = _this select 1;
+_inDanger = false;
+if ((count _this) > 2) then {_inDanger = _this select 2};
 
 _unitVar = str _unitG;
 
@@ -167,8 +169,11 @@ if ((_isWater) or (not (isNull ((leader _HQ) FindNearestEnemy [_posX,_posY])) an
 	_exh = _exh - [_unitG];
 	_HQ setVariable ["RydHQ_Exhausted",_exh];
 	};
+	
+[_unitG,[_posX,_posY,0],"HQ_ord_withdraw",_HQ] call RYD_OrderPause;
 
 _nE = _UL findnearestenemy _UL;
+
 _alive = true;
 
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
@@ -391,7 +396,7 @@ if not ((_GDV == _unitG) or (isNull _GDV)) then
 	//{unassignVehicle _x} foreach (units _unitG);
 	_pass orderGetIn false;
 	_allowed = false;
-	(units _unitG) allowGetIn false
+	(units _unitG) allowGetIn false;//if (player in (units _unitG)) then {diag_log "NOT ALLOW rest"};
 	}
 else
 	{
@@ -445,6 +450,10 @@ _GDV setVariable [("CargoM" + _unitvar), false];
 
 _UL = leader _unitG;if not (isPlayer _UL) then {if (_timer <= 60) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdFinal,"OrdFinal"] call RYD_AIChatter}}};
 
+//diag_log format ["rest: %1",_unitG];
+
+_noDanger = not _inDanger;
+
 waituntil 
 	{
 	sleep 60;
@@ -495,8 +504,23 @@ waituntil
 		_alive = false
 		};
 		
-	(((_vehready) and (_solready)) or not (_alive))
+	if (_alive) then
+		{
+		if (_inDanger) then
+			{
+			_inD = _unitG getVariable ["NearE",0];
+			
+			if not ((_inD * (_HQ getVariable ["RydHQ_Withdraw",1])) > 0.5) then
+				{
+				_noDanger = true
+				}
+			}
+		};
+		
+	(((_vehready) and (_solready) and (_noDanger)) or not (_alive))
 	};
+	
+//diag_log format ["endrest: %1 alive: %2",_unitG,_alive];
 
 _exh = (_HQ getVariable ["RydHQ_Exhausted",[]]);
 

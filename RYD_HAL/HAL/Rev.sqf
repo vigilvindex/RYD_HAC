@@ -11,7 +11,7 @@ _enemies = (_HQ getVariable ["RydHQ_KnEnemies",[]]);
 if (_HQ getVariable ["RydHQ_KnowTL",true]) then 
 	{
 		{
-		if (isPlayer (leader _x)) then {_players set [(count _players),_x]};
+		if (isPlayer (leader _x)) then {_players pushBack _x};
 		}
 	foreach _friends;
 	};

@@ -42,8 +42,8 @@ if (_AAO) then
 if not ((count (_HQ getVariable ["RydHQ_KnEnemies",[]])) == 0) then 
 	{
 		{
-		_Epos0 = _Epos0 + [((getPosATL _x) select 0)];
-		_Epos1 = _Epos1 + [((getPosATL _x) select 1)]
+		_Epos0 pushBack ((getPosATL _x) select 0);
+		_Epos1 pushBack ((getPosATL _x) select 1)
 		}
 	foreach (_HQ getVariable ["RydHQ_KnEnemies",[]])
 	};
@@ -157,6 +157,9 @@ _BorHQD = (leader _HQ) distance _BEnemyPos;
 
 _distanceSafe = 1000;
 
+_dstMpl = (_HQ getVariable ["RydHQ_AttSFDistance",1]) * (_unitG getVariable ["RydHQ_myAttDst",1]);
+_distanceSafe = _distanceSafe * _dstMpl;
+
 _safeX1 = _h * _distanceSafe * (cos _angle);
 _safeY1 = _h * _distanceSafe * (sin _angle);
 
@@ -258,13 +261,14 @@ if ((_ammo > 0) and not (_busy)) then
 	{
 	_unitG setVariable [("Deployed" + (str _unitG)),false];_unitG setVariable [("Capt" + (str _unitG)),false];
 	_unitG setVariable [("Busy" + (str _unitG)),true];
-	_veh = str (typeOf (Vehicle (leader (_unitG))));
 
 	_SFTargets = (_HQ getVariable ["RydHQ_SFTargets",[]]);
-	_SFTargets set [(count _SFTargets),_trgG];
+	_SFTargets pushBack _trgG;
 	_HQ setVariable ["RydHQ_SFTargets",_SFTargets];
 
 	[_unitG] call RYD_WPdel;
+	
+	[_unitG,[_posXWP4,_posYWP4,0],"HQ_ord_SF",_HQ] call RYD_OrderPause;
 
 	if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
@@ -582,7 +586,7 @@ if ((_ammo > 0) and not (_busy)) then
 		//{unassignVehicle _x} foreach (units _unitG);
 		_pass orderGetIn false;
 		_allowed = false;
-		(units _unitG) allowGetIn false
+		(units _unitG) allowGetIn false;//if (player in (units _unitG)) then {diag_log "NOT ALLOW sfatt"};
 		}
 	else
 		{

@@ -32,6 +32,9 @@ _angle = _dX atan2 _dY;
 _distance = (leader _HQ) distance _PosObj1;
 _distance2 = 500;
 
+_dstMpl = (_HQ getVariable ["RydHQ_AttArmDistance",1]) * (_unitG getVariable ["RydHQ_myAttDst",1]);
+_distance2 = _distance2 * _dstMpl;
+
 _dXc = _distance2 * (cos _angle);
 _dYc = _distance2 * (sin _angle);
 
@@ -59,11 +62,20 @@ _isWater = surfaceIsWater [_posX,_posY];
 if (_isWater) exitwith 
 	{
 	_attAv = _HQ getVariable ["RydHQ_AttackAv",[]];
-	_attAv set [(count _attAv),_unitG];
+	_attAv pushBack _unitG;
 	_HQ setVariable ["RydHQ_AttackAv",_attAv];
 	_unitG setVariable [("Busy" + (str _unitG)),false];
 	[_Trg,"ArmorAttacked"] call RYD_VarReductor
 	};
+	
+if (RydxHQ_SynchroAttack) then
+	{
+	_attackedBy = (group _trg) getVariable ["RYD_Attacks",[]];
+	_attackedBy pushBack [_unitG,[_posX,_posY,0]];
+	(group _trg) setVariable ["RYD_Attacks",_attackedBy];
+	};
+	
+[_unitG,[_posX,_posY,0],"HQ_ord_attack",_HQ] call RYD_OrderPause;
 
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
@@ -77,16 +89,9 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then
 	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","mil_dot","Arm " + _signum," - ATTACK"] call RYD_Mark;
 	};
 
-_task = [(leader _unitG),["Search and destroy enemy.", "S&D", ""],[_posX,_posY]] call RYD_AddTask;
+_task = [(leader _unitG),["Search and destroy enemy.", "SAD", ""],[_posX,_posY]] call RYD_AddTask;
 
 _wp = [_unitG,[_posX,_posY],"MOVE","AWARE","RED","NORMAL"] call RYD_WPadd;
-
-if (RydxHQ_SynchroAttack) then
-	{
-	[_wp,_Trg] call RYD_WPSync;
-	 
-	 
-	};
 
 _cause = [_unitG,6,true,0,24,[],false] call RYD_Wait;
 _timer = _cause select 0;
@@ -100,6 +105,13 @@ if not (_alive) exitwith
 
 if (_timer > 24) then {deleteWaypoint _wp};
 
+if (RydxHQ_SynchroAttack) then
+	{
+	[_wp,_Trg,_unitG,_HQ] call RYD_WPSync;
+	 
+	 
+	};
+
 if (isPlayer (leader _unitG)) then
 	{
 	if not (isMultiplayer) then
@@ -108,12 +120,12 @@ if (isPlayer (leader _unitG)) then
 		}
 	else
 		{
-		[_task,(leader _unitG),["Search and destroy enemy.", "S&D", ""],(getPosATL _Trg),"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+		[_task,(leader _unitG),["Search and destroy enemy.", "SAD", ""],(getPosATL _Trg),"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 		}
 	};
 
 _cur = true;
-if (RydxHQ_SynchroAttack) then {_cur = false};
+//if (RydxHQ_SynchroAttack) then {_cur = false};
 _frm = formation _unitG;
 if not (isPlayer (leader _unitG)) then {_frm = "WEDGE"};
 
@@ -189,7 +201,7 @@ if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) re
 if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker _i};
 
 _attAv = _HQ getVariable ["RydHQ_AttackAv",[]];
-_attAv set [(count _attAv),_unitG];
+_attAv pushBack _unitG;
 _HQ setVariable ["RydHQ_AttackAv",_attAv];
 
 _unitG setVariable [("Busy" + (str _unitG)),false];

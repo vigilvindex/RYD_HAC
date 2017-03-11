@@ -1,16 +1,40 @@
-RYD_AngTowards = 
+RYD_Marker = 
 	{
-	private ["_source0","_target0","_rnd0","_dX0","_dY0","_angleAzimuth0"];
-	_source0 = _this select 0;
-	_target0 = _this select 1;
-	_rnd0 = _this select 2;
+	private ["_name","_pos","_cl","_shape","_size","_dir","_alpha","_type","_brush","_text","_i"];	
 
-	_dX0 = (_target0 select 0) - (_source0 select 0);
-	_dY0 = (_target0 select 1) - (_source0 select 1);
+	_name = _this select 0;
+	_pos = _this select 1;
+	_cl = _this select 2;
+	_shape = _this select 3;
 
-	_angleAzimuth0 = (_dX0 atan2 _dY0) + (random (_rnd0 * 2)) - _rnd0;
+	_shape = toUpper (_shape);
 
-	_angleAzimuth0
+	_size = _this select 4;
+	_dir = _this select 5;
+	_alpha = _this select 6;
+
+	if not (_shape == "ICON") then {_brush = _this select 7} else {_type = _this select 7};
+	_text = _this select 8;
+
+	if not ((typename _pos) == "ARRAY") exitWith {};
+	if ((_pos select 0) == 0) exitWith {};
+	if ((count _pos) < 2) exitWith {};
+//diag_log format ["BB mark: %1 pos: %2 col: %3 size: %4 dir: %5 text: %6",_name,_pos,_cl,_size,_dir,_text];
+	if (isNil "_pos") exitWith {};
+
+	_i = _name;
+	_i = createMarker [_i,_pos];
+	_i setMarkerColor _cl;
+	_i setMarkerShape _shape;
+	_i setMarkerSize _size;
+	_i setMarkerDir _dir;
+	if not (_shape == "ICON") then {_i setMarkerBrush _brush} else {_i setMarkerType _type};
+	_i setMarkerAlpha _alpha;
+	_i setmarkerText _text;
+	
+	RydxHQ_Markers set [(count RydxHQ_Markers),_i]; 
+
+	_i
 	};
 
 RYD_DistOrdB = 
@@ -31,7 +55,7 @@ RYD_DistOrdB =
 	foreach _array;
 
 		{
-		if not (isNil "_x") then {_final set [(count _final),_x]}
+		if not (isNil "_x") then {_final pushBack _x}
 		}
 	foreach _first;
 
@@ -78,7 +102,76 @@ RYD_WhereIs =
 
 	[_isLeft,_isFlanking,_isBehind]
 	};
+	
+RYD_TerraCognita = 
+	{
+	private ["_position","_posX","_posY","_radius","_precision","_sourcesCount","_urban","_forest","_hills","_flat","_sea","_valS","_value","_val0","_samples","_sGr","_hprev","_hcurr","_samplePos","_i","_rds"];	
 
+	_position = _this select 0;
+	_samples = _this select 1;
+	_rds = 100;
+	if ((count _this) > 2) then {_rds = _this select 2};
+
+	if not ((typeName _position) == "ARRAY") then {_position = getPosATL _position};
+
+	_posX = _position select 0;
+	_posY = _position select 1;
+
+	_radius = 5;
+	_precision = 1;
+	_sourcesCount = 1;
+
+	_urban = 0;
+	_forest = 0;
+	_hills = 0;
+	_flat = 0;
+	_sea = 0;
+
+	_sGr = 0;
+	_hprev = getTerrainHeightASL [_posX,_posY];
+
+	for "_i" from 1 to 10 do
+		{
+		_samplePos = [_posX + ((random (_rds * 2)) - _rds),_posY + ((random (_rds * 2)) - _rds)];
+		_hcurr = getTerrainHeightASL _samplePos;
+		_sGr = _sGr + abs (_hcurr - _hprev)
+		};
+
+	_sGr = _sGr/10;
+
+		{
+		_valS = 0;
+
+		for "_i" from 1 to _samples do
+			{
+			_position = [_posX + (random (_rds/5)) - (_rds/10),_posY + (random (_rds/5)) - (_rds/10)];
+
+
+			_value = selectBestPlaces [_position,_radius,_x,_precision,_sourcesCount];
+
+			_val0 = _value select 0;
+			_val0 = _val0 select 1;
+
+			_valS = _valS + _val0;
+			};
+
+		_valS = _valS/_samples;
+
+		switch (_x) do
+			{
+			case ("Houses") : {_urban = _urban + _valS};
+			case ("Trees") : {_forest = _forest + (_valS/3)};
+			case ("Forest") : {_forest = _forest + _valS};
+			case ("Hills") : {_hills = _hills + _valS};
+			case ("Meadow") : {_flat = _flat + _valS};
+			case ("Sea") : {_sea = _sea + _valS};
+			};
+		}
+	foreach ["Houses","Trees","Forest","Hills","Meadow","Sea"];
+
+	[_urban,_forest,_hills,_flat,_sea,_sGr]
+	};
+	
 RYD_Sectorize = 
 	{
 	private ["_ctr","_lng","_ang","_nbr","_EdgeL","_rd","_main","_step","_X1","_Y1","_posX","_posY","_centers","_first",
@@ -113,7 +206,7 @@ RYD_Sectorize =
 			{
 			if not (_first) then {_first = true;_posX = _posX + _step};
 			if not ([_posX,_PosY] in _main) exitwith {_posX = ((_ctr select 0) - _rd) + _step/2;_first = true};
-			_centers set [(count _centers),[_posX,_PosY]];
+			_centers pushBack [_posX,_PosY];
 			_first = false
 			};
 		_posY = _posY + _step;
@@ -141,7 +234,7 @@ RYD_Sectorize =
 			_Xb = _X1 + _dXb;
 			_Yb = _Y1 + _dYb;
 			_center = [_Xb,_Yb];
-			_centers set [(count _centers),_center]
+			_centers pushBack _center
 			}
 		foreach _centers2
 		};
@@ -156,50 +249,11 @@ RYD_Sectorize =
 		_sec setDirection _ang;
 		_sec setRectangular true;
 
-		_sectors set [(count _sectors),_sec];
+		_sectors pushBack _sec;
 		}
 	foreach _centers;
 
 	[_sectors,_main]	
-	};
-
-RYD_Marker = 
-	{
-	private ["_name","_pos","_cl","_shape","_size","_dir","_alpha","_type","_brush","_text","_i"];	
-
-	_name = _this select 0;
-	_pos = _this select 1;
-	_cl = _this select 2;
-	_shape = _this select 3;
-
-	_shape = toUpper (_shape);
-
-	_size = _this select 4;
-	_dir = _this select 5;
-	_alpha = _this select 6;
-
-	if not (_shape == "ICON") then {_brush = _this select 7} else {_type = _this select 7};
-	_text = _this select 8;
-
-	if not ((typename _pos) == "ARRAY") exitWith {};
-	if ((_pos select 0) == 0) exitWith {};
-	if ((count _pos) < 2) exitWith {};
-//diag_log format ["BB mark: %1 pos: %2 col: %3 size: %4 dir: %5 text: %6",_name,_pos,_cl,_size,_dir,_text];
-	if (isNil "_pos") exitWith {};
-
-	_i = _name;
-	_i = createMarker [_i,_pos];
-	_i setMarkerColor _cl;
-	_i setMarkerShape _shape;
-	_i setMarkerSize _size;
-	_i setMarkerDir _dir;
-	if not (_shape == "ICON") then {_i setMarkerBrush _brush} else {_i setMarkerType _type};
-	_i setMarkerAlpha _alpha;
-	_i setmarkerText _text;
-	
-	RydxHQ_Markers set [(count RydxHQ_Markers),_i]; 
-
-	_i
 	};
 
 RYD_LocLineTransform = 
@@ -361,75 +415,6 @@ RYD_LocMultiTransform =
 	true
 	};
 
-RYD_TerraCognita = 
-	{
-	private ["_position","_posX","_posY","_radius","_precision","_sourcesCount","_urban","_forest","_hills","_flat","_sea","_valS","_value","_val0","_samples","_sGr","_hprev","_hcurr","_samplePos","_i","_rds"];	
-
-	_position = _this select 0;
-	_samples = _this select 1;
-	_rds = 100;
-	if ((count _this) > 2) then {_rds = _this select 2};
-
-	if not ((typeName _position) == "ARRAY") then {_position = getPosATL _position};
-
-	_posX = _position select 0;
-	_posY = _position select 1;
-
-	_radius = 5;
-	_precision = 1;
-	_sourcesCount = 1;
-
-	_urban = 0;
-	_forest = 0;
-	_hills = 0;
-	_flat = 0;
-	_sea = 0;
-
-	_sGr = 0;
-	_hprev = getTerrainHeightASL [_posX,_posY];
-
-	for "_i" from 1 to 10 do
-		{
-		_samplePos = [_posX + ((random (_rds * 2)) - _rds),_posY + ((random (_rds * 2)) - _rds)];
-		_hcurr = getTerrainHeightASL _samplePos;
-		_sGr = _sGr + abs (_hcurr - _hprev)
-		};
-
-	_sGr = _sGr/10;
-
-		{
-		_valS = 0;
-
-		for "_i" from 1 to _samples do
-			{
-			_position = [_posX + (random (_rds/5)) - (_rds/10),_posY + (random (_rds/5)) - (_rds/10)];
-
-
-			_value = selectBestPlaces [_position,_radius,_x,_precision,_sourcesCount];
-
-			_val0 = _value select 0;
-			_val0 = _val0 select 1;
-
-			_valS = _valS + _val0;
-			};
-
-		_valS = _valS/_samples;
-
-		switch (_x) do
-			{
-			case ("Houses") : {_urban = _urban + _valS};
-			case ("Trees") : {_forest = _forest + (_valS/3)};
-			case ("Forest") : {_forest = _forest + _valS};
-			case ("Hills") : {_hills = _hills + _valS};
-			case ("Meadow") : {_flat = _flat + _valS};
-			case ("Sea") : {_sea = _sea + _valS};
-			};
-		}
-	foreach ["Houses","Trees","Forest","Hills","Meadow","Sea"];
-
-	[_urban,_forest,_hills,_flat,_sea,_sGr]
-	};
-
 RYD_ForceCount = 
 	{
 	private ["_friends","_inf","_car","_arm","_air","_nc","_current","_initial","_value","_morale","_enemies","_einf","_ecar","_earm","_eair","_enc","_frArr","_enArr",
@@ -483,11 +468,11 @@ RYD_ForceCount =
 	if ((count _enemies) > 0) then 
 		{
 			{
-			if (not (_x in _enG) and (_x in _einf)) then {_eInfG set [(count _eInfG),_x]};
-			if (not (_x in _enG) and (_x in _ecar)) then {_eCarG set [(count _eCarG),_x]};
-			if (not (_x in _enG) and (_x in _earm)) then {_eArmG set [(count _eArmG),_x]};
-			if (not (_x in _enG) and (_x in _eair)) then {_eAirG set [(count _eAirG),_x]};
-			if (not (_x in _enG) and (_x in _enc)) then {_eNCG set [(count _eNCG),_x]};	
+			if (not (_x in _enG) and (_x in _einf)) then {_eInfG pushBack _x};
+			if (not (_x in _enG) and (_x in _ecar)) then {_eCarG pushBack _x};
+			if (not (_x in _enG) and (_x in _earm)) then {_eArmG pushBack _x};
+			if (not (_x in _enG) and (_x in _eair)) then {_eAirG pushBack _x};
+			if (not (_x in _enG) and (_x in _enc)) then {_eNCG pushBack _x};	
 			}
 		foreach _enemies;
 
@@ -519,8 +504,8 @@ RYD_ForceCount =
 
 	_gpHQ setVariable ["ForceRep",[_frRep,_enRep]];
 
-	_frArr set [(count _frArr),_frRep];
-	_enArr set [(count _enArr),_enRep];
+	_frArr pushBack _frRep;
+	_enArr pushBack _enRep;
 
 	[_frArr,_enArr]
 	};
@@ -570,11 +555,11 @@ RYD_ForceAnalyze =
 				_frArr = _arr select 0;
 				_enArr = _arr select 1;
 				
-				_HQs set [(count _HQs),_x];
+				_HQs pushBack _x;
 				_frG = _frG + (_HQ getVariable ["RydHQ_Friends",[]]) - (_HQ getVariable ["RydHQ_Exhausted",[]]);
 
 					{
-					if not (_x in _enG) then {_enG set [(count _enG),_x]};
+					if not (_x in _enG) then {_enG pushBack _x};
 					}
 				foreach (_HQ getVariable ["RydHQ_KnEnemiesG",[]])
 				}
@@ -582,8 +567,8 @@ RYD_ForceAnalyze =
 		}
 	foreach _HQarr;
 
-	_frArr set [(count _frArr),_frG];
-	_enArr set [(count _enArr),_enG];
+	_frArr pushBack _frG;
+	_enArr pushBack _enG;
 
 	[_frArr,_enArr,_HQs]
 	};
@@ -660,7 +645,7 @@ RYD_Itinerary =
 	_tgtIn = [];
 
 		{
-		if ((position _x) in _bound) then {_secIn set [(count _secIn),_x]}
+		if ((position _x) in _bound) then {_secIn pushBack _x}
 		}
 	foreach _sectors;
 
@@ -686,8 +671,8 @@ RYD_Itinerary =
 
 			if not (_cSum in _HandledArray) then 
 				{
-				_tgtIn set [(count _tgtIn),_x];
-				_HandledArray set [(count _HandledArray),_cSum];
+				_tgtIn pushBack _x;
+				_HandledArray pushBack _cSum;
 				missionNameSpace setVariable [_varName,_HandledArray];
 				}
 			}
@@ -756,7 +741,7 @@ RYD_ExecutePath =
 			{
 			_pCnt = _pCnt + 1;
 			_j = [(_x select 0),(random 1000),"markBBPath","ColorBlack","ICON","mil_box",(str _pCnt),"",[0.35,0.35]] call RYD_Mark;
-			_marksT set [(count _marksT),_j]
+			_marksT pushBack _j
 			}
 		foreach _sortedA;
 
@@ -779,7 +764,7 @@ RYD_ExecutePath =
 
 			_lM = [_centerPoint,(random 1000),"markBBline","ColorPink","RECTANGLE","Solid","","",[_mr1,_mr2],_angleM] call RYD_Mark;
 
-			_marksT set [(count _marksT),_lM]
+			_marksT pushBack _lM
 			}
 		};
 
@@ -902,7 +887,7 @@ RYD_ExecutePath =
 									_enY = _enY/_ct;
 									};
 
-								_KnEn set [(count _KnEn),[[_enX,_enY,0],_ct]];
+								_KnEn pushBack [[_enX,_enY,0],_ct];
 								};
 
 							}
@@ -1103,7 +1088,7 @@ RYD_ExecutePath =
 						
 					_unitG setVariable ["Busy" + (str _unitG),true];
 					_garrison = _HQ getVariable ["RydHQ_Garrison",[]];
-					_garrison set [(count _garrison),_unitG];
+					_garrison pushBack _unitG;
 					_HQ setVariable ["RydHQ_Garrison",_garrison];
 					};
 					
@@ -1251,6 +1236,8 @@ RYD_ReserveExecuting =
 						_unitG = _this select 0;
 						_garrison = _this select 1;
 						_Wpos = _this select 2;
+						
+						_Wpos set [2,0];
 
 						_form = "DIAMOND";
 						if (isPlayer (leader _unitG)) then {_form = formation _unitG};
@@ -1273,7 +1260,7 @@ RYD_ReserveExecuting =
 
 						if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) removeSimpleTask _task};
 
-						if not (_timer > 30) then {_garrison set [(count _garrison),_unitG]};
+						if not (_timer > 30) then {_garrison pushBack _unitG};
 						};
 						
 					[[_forGarr,_garrison,_Wpos],_code] call RYD_Spawn
@@ -1302,8 +1289,8 @@ RYD_ReserveExecuting =
 
 					if ((_enV distance _enV2) < 600) then 
 						{
-						_posArr set [(count _posArr),getPosATL _enV2];
-						_assg set [(count _assg),_x];			
+						_posArr pushBack (getPosATL _enV2);
+						_assg pushBack _x;			
 						}				
 					}
 				foreach _hostileG;
@@ -1322,7 +1309,7 @@ RYD_ReserveExecuting =
 					foreach _posArr;
 					
 					_poss = [[_sX/_nr,_sY/_nr,0],_nr];
-					if not (surfaceIsWater [_sX/_nr,_sY/_nr]) then {_possPos set [(count _possPos),_poss]}
+					if not (surfaceIsWater [_sX/_nr,_sY/_nr]) then {_possPos pushBack _poss}
 					};
 					
 				if ((_enV distance _middlePos) < 600) then 
@@ -1549,11 +1536,11 @@ RYD_ObjMark =
 		if ((_taken) and (_BBSide == "A")) then {_color = "ColorBlue";_alpha = 0.5};
 		if ((_taken) and (_BBSide == "B")) then {_color = "ColorRed";_alpha = 0.5};
 		_mark = [_mark,_posStr,_color,"ICON",[_valStr/2,_valStr/2],0,_alpha,"mil_dot",(str _valStr)] call RYD_Marker;
-		_markers set [(count _markers),_mark]			
+		_markers pushBack _mark			
 		}
 	foreach _strArea;
 
-	while {((RydBB_Active) and (RydBB_Debug))} do
+	while {((RydBB_Active) and {(RydBB_Debug)})} do
 		{
 		sleep 10;
 		if not (RydBB_Active) exitWith {};
@@ -1593,7 +1580,7 @@ RYD_ClusterA =
 		_sum = (_x select 0) + (_x select 1);
 		if not (_sum in _checked) then
 			{
-			_checked set [(count _checked),_sum];
+			_checked pushBack _sum;
 			_point = _x;
 			_newCluster = [_point];
 
@@ -1603,14 +1590,14 @@ RYD_ClusterA =
 					{
 					if ((_point distance _x) <= _range) then 
 						{
-						_checked set [(count _checked),_sum];
-						_newCluster set [(count _newCluster),_x];
+						_checked pushBack _sum;
+						_newCluster pushBack _x;
 						}
 					}
 				}
 			foreach _points;
 
-			_clusters set [(count _clusters),_newCluster]
+			_clusters pushBack _newCluster
 			}
 		}
 	foreach _points;
@@ -1674,7 +1661,7 @@ RYD_ClusterB =
 					if (_sumS == _sumMin) exitWith 
 						{
 						_added = true;
-						_cluster set [(count _cluster),_point]
+						_cluster pushBack _point
 						};
 					}
 				foreach _cluster;
@@ -1685,7 +1672,7 @@ RYD_ClusterB =
 
 			if not (_added) then 
 				{
-				_clusters set [(count _clusters),[_point,_pointMin]];
+				_clusters pushBack [_point,_pointMin];
 				};
 			}
 		}
@@ -1718,11 +1705,11 @@ RYD_Cluster =
 		foreach _cluster;
 
 		_center = [_midX/(count _cluster),_midY/(count _cluster),0];
-		_centers set [(count _centers),_center];
+		_centers pushBack _center;
 		}
 	foreach _clusters;
 
-	_clusters set [(count _clusters),_centers];
+	_clusters pushBack _centers;
 
 	_clustersC = [_centers,500] call RYD_ClusterA;
 
@@ -1736,7 +1723,7 @@ RYD_Cluster =
 			_centerC = _x;
 
 				{
-				if (((_centers select _foreachIndex) select 0) == (_centerC select 0)) then {_clusterNearby set [(count _clusterNearby),(_clusters select _foreachIndex)]}
+				if (((_centers select _foreachIndex) select 0) == (_centerC select 0)) then {_clusterNearby pushBack (_clusters select _foreachIndex)}
 				}
 			foreach _clusters
 			}
@@ -1744,13 +1731,13 @@ RYD_Cluster =
 
 			{
 				{
-				_newCluster set [(count _newCluster),_x]
+				_newCluster pushBack _x
 				}
 			foreach _x
 			}
 		foreach _clusterNearby;
 
-		_newClusters set [(count _newClusters),_newCluster]
+		_newClusters pushBack _newCluster
 		}
 	foreach _clustersC;
 
@@ -1873,7 +1860,7 @@ RYD_BBSimpleD =
 
 				_x setVariable ["LastCenter",_frCenter];
 
-				_frCenters set [(count _frCenters),_frCenter];
+				_frCenters pushBack _frCenter;
 
 				_colorArr = "ColorBlue";
 				if (_BBSide == "B") then {_colorArr = "ColorRed"};
@@ -1952,8 +1939,8 @@ RYD_BBSimpleD =
 					}
 				foreach _x;
 
-				_centers set [(count _centers),[_midX/(count _x),_midY/(count _x),0]];
-				_amounts set [(count _amounts),_amount];
+				_centers pushBack [_midX/(count _x),_midY/(count _x),0];
+				_amounts pushBack _amount;
 				}
 			}
 		foreach _clusters;
@@ -1988,7 +1975,7 @@ RYD_BBSimpleD =
 				if not (_tooClose) then
 					{
 					_battle = [_x,(random 10000),"markBattle",_colorBatt,"ICON","mil_ambush","","",[_sizeBatt,_sizeBatt],_angleBatt - 90] call RYD_Mark;
-					_battles set [(count _battles),_battle];
+					_battles pushBack _battle;
 					missionNamespace setVariable ["Battlemarks",_battles];
 					}
 				else

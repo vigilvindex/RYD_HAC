@@ -5,7 +5,7 @@ private ["_HQ","_rep","_noenemy","_repS","_repSG","_damaged","_Sdamaged","_Ldama
 	
 _HQ = _this select 0;
 
-_rep = RHQ_Rep + ["O_Truck_03_repair_F","I_Truck_02_box_F","O_Truck_02_box_F","B_APC_Tracked_01_CRV_F","B_Truck_01_Repair_F"] - RHQs_Rep;
+_rep = RHQ_Rep + RYD_WS_rep - RHQs_Rep;
 _noenemy = true;
 
 _repS = [];
@@ -14,12 +14,12 @@ _repSG = [];
 	{
 	if not (_x in _repS) then
 		{
-		if ((typeOf (assignedvehicle _x)) in _rep) then 
+		if ((toLower (typeOf (assignedvehicle _x))) in _rep) then 
 			{
-			_repS set [(count _repS),_x];
+			_repS pushBack _x;
 			if not ((group _x) in (_repSG + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]))) then 
 				{
-				_repSG set [(count _repSG),(group _x)]
+				_repSG pushBack (group _x)
 				}
 			}
 		}
@@ -44,10 +44,10 @@ _Ldamaged = [];
 					{
 					if (((getposATL _x) select 2) < 5) then 
 						{
-						_damaged set [(count _damaged),_av];
+						_damaged pushBack _av;
 						if (((damage _av) > 0.5) or not (canMove _av)) then
 							{
-							_Sdamaged set [(count _Sdamaged),_av]
+							_Sdamaged pushBack _av
 							}
 						}
 					}
@@ -80,7 +80,7 @@ _rtrs = [];
 					{
 					if not (_x in _rtrs) then 
 						{
-						_rtrs set [(count _rtrs),_x]
+						_rtrs pushBack _x
 						}
 					}
 				}
@@ -107,7 +107,7 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					if not ((group _SDunit) in (_HQ getVariable ["RydHQ_RSupportedG",[]])) then 
 						{
 						_supported = _HQ getVariable ["RydHQ_RSupportedG",[]];
-						_supported set [(count _supported),(group _SDunit)];
+						_supported pushBack (group _SDunit);
 						_HQ setVariable ["RydHQ_RSupportedG",_supported];
 						//_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _SDunit)]]
 						}
@@ -121,7 +121,7 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					if not ((group _SDunit) in (_HQ getVariable ["RydHQ_RSupportedG",[]])) then 
 						{
 						_supported = _HQ getVariable ["RydHQ_RSupportedG",[]];
-						_supported set [(count _supported),(group _SDunit)];
+						_supported pushBack (group _SDunit);
 						_HQ setVariable ["RydHQ_RSupportedG",_supported];
 						//_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _SDunit)]]
 						}
@@ -149,7 +149,7 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 				_SDunits = _SDunits - [_SDunit];
 				
 				_supported = _HQ getVariable ["RydHQ_RSupportedG",[]];
-				_supported set [(count _supported),(group _SDunit)];
+				_supported pushBack (group _SDunit);
 				_HQ setVariable ["RydHQ_RSupportedG",_supported];
 				
 				//_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _SDunit)]];
@@ -189,7 +189,7 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 					if not ((group _Dunit) in (_HQ getVariable ["RydHQ_RSupportedG",[]])) then 
 						{
 						_supported = _HQ getVariable ["RydHQ_RSupportedG",[]];
-						_supported set [(count _supported),(group _Dunit)];
+						_supported pushBack (group _Dunit);
 						_HQ setVariable ["RydHQ_RSupportedG",_supported];
 						//_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _Dunit)]]
 						}
@@ -203,7 +203,7 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 					if not ((group _Dunit) in (_HQ getVariable ["RydHQ_RSupportedG",[]])) then 
 						{
 						_supported = _HQ getVariable ["RydHQ_RSupportedG",[]];
-						_supported set [(count _supported),(group _Dunit)];
+						_supported pushBack (group _Dunit);
 						_HQ setVariable ["RydHQ_RSupportedG",_supported];
 						//_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _Dunit)]]
 						}
@@ -231,7 +231,7 @@ for [{_a = 500},{_a < 10000},{_a = _a + 500}] do
 				_Dunits = _Dunits - [_Dunit];
 				
 				_supported = _HQ getVariable ["RydHQ_RSupportedG",[]];
-				_supported set [(count _supported),(group _Dunit)];
+				_supported pushBack (group _Dunit);
 				_HQ setVariable ["RydHQ_RSupportedG",_supported];
 				
 				//_HQ setVariable ["RydHQ_RSupportedG",(_HQ getVariable ["RydHQ_RSupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_RSupportedG",[]])),(group _Dunit)]];

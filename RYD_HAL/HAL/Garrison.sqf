@@ -3,6 +3,7 @@ _SCRname = "Garrison";
 _HQ = _this select 0;
 _recArr = _this select 1;
 _Garrison = _HQ getVariable ["RydHQ_Garrison",[]];
+_garrRange = _HQ getVariable ["RydHQ_GarrRange",1];
 
 _posTaken = [];
 
@@ -36,7 +37,7 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 			{
 			//{unassignVehicle _x} foreach (units _unitG);
 			(units _unitG) orderGetIn false;
-			(units _unitG) allowGetin false;
+			(units _unitG) allowGetin false;//if (player in (units _unitG)) then {diag_log "NOT ALLOW garr"};
 			sleep 5
 			};
 
@@ -51,13 +52,13 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 
 		if not (isPlayer _UL) then
 			{
-			_list = _pos nearObjects ["StaticWeapon", 300];
+			_list = _pos nearObjects ["StaticWeapon",300 * _garrRange];
 			_staticWeapons = [];
 
 				{
 				if ((_x emptyPositions "gunner") > 0) then 
 					{
-					_staticWeapons = _staticWeapons + [_x];	
+					_staticWeapons pushBack _x;	
 					};
 				} 
 			forEach _list;
@@ -67,7 +68,7 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 					{
 					_unit = (_units select ((count _units) - 1));
 
-					if (((random 1) > 0.1) and not ((typeOf _unit) in _recArr)) then 
+					if (((random 1) > 0.1) and not ((toLower (typeOf _unit)) in _recArr)) then 
 						{
 						_unit assignAsGunner _x;
 						[_unit] orderGetIn true;
@@ -78,14 +79,14 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 				} 
 			forEach _staticWeapons;
 
-			_Bldngs = _pos nearObjects ["House",300];
+			_Bldngs = _pos nearObjects ["House",300 * _garrRange];
 			_posTaken = missionnamespace getvariable ["PosTaken",[]];
 			_posAll = [];
 			_posAll0 = [];
 
 				{
 				_Bldg = _x;
-				if ((_Bldg distance _UL) > 300) then {_Bldg = ObjNull};
+				if ((_Bldg distance _UL) > (300 * _garrRange)) then {_Bldg = ObjNull};
 
 				if not (isNull _Bldg) then
 					{
@@ -118,7 +119,7 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 
 							if not (_tkn) then 
 								{
-								_posAll set [(count _posAll),[_posAct,_Bldg]]
+								_posAll pushBack [_posAct,_Bldg]
 								}
 							};
 							
@@ -150,7 +151,7 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 						_ct = _ct + 1
 						};
 
-					if not ((_posS distance _pos) > 350) then
+					if not ((_posS distance _pos) > (350 * _garrRange)) then
 						{
 						if ((random 100) > 20) then
 							{
@@ -167,11 +168,11 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 
 							if not (_tkn) then 
 								{
-								_posAll set [_ix,"Del"];
-								_posAll = _posAll - ["Del"];
+								_posAll set [_ix,0];
+								_posAll = _posAll - [0];
 								_ix  = count _posTaken;
-								_posTaken set [(count _posTaken),_posS];
-								_posTaken = _posTaken - ["Del"];
+								_posTaken pushBack _posS;
+								_posTaken = _posTaken - [0];
 								missionnamespace setVariable ["PosTaken",_posTaken];
 								//[_x,_posS,_bld,[_posTaken,_ix],_HQ] spawn RYD_GarrS;
 								[[_x,_posS,_bld,[_posTaken,_ix],_HQ],RYD_GarrS] call RYD_Spawn;
@@ -213,7 +214,7 @@ for [{_a = 0},{_a < (count _Garrison)},{_a = _a + 1}] do
 						
 					if (_isGood) then
 						{
-						_patrolPos set [(count _patrolPos),_pA];
+						_patrolPos pushBack _pA;
 						}
 					}
 				}

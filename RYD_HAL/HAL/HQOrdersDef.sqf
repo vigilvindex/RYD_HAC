@@ -1,12 +1,14 @@
 _SCRname = "OrdersDef";
 
-private ["_HQ","_LMCU","_airDef","_recDef","_allInDef","_goodSpots","_inDef","_default","_Epos0","_Epos1","_nObj","_default","_Epos0Max","_Epos0Min","_EposA","_Epos1Max","_Epos1Min",
+private ["_HQ","_defRange","_LMCU","_airDef","_recDef","_allInDef","_goodSpots","_inDef","_default","_Epos0","_Epos1","_nObj","_default","_Epos0Max","_Epos0Min","_EposA","_Epos1Max","_Epos1Min",
 	"_sel1Max","_sel1Min","_EposB","_PosMid0","_PosMid1","_defRes","_defPoints","_ct","_cl","_clr","_closest","_friend","_dstM","_dstAct","_defPoints0","_defArray","_Lenght1","_Width1",
 	"_Lenght2","_Width2","_FreeLOS","_PrimDir","_SecDir","_randomPrimDir","_randomSecDir","_DN","_defPoint","_dX","_dY","_Angle","_dXb","_dYb","_posX","_posY","_Center","_lng","_wdt",
 	"_defFront","_goodmark","_spotsN","_goodSpotsRec","_angleV","_Spot","_GS","_recDefSpot","_isDef","_closestArr","_friend","_dstM","_arrP","_AAO","_ad",
 	"_dstAct","_aa","_Spot","_defSpot","_def","_bb","_SpotB","_radius","_position","_precision","_sourcesCount","_expression","_NR","_cnt","_Rpoint","_ammo","_dL","_d1","_d2","_d3","_d4"];
 
 _HQ = _this select 0;
+
+_defRange = _HQ getVariable ["RydHQ_DefRange",1];
 
 _LMCU = ((_HQ getVariable ["RydHQ_Friends",[]]) - (((_HQ getVariable ["RydHQ_AirG",[]]) - (_HQ getVariable ["RydHQ_NCrewInfG",[]])) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]) + (_HQ getVariable ["RydHQ_NavalG",[]]) + (_HQ getVariable ["RydHQ_StaticG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_ArtG",[]]) + ((_HQ getVariable ["RydHQ_NCCargoG",[]]) - ((_HQ getVariable ["RydHQ_NCrewInfG",[]]) - (_HQ getVariable ["RydHQ_SupportG",[]]))))) - (_HQ getVariable ["RydHQ_NoDef",[]]);
 _airDef = ((_HQ getVariable ["RydHQ_AirG",[]]) - ((_HQ getVariable ["RydHQ_NCAirG",[]]) + (_HQ getVariable ["RydHQ_NCrewInfG",[]]))) - ((_HQ getVariable ["RydHQ_NoDef",[]]) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]) + (_HQ getVariable ["RydHQ_AmmoDrop",[]]));
@@ -62,8 +64,8 @@ if (_AAO) then
 if not ((count (_HQ getVariable ["RydHQ_KnEnPos",[]])) == 0) then 
 	{
 		{
-		_Epos0 set [(count _Epos0),(_x select 0)];
-		_Epos1 set [(count _Epos1),(_x select 1)]
+		_Epos0 pushBack (_x select 0);
+		_Epos1 pushBack (_x select 1)
 		}
 	foreach (_HQ getVariable ["RydHQ_KnEnPos",[]])
 	}
@@ -115,7 +117,7 @@ _defRes = [];
 	{
 	if ((not (_x in (_HQ getVariable ["RydHQ_NCCargoG",[]])) or ((count (units _x)) > 1)) and ((random 100) > (70/(0.75 + ((_HQ getVariable ["RydHQ_Fineness",0.5])/4))))) then 
 		{
-		_defRes set [(count _defRes),_x]
+		_defRes pushBack _x
 		};
 	}
 foreach _LMCU;
@@ -198,22 +200,86 @@ _randomSecDir = ["W","E"];
 
 _DN = false;
 
+_Angle = 0;
+
 	{
 	_PrimDir = "";
 	_SecDir = "";
 	_defPoint = _x;
 	_dX = (_PosMid0) - ((getPos _defPoint) select 0);
 	_dY = (_Posmid1) - ((getPos _defPoint) select 1);
-	_Angle = _dX atan2 _dY;
-
+		
+	if not ((_dX == 0) or (_dY == 0)) then
+		{
+		_Angle = _dX atan2 _dY;
+		};
+	
+	if ((count (_HQ getVariable ["RydHQ_KnEnPos",[]])) == 0) then
+		{
+		_Angle = getDir _defPoint
+		};
+	
 	if (_Angle < 0) then {_Angle = _Angle + 360}; 
+	
+	_defFront = [];
+	
+	switch (_defPoint) do
+		{
+		case (_HQ getVariable ["leaderHQ",leader _HQ]) : 
+			{
+			_dL = _HQ getVariable "RydHQ_DefFrontL";
+			if not (isNil "_dL") then {_defFront = _dL}
+			};
+			
+		case (_HQ getVariable ["RydHQ_Obj1",leader _HQ]) : 
+			{
+			_d1 = _HQ getVariable "RydHQ_DefFront1";
+			if not (isNil "_d1") then {_defFront = _d1}
+			};
+			
+		case (_HQ getVariable ["RydHQ_Obj2",leader _HQ]) : 
+			{
+			_d2 = _HQ getVariable "RydHQ_DefFront2";
+			if not (isNil "_d2") then {_defFront = _d2}
+			};
+			
+		case (_HQ getVariable ["RydHQ_Obj3",leader _HQ]) : 
+			{
+			_d3 = _HQ getVariable "RydHQ_DefFront3";
+			if not (isNil "_d3") then {_defFront = _d3}
+			};
+			
+		case (_HQ getVariable ["RydHQ_Obj4",leader _HQ]) : 
+			{
+			_d4 = _HQ getVariable "RydHQ_DefFront4";
+			if not (isNil "_d4") then {_defFront = _d4}
+			};
+		};
+
+	if not ((count _defFront) == 0) then
+		{
+		_PrimDir = _defFront select 0;
+		_SecDir = _defFront select 1;	
+		
+		switch (true) do
+			{
+			case ((_PrimDir == "N") and (_SecDir == "")) : {_Angle = 0};
+			case ((_PrimDir == "N") and (_SecDir == "E")) : {_Angle = 45};
+			case ((_PrimDir == "E") and (_SecDir == "")) : {_Angle = 90};
+			case ((_PrimDir == "S") and (_SecDir == "E")) : {_Angle = 135};
+			case ((_PrimDir == "S") and (_SecDir == "")) : {_Angle = 180};
+			case ((_PrimDir == "S") and (_SecDir == "W")) : {_Angle = 225};
+			case ((_PrimDir == "W") and (_SecDir == "")) : {_Angle = 270};
+			case ((_PrimDir == "N") and (_SecDir == "W")) : {_Angle = 315};
+			};
+		};
 
 	_dXb = 400 * (sin _Angle);
 	_dYb = 400 * (cos _Angle);
 	_posX = ((getPos _defPoint) select 0) + _dXb;
 
 	_posY = ((getPos _defPoint) select 1) + _dYb;
-
+	
 	switch (true) do
 		{
 		case ((_Angle < 30) or (_Angle >= 330)) : {_PrimDir = "N"};
@@ -234,10 +300,10 @@ _DN = false;
 	_Center = [_posX,_posY];
 	_DN = false;
 
-	_Lenght1 = 50 * _clr;
-	_Width1 = 100 + (5*_clr);
-	_Lenght2 = 50 * _cl;
-	_Width2 = 100 + (5*_cl);
+	_Lenght1 = 50 * _clr * _defRange;
+	_Width1 = (100 + (5*_clr)) * _defRange;
+	_Lenght2 = 50 * _cl * _defRange;
+	_Width2 = (100 + (5*_cl)) * _defRange;
 
 	_lng = _Lenght2;
 	_wdt = _Width2;
@@ -250,74 +316,74 @@ _DN = false;
 		_Width2 = 50 * _cl;
 		};
 
-	if (((_Center distance [_PosMid0,_PosMid1]) < 500) or ((count (_HQ getVariable ["RydHQ_KnEnPos",[]])) == 0)) then 
+	if ((_Center distance [_PosMid0,_PosMid1]) < 500) then 
 		{
 		_Lenght1 = 50 * _clr;
 		_Width1 = 50 * _clr;
 		_Lenght2 = 50 * _cl;
 		_Width2 = 50 * _cl;
-
-		_defFront = [];
+		};
 		
-		switch (_defPoint) do
+	_defFront = [];
+	_isHQ = false;
+	
+	switch (_defPoint) do
+		{
+		case (_HQ getVariable ["leaderHQ",leader _HQ]) : 
 			{
-			case (_HQ getVariable ["leaderHQ",leader _HQ]) : 
-				{
-				_dL = _HQ getVariable "RydHQ_DefFrontL";
-				if not (isNil "_dL") then {_defFront = _dL}
-				};
-				
-			case (_HQ getVariable ["RydHQ_Obj1",leader _HQ]) : 
-				{
-				_d1 = _HQ getVariable "RydHQ_DefFront1";
-				if not (isNil "_d1") then {_defFront = _d1}
-				};
-				
-			case (_HQ getVariable ["RydHQ_Obj2",leader _HQ]) : 
-				{
-				_d2 = _HQ getVariable "RydHQ_DefFront2";
-				if not (isNil "_d2") then {_defFront = _d2}
-				};
-				
-			case (_HQ getVariable ["RydHQ_Obj3",leader _HQ]) : 
-				{
-				_d3 = _HQ getVariable "RydHQ_DefFront3";
-				if not (isNil "_d3") then {_defFront = _d3}
-				};
-				
-			case (_HQ getVariable ["RydHQ_Obj4",leader _HQ]) : 
-				{
-				_d4 = _HQ getVariable "RydHQ_DefFront4";
-				if not (isNil "_d4") then {_defFront = _d4}
-				};
+			_dL = _HQ getVariable "RydHQ_DefFrontL";
+			if not (isNil "_dL") then {_defFront = _dL;_isHQ = true}
 			};
-
-		if (((count (_HQ getVariable ["RydHQ_KnEnPos",[]])) == 0) or not ((count _defFront) == 0)) then
+			
+		case (_HQ getVariable ["RydHQ_Obj1",leader _HQ]) : 
 			{
-			if not ((count _defFront) == 0) then 
-				{
-				_PrimDir = _defFront select 0;
-				_SecDir = _defFront select 1
-				}
-			else
-				{
-				_PrimDir = _randomPrimDir select (floor (random (count _randomPrimDir)));
-				if (((_PrimDir == "N") or (_PrimDir == "S")) and ((random 100) >= 50)) then {_SecDir = _randomSecDir select (floor (random (count _randomSecDir)))} else {_SecDir = ""};
-				};
+			_d1 = _HQ getVariable "RydHQ_DefFront1";
+			if not (isNil "_d1") then {_defFront = _d1}
+			};
+			
+		case (_HQ getVariable ["RydHQ_Obj2",leader _HQ]) : 
+			{
+			_d2 = _HQ getVariable "RydHQ_DefFront2";
+			if not (isNil "_d2") then {_defFront = _d2}
+			};
+			
+		case (_HQ getVariable ["RydHQ_Obj3",leader _HQ]) : 
+			{
+			_d3 = _HQ getVariable "RydHQ_DefFront3";
+			if not (isNil "_d3") then {_defFront = _d3}
+			};
+			
+		case (_HQ getVariable ["RydHQ_Obj4",leader _HQ]) : 
+			{
+			_d4 = _HQ getVariable "RydHQ_DefFront4";
+			if not (isNil "_d4") then {_defFront = _d4}
+			};
+		};
 
-				_DN = true;
+	if not ((count _defFront) == 0) then
+		{
+		_PrimDir = _defFront select 0;
+		_SecDir = _defFront select 1;
 
-			switch (true) do
-				{
-				case ((_PrimDir == "N") and (_SecDir == "")) : {_HQ setVariable ["RydHQ_Angle",0]};
-				case ((_PrimDir == "N") and (_SecDir == "E")) : {_HQ setVariable ["RydHQ_Angle",45]};
-				case ((_PrimDir == "E") and (_SecDir == "")) : {_HQ setVariable ["RydHQ_Angle",90]};
-				case ((_PrimDir == "S") and (_SecDir == "E")) : {_HQ setVariable ["RydHQ_Angle",135]};
-				case ((_PrimDir == "S") and (_SecDir == "")) : {_HQ setVariable ["RydHQ_Angle",180]};
-				case ((_PrimDir == "S") and (_SecDir == "W")) : {_HQ setVariable ["RydHQ_Angle",225]};
-				case ((_PrimDir == "W") and (_SecDir == "")) : {_HQ setVariable ["RydHQ_Angle",270]};
-				case ((_PrimDir == "N") and (_SecDir == "W")) : {_HQ setVariable ["RydHQ_Angle",315]};
-				}
+		_DN = true;
+		_defDir = 0;
+
+		switch (true) do
+			{
+			case ((_PrimDir == "N") and (_SecDir == "")) : {_defDir = 0};
+			case ((_PrimDir == "N") and (_SecDir == "E")) : {_defDir = 45};
+			case ((_PrimDir == "E") and (_SecDir == "")) : {_defDir = 90};
+			case ((_PrimDir == "S") and (_SecDir == "E")) : {_defDir = 135};
+			case ((_PrimDir == "S") and (_SecDir == "")) : {_defDir = 180};
+			case ((_PrimDir == "S") and (_SecDir == "W")) : {_defDir = 225};
+			case ((_PrimDir == "W") and (_SecDir == "")) : {_defDir = 270};
+			case ((_PrimDir == "N") and (_SecDir == "W")) : {_defDir = 315};
+			};
+		
+		_HQ setVariable ["RydHQ_Angle",_defDir];
+		if (_isHQ) then
+			{
+			_HQ setVariable ["RydHQ_AngleR",_defDir];
 			}
 		};
 
@@ -348,7 +414,7 @@ _DN = false;
 
 	_angleV = _HQ getVariable ["RydHQ_Angle",0];
 
-	_defArray set [(count _defArray),[_defPoint,_goodSpotsRec,_goodSpots,_DN,[_dXb,_dYb],_angleV]];
+	_defArray pushBack [_defPoint,_goodSpotsRec,_goodSpots,_DN,[_dXb,_dYb],_angleV];
 	}
 foreach _defPoints;
 
@@ -405,7 +471,7 @@ _recDefSpot = _HQ getVariable ["RydHQ_RecDefSpot",[]];
 								_closestArr set [1,_goodSpots];
 								//[_x,_Spot,_angleV,_HQ] spawn HAL_GoDefRecon;
 								[[_x,_Spot,_angleV,_HQ],HAL_GoDefRecon] call RYD_Spawn;
-								_recDefSpot set [(count _recDefSpot),_x];
+								_recDefSpot pushBack _x;
 								_HQ setVariable ["RydHQ_RecDefSpot",_recDefSpot];
 								}
 							}
@@ -476,7 +542,7 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 										_closestArr set [2,_goodSpots];
 										//[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
 										[[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ],HAL_GoDef] call RYD_Spawn;
-										_defSpot set [(count _defSpot),_x];
+										_defSpot pushBack _x;
 										_HQ setVariable ["RydHQ_DefSpot",_defSpot];
 										};
 									};
@@ -524,7 +590,7 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 								_Spot = _closestArr select 0;
 								
 								_AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
-								_AirInDef set [(count _AirInDef),_ad];
+								_AirInDef pushBack _ad;
 								_HQ setVariable ["RydHQ_AirInDef",_AirInDef];	
 
 								_ad setVariable [("Busy" + (str _ad)), false];
@@ -583,10 +649,10 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 
 
 
-										_radius = 50 + (50 * _ct);
+										_radius = (50 + (50 * _ct)) * _defRange;
 										_position = [(_SpotB select 0) + (random (2*_radius)) - _radius,(_SpotB select 1) + (random (2*_radius)) - _radius];
-										_radius = 100;
-										_precision = 20;
+										_radius = 100 * _defRange;;
+										_precision = 20 * _defRange;;
 										_sourcesCount = 1;
 										_expression = "Meadow";
 										switch (true) do 
@@ -595,11 +661,14 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 											case (not (_x in (_HQ getVariable ["RydHQ_InfG",[]]))) : {_expression = "(1 + (2 * Meadow)) * (1 - Forest) * (1 - (0.5 * Trees)) * (1 - (10 * sea))"};
 											};
 										_Spot = selectBestPlaces [_position,_radius,_expression,_precision,_sourcesCount];
+										
+										if ((count _Spot) < 1) exitWith {};
+										
 										_Spot = _Spot select 0;
 										_Spot = _Spot select 0;
 										if ((random 100) > 70/(0.75 + ((_HQ getVariable ["RydHQ_Fineness",0.5])/2))) then 
 											{
-											_NR = _Spot nearRoads 200;
+											_NR = _Spot nearRoads (200 * _defRange);
 											_cnt = 0;
 											if not ((count _NR) == 0) then 
 												{
@@ -607,8 +676,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 													{
 													_cnt = _cnt + 1;
 													_Rpoint = _NR select (floor (random (count _NR)));
-													_posX = ((position _Rpoint) select 0) + (random 100) - 50;
-													_posY = ((position _Rpoint) select 1) + (random 100) - 50;
+													_posX = ((position _Rpoint) select 0) + (((random 100) - 50) * _defRange);
+													_posY = ((position _Rpoint) select 1) + (((random 100) - 50) * _defRange);
 													if (not (isOnRoad [_posX,_posY]) and (([_posX,_posY] distance _Rpoint) > 10) or (_cnt > 10)) exitwith {if (_cnt <= 10) then {_Spot = [_posX,_posY]}};
 													}
 												};
@@ -616,7 +685,7 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 
 										//[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
 										[[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ],HAL_GoDef] call RYD_Spawn;
-										_def set [(count _def),_x];
+										_def pushBack _x;
 										_HQ setVariable ["RydHQ_Def",_def]
 										};
 									};
@@ -669,10 +738,10 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 										_dXb = (_closestArr select 4) select 0;
 										_dYb = (_closestArr select 4) select 1;
 
-										_radius = 50 + (50 * _ct);
+										_radius = (50 + (50 * _ct)) * _defRange;
 										_position = [(_SpotB select 0) + (random (2*_radius)) - _radius,(_SpotB select 1) + (random (2*_radius)) - _radius];
-										_radius = 100;
-										_precision = 20;
+										_radius = 100 * _defRange;
+										_precision = 20 * _defRange;
 										_sourcesCount = 1;
 										_expression = "Meadow";
 										switch (true) do 
@@ -681,11 +750,14 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 											case (not (_x in (_HQ getVariable ["RydHQ_InfG",[]]))) : {_expression = "(1 + (2 * Meadow)) * (1 - Forest) * (1 - (0.5 * Trees)) * (1 - (10 * sea))"};
 											};
 										_Spot = selectBestPlaces [_position,_radius,_expression,_precision,_sourcesCount];
+										
+										if ((count _Spot) < 1) exitWith {};
+										
 										_Spot = _Spot select 0;
 										_Spot = _Spot select 0;
 										if ((random 100) > 70/(0.75 + ((_HQ getVariable ["RydHQ_Fineness",0.5])/2))) then 
 											{
-											_NR = _Spot nearRoads 200;
+											_NR = _Spot nearRoads (200 * _defRange);
 											_cnt = 0;
 											if not ((count _NR) == 0) then 
 												{
@@ -693,8 +765,8 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 													{
 													 _cnt = _cnt + 1;
 													_Rpoint = _NR select (floor (random (count _NR)));
-													_posX = ((position _Rpoint) select 0) + (random 100) - 50;
-													_posY = ((position _Rpoint) select 1) + (random 100) - 50;
+													_posX = ((position _Rpoint) select 0) + (((random 100) - 50) * _defRange);
+													_posY = ((position _Rpoint) select 1) + (((random 100) - 50) * _defRange);
 													if (not (isOnRoad [_posX,_posY]) and (([_posX,_posY] distance _Rpoint) > 10) or (_cnt > 10)) exitwith {if (_cnt <= 10) then {_Spot = [_posX,_posY]}};
 													}
 												};
@@ -702,7 +774,7 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 										
 										//[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ] spawn HAL_GoDef;
 										[[_x,_Spot,_dXb,_dYb,_DN,_angleV,_HQ],HAL_GoDef] call RYD_Spawn;
-										_def set [(count _def),_x];
+										_def pushBack _x;
 										_HQ setVariable ["RydHQ_Def",_def]
 										}
 									}
@@ -745,7 +817,7 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 
 								_Spot = _closestArr select 0;
 								_AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
-								_AirInDef set [(count _AirInDef),_ad];
+								_AirInDef pushBack _ad;
 								_HQ setVariable ["RydHQ_AirInDef",_AirInDef];
 								
 								_ad setVariable [("Busy" + (str _ad)), false];
@@ -780,12 +852,12 @@ switch ((random 100) >= (50/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) d
 							{
 							if not ((_x getVariable ["Busy" + (str _x),false]) and (_x in ((_HQ getVariable ["RydHQ_DefSpot",[]]) + (_HQ getVariable ["RydHQ_Def",[]])))) then
 								{
-								_posX = ((position (leader _HQ)) select 0) + (random 400) - 200;
-								_posY = ((position (leader _HQ)) select 1) + (random 400) - 200;
+								_posX = ((position (leader _HQ)) select 0) + (((random 400) - 200) * _defRange);
+								_posY = ((position (leader _HQ)) select 1) + (((random 400) - 200) * _defRange);
 								_Spot = [_posX,_posY];
 								//[_x,_Spot,_HQ] spawn HAL_GoDefRes;
 								[[_x,_Spot,_HQ],HAL_GoDefRes] call RYD_Spawn;
-								_def set [(count _def),_x];
+								_def pushBack _x;
 								_HQ setVariable ["RydHQ_Def",_def]
 								}
 							}

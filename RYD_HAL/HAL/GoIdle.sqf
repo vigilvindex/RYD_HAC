@@ -180,6 +180,8 @@ if (_isWater) exitwith {_unitG setVariable [("Deployed" + (str _unitG)),false]};
 
 [_unitG] call RYD_WPdel;
 
+[_unitG,[_posX,_posY,0],"HQ_ord_idle",_HQ] call RYD_OrderPause;
+
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
 _UL = leader _unitG;
@@ -210,7 +212,7 @@ if (_unitG in ((_HQ getVariable ["RydHQ_SupportG",[]]))) then {_CM = "BLUE";_tp 
 _sts = ["true","deletewaypoint [(group this), 0];"];
 if (_unitG in (_HQ getVariable ["RydHQ_AirG",[]])) then {_sts = ["true", "{(vehicle _x) land 'LAND'} foreach (units (group this)); deletewaypoint [(group this), 0]"]};
 
-_wp = [_unitG,[_posX,_posY],_tp,"SAFE",_CM,_spd,_sts] call RYD_WPadd;
+_wp = [_unitG,[_posX,_posY],_tp,"SAFE",_CM,_spd,_sts,true,0,[0,0,0],"STAG COLUMN"] call RYD_WPadd;
 
 if (_patrol) then 
 	{
@@ -253,7 +255,7 @@ if (_patrol) then
 			_crr = false;
 			if (_a == 1) then {_crr = true};
 
-			_wp = [[_unitG],_pos,_tp,"SAFE","YELLOW","LIMITED",["true",""],_crr,0.01] call RYD_WPadd
+			_wp = [[_unitG],_pos,_tp,"SAFE","YELLOW","LIMITED",["true",""],_crr,0.01,[20,25,30],"STAG COLUMN"] call RYD_WPadd
 			};
 		}
 	};

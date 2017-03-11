@@ -6,17 +6,27 @@ if (isNil ("RHQs_SPMortars")) then {RHQs_SPMortars = []};
 if (isNil ("RHQs_Mortars")) then {RHQs_Mortars = []};
 if (isNil ("RHQs_RocketArty")) then {RHQs_RocketArty = []};
 
-RydHQ_Howitzer = ["M119","M119_US_EP1","D30_CDF","D30_Ins","D30_RU","D30_TK_EP1","D30_TK_GUE_EP1","D30_TK_INS_EP1"];
-RydHQ_Mortar = ["M252","M252_US_EP1","2b14_82mm_CDF","2b14_82mm_GUE","2b14_82mm_INS","2b14_82mm_TK_EP1","2b14_82mm_TK_GUE_EP1","2b14_82mm_TK_INS_EP1"];
-RydHQ_Rocket = ["MLRS","MLRS_DES_EP1","GRAD_CDF","GRAD_INS","GRAD_RU","GRAD_TK_EP1"];
+RydHQ_Howitzer = ["m119","m119_us_ep1","d30_cdf","d30_ins","d30_ru","d30_tk_ep1","d30_tk_gue_ep1","d30_tk_ins_ep1"];
+RydHQ_Mortar = ["m252","m252_us_ep1","2b14_82mm_cdf","2b14_82mm_gue","2b14_82mm_ins","2b14_82mm_tk_ep1","2b14_82mm_tk_gue_ep1","2b14_82mm_tk_ins_ep1"];
+RydHQ_Rocket = ["mlrs","mlrs_des_ep1","grad_cdf","grad_ins","grad_ru","grad_tk_ep1"];
 
 if (isNil "RydHQ_Add_OtherArty") then {RydHQ_Add_OtherArty = []};
 
 RydHQ_OtherArty = [] + RydHQ_Add_OtherArty;
 
-RydHQ_Mortar_A3 = RHQ_Mortars + ["I_Mortar_01_F","O_Mortar_01_F","B_G_Mortar_01_F","B_Mortar_01_F"] - RHQs_Mortars;
-RydHQ_SPMortar_A3 = RHQ_SPMortars + ["O_MBT_02_arty_F","B_MBT_01_arty_F"] - RHQs_SPMortars;
-RydHQ_Rocket_A3 = RHQ_RocketArty + ["B_MBT_01_mlrs_F"] - RHQs_RocketArty;
+RydHQ_Mortar_A3 = RHQ_Mortars + ["i_mortar_01_f","o_mortar_01_f","b_g_mortar_01_f","b_mortar_01_f"] - RHQs_Mortars;
+RydHQ_SPMortar_A3 = RHQ_SPMortars + ["o_mbt_02_arty_f","b_mbt_01_arty_f"] - RHQs_SPMortars;
+RydHQ_Rocket_A3 = RHQ_RocketArty + ["b_mbt_01_mlrs_f"] - RHQs_RocketArty;
+
+RydHQ_AllArty = RydHQ_Howitzer + RydHQ_Mortar + RydHQ_Rocket + RydHQ_Mortar_A3 + RydHQ_SPMortar_A3 + RydHQ_Rocket_A3;
+
+	{
+		{
+		RydHQ_AllArty pushBack (toLower _x)
+		}
+	foreach (_x select 0)
+	}
+foreach RydHQ_OtherArty;
 
 RydxHQ_SmokeMuzzles = 
 	[
@@ -51,7 +61,8 @@ if (isNil ("RydBB_LRelocating")) then {RydBB_LRelocating = true};
 
 if (isNil ("RydHQ_GroupMarks")) then {RydHQ_GroupMarks = []};
 if (isNil ("RydHQ_ChatDebug")) then {RydHQ_ChatDebug = false};
-if (isNil ("RydHQ_PathFinding")) then {RydHQ_PathFinding = 0};
+if (isNil "RydHQ_HQChat") then {RydHQ_HQChat = true};
+if (isNil ("RydHQ_PathFinding")) then {RydHQ_PathFinding = 100};
 if (isNil "RydxHQ_SynchroAttack") then {RydxHQ_SynchroAttack = false};
 if (isNil "RydHQ_TimeM") then {RydHQ_TimeM = false};
 if (isNil "RydHQ_CamV") then {RydHQ_CamV = false};
@@ -59,6 +70,7 @@ if (isNil "RydHQ_CamVIncluded") then {RydHQ_CamVIncluded = []};
 if (isNil "RydHQ_CamVExcluded") then {RydHQ_CamVExcluded = []};
 if (isNil "RydxHQ_GPauseActive") then {RydxHQ_GPauseActive = false};
 if (isNil ("RydHQ_DbgMon")) then {RydHQ_DbgMon = true};
+if (isNil ("RydHQ_RHQAutoFill")) then {RydHQ_RHQAutoFill = true};
 
 if (isNil ("RHQ_SpecFor")) then {RHQ_SpecFor = []};
 if (isNil ("RHQ_Recon")) then {RHQ_Recon = []};
@@ -153,6 +165,77 @@ call compile preprocessfile (RYD_Path + "RHQLibrary.sqf");
 if (isNil "RydxHQ_AIChatDensity") then {RydxHQ_AIChatDensity = 10};
 if (isNil "RydxHQ_NEAware") then {RydxHQ_NEAware = 0};
 if (isNil "RydxHQ_MARatio") then {RydxHQ_MARatio = [-1,-1,-1,-1]};
+if (isNil "RydHQ_SlingDrop") then {RydHQ_SlingDrop = false};
+
+if (isNil "RydHQ_CallSignsA") then 
+	{
+	RydHQ_CallSignsA = 
+		[
+		["ONE",false],
+		["TWO",false],
+		["THREE",false],
+		["FOUR",false],
+		["FIVE",false],
+		["SIX",false],
+		["SEVEN",false],
+		["EIGHT",false],
+		["NINE",false],
+		["TEN",false],
+		["ELEVEN",false],
+		["TWELVE",false],
+		["WHITE",true],
+		["GREY",true],
+		["BLACK",true],
+		["BLUE",true],
+		["RED",true],
+		["GREEN",true],
+		["YELLOW",true],
+		["PURPLE",true],
+		["BROWN",true],
+		["ORANGE",true],
+		["DARK",true],
+		["BRIGHT",true]
+		]
+	};
+
+if (isNil "RydHQ_CallSignsN") then 
+	{
+	RydHQ_CallSignsN = 
+		[
+			[
+			["PERSEUS",[]],
+			["AJAX",[]],
+			["HECTOR",[]],
+			["CASTOR",[]],
+			["JASON",[]],
+			["ACHILLES",[]]
+			],
+			[
+			["LADON",[]],
+			["CERBERUS",[]],
+			["MANTICORE",[]],
+			["MINOTAUR",[]],
+			["CENTAUR",[]],
+			["CHIMERA",[]]
+			],
+			[
+			["PHOENIX",[]],
+			["HARPY",[]],
+			["GRIFFIN",[]],
+			["SPHINX",[]],
+			["PEGASUS",[]],
+			["ERINYS",[]]
+			],
+			[
+			["HERACLES",[]],
+			["CYCLOPS",[]],
+			["ARES",[]],
+			["ATLAS",[]],
+			["TYPHON",[]],
+			["POLYPHEMUS",[]]	
+			]
+		]
+	};
 
 RydxHQ_Markers = [];
 RydxHQ_Handles = [];

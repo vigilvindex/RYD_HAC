@@ -2241,4 +2241,102 @@ class CfgRadio
 		sound[] = {"", 1, 1};
 		title = "Fire Mission received on target location - Out.";
 		};
+		
+	class HQ_ord_attack
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Engage the enemy";
+		};
+		
+	class HQ_ord_recon
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Perform reconnaissance the area";
+		};
+		
+	class HQ_ord_capture
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Capture area";
+		};
+		
+	class HQ_ord_defend
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Take and hold defensive positions";
+		};
+		
+	class HQ_ord_defendR
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Wait for reinforcement task";
+		};
+		
+	class HQ_ord_flank
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Outflank enemy positions";
+		};
+		
+	class HQ_ord_ammoS
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Deliver ammunition";
+		};
+		
+	class HQ_ord_medS
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Provide medevac";
+		};
+		
+	class HQ_ord_fuelS
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Deliver fuel";
+		};
+		
+	class HQ_ord_repS
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Conduct field repairs";
+		};
+		
+	class HQ_ord_idle
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Wait for orders";
+		};
+		
+	class HQ_ord_withdraw
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Withdraw";
+		};
+		
+	class HQ_ord_cargo
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Provide transport";
+		};
+		
+	class HQ_ord_SF
+		{
+		name = "";
+		sound[] = {"", 1, 1};
+		title = "Perform operation";
+		};
 	};

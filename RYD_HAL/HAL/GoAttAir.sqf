@@ -35,6 +35,8 @@ _dYb = _distance * (cos _angle);
 _posX = ((getPosATL (leader _HQ)) select 0) + _dXb;
 _posY = ((getPosATL (leader _HQ)) select 1) + _dYb;
 
+[_unitG,[_posX,_posY,0],"HQ_ord_attack",_HQ] call RYD_OrderPause;
+
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
 _UL = leader _unitG;
@@ -47,7 +49,7 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then
 	_i = [[_posX,_posY],_unitG,"markAttack","ColorRed","ICON","mil_dot","Air " + _signum," - ATTACK"] call RYD_Mark
 	};
 
-_task = [(leader _unitG),["Search and destroy enemy.", "S&D", ""],[_posX,_posY]] call RYD_AddTask;
+_task = [(leader _unitG),["Search and destroy enemy.", "SAD", ""],[_posX,_posY]] call RYD_AddTask;
 
 _wp = [_unitG,[_posX,_posY],"SAD","COMBAT","RED","NORMAL",["true", "deletewaypoint [(group this), 0]"],true,0.001] call RYD_WPadd;
 
@@ -56,8 +58,9 @@ _lasT = ObjNull;
 if (_unitG in (_HQ getVariable ["RydHQ_BAirG",[]])) then 
 	{
 	_eSide = side _unitG;
-	_wp waypointAttachVehicle _Trg;
 	_wp setWaypointType "DESTROY";
+	_wp waypointAttachVehicle _Trg;
+
 	_tgt = "LaserTargetWStatic";
 	if (_eSide == east) then {_tgt = "LaserTargetEStatic"};
 
@@ -76,7 +79,7 @@ if (_unitG in (_HQ getVariable ["RydHQ_BAirG",[]])) then
 		_VL = vehicle (leader _unitG);
 		_ct = 0;
 
-		while {(not (isNull _Trg) and not (isNull _lasT) and not (isNull _VL) and (_ct < 100))} do
+		while {(not (isNull _Trg) and {not (isNull _lasT) and {not (isNull _VL) and {(_ct < 100)}}})} do
 			{
 			if not (alive _Trg) exitWith {};
 			if not (alive _VL) exitWith {};
@@ -151,7 +154,7 @@ if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) re
 if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker ("markAttack" + str (_unitG))};
 
 _attAv = _HQ getVariable ["RydHQ_AttackAv",[]];
-_attAv set [(count _attAv),_unitG];
+_attAv pushBack _unitG;
 _HQ setVariable ["RydHQ_AttackAv",_attAv];
  
 _unitG setVariable [("Busy" + (str _unitG)),false];

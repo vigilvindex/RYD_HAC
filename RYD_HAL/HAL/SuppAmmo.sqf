@@ -5,7 +5,7 @@ private ["_HQ","_ammo","_noenemy","_ammoS","_ammoSG","_Hollow","_soldiers","_Zer
 
 _HQ = _this select 0;
 
-_ammo = RHQ_Ammo + ["O_Truck_03_ammo_F","I_Truck_02_ammo_F","O_Truck_02_Ammo_F","B_APC_Tracked_01_CRV_F","B_Truck_01_ammo_F"] - RHQs_Ammo;
+_ammo = RHQ_Ammo + RYD_WS_ammo - RHQs_Ammo;
 
 _noenemy = true;
 	
@@ -15,13 +15,13 @@ _ammoSG = [];
 	{
 	if not (_x in _ammoS) then
 		{
-		if ((typeOf (assignedvehicle _x)) in _ammo) then 
+		if ((toLower (typeOf (assignedvehicle _x))) in _ammo) then 
 			{
-			_ammoS set [(count _ammoS),_x];
+			_ammoS pushBack _x;
 
 			if not ((group _x) in (_ammoSG + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]))) then 
 				{
-				_ammoSG set [(count _ammoSG),(group _x)]
+				_ammoSG pushBack (group _x)
 				}
 			}
 		}
@@ -31,7 +31,7 @@ foreach (_HQ getVariable ["RydHQ_Support",[]]);
 	{
 	if not (_x in _ammoSG) then
 		{
-		_ammoSG set [(count _ammoSG),_x]
+		_ammoSG pushBack _x
 		}
 	}
 foreach (_HQ getVariable ["RydHQ_AmmoDrop",[]]);
@@ -60,11 +60,11 @@ _ZeroA = [];
 				{
 				if not (_av in _ZeroA) then
 					{
-					if not ((typeOf _av) in ((_HQ getVariable ["RydHQ_NCVeh",[]]))) then
+					if not ((toLower (typeOf _av)) in ((_HQ getVariable ["RydHQ_NCVeh",[]]))) then
 						{
 						if (((getposATL _x) select 2) < 5) then 
 							{
-							_ZeroA set [(count _ZeroA),_av]
+							_ZeroA pushBack _av
 							}
 						}
 					}
@@ -77,10 +77,10 @@ _ZeroA = [];
 				{
 				if not (_x in _Hollow) then 
 					{
-					_Hollow set [(count _Hollow),_x]; 
+					_Hollow pushBack _x; 
 					if not (_x in _soldiers) then 
 						{
-						_soldiers set [(count _soldiers),_x]
+						_soldiers pushBack _x
 						}
 					}
 				}
@@ -112,7 +112,7 @@ _MTrucks = [];
 					{
 					if not (_x in _MTrucks) then 
 						{
-						_MTrucks set [(count _MTrucks),_x]
+						_MTrucks pushBack _x
 						}
 					}
 				}
@@ -127,11 +127,11 @@ _MTrucks3 = [];
 	{
 	if (_x in (_HQ getVariable ["RydHQ_AmmoDrop",[]])) then
 		{
-		_MTrucks3 set [(count _MTrucks3),_x]
+		_MTrucks3 pushBack _x
 		}
 	else
 		{
-		_MTrucks2 set [(count _MTrucks2),_x]
+		_MTrucks2 pushBack _x
 		}
 	}
 foreach _MTrucks;
@@ -148,8 +148,7 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 
 		for [{_b = 0},{_b < (count _ZeroA)},{_b = _b + 1}] do 
 			{
-			_Zunit = _ZeroA select _b;
-			
+			_Zunit = _ZeroA select _b;		
 
 				{
 				if ((_Zunit distance (assignedvehicle (leader _x))) < 400) exitwith 
@@ -157,7 +156,7 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					if not ((group _Zunit) in (_HQ getVariable ["RydHQ_ASupportedG",[]])) then 
 						{
 						_supported = _HQ getVariable ["RydHQ_ASupportedG",[]];
-						_supported set [(count _supported),(group _Zunit)];
+						_supported pushBack (group _Zunit);
 						_HQ setVariable ["RydHQ_ASupportedG",_supported];
 						//_HQ setVariable ["RydHQ_ASupportedG",(_HQ getVariable ["RydHQ_ASupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_ASupportedG",[]])),(group _Zunit)]]
 						}
@@ -171,7 +170,7 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 					if not ((group _Zunit) in (_HQ getVariable ["RydHQ_ASupportedG",[]])) then 
 						{
 						_supported = _HQ getVariable ["RydHQ_ASupportedG",[]];
-						_supported set [(count _supported),(group _Zunit)];
+						_supported pushBack (group _Zunit);
 						_HQ setVariable ["RydHQ_ASupportedG",_supported];
 						//_HQ setVariable ["RydHQ_ASupportedG",(_HQ getVariable ["RydHQ_ASupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_ASupportedG",[]])),(group _Zunit)]]
 						}
@@ -198,7 +197,7 @@ for [{_a = 500},{_a <= 44000},{_a = _a + 500}] do
 				_MTrucks2 = _MTrucks2 - [_x];
 				_Zunits = _Zunits - [_Zunit];
 				_supported = _HQ getVariable ["RydHQ_ASupportedG",[]];
-				_supported set [(count _supported),(group _Zunit)];
+				_supported pushBack (group _Zunit);
 				_HQ setVariable ["RydHQ_ASupportedG",_supported];
 				//_HQ setVariable ["RydHQ_ASupportedG",(_HQ getVariable ["RydHQ_ASupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_ASupportedG",[]])),(group _Zunit)]];
 				//[_MTruck,_Zunit,_Hollow,_soldiers,false,objNull,_HQ] spawn HAL_GoAmmoSupp
@@ -241,7 +240,7 @@ if ((count (_HQ getVariable ["RydHQ_AmmoBoxes",[]])) > 0) then
 						if not ((group _Hunit) in (_HQ getVariable ["RydHQ_ASupportedG",[]])) then 
 							{
 							_supported = _HQ getVariable ["RydHQ_ASupportedG",[]];
-							_supported set [(count _supported),(group _Hunit)];
+							_supported pushBack (group _Hunit);
 							_HQ setVariable ["RydHQ_ASupportedG",_supported];
 							//_HQ setVariable ["RydHQ_ASupportedG",(_HQ getVariable ["RydHQ_ASupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_ASupportedG",[]])),(group _Hunit)]]
 							}
@@ -252,10 +251,10 @@ if ((count (_HQ getVariable ["RydHQ_AmmoBoxes",[]])) > 0) then
 					{
 					if ((_Hunit distance _x) < 250) exitwith 
 						{
-						if not ((group _Zunit) in (_HQ getVariable ["RydHQ_ASupportedG",[]])) then 
+						if not ((group _Hunit) in (_HQ getVariable ["RydHQ_ASupportedG",[]])) then 
 							{
 							_supported = _HQ getVariable ["RydHQ_ASupportedG",[]];
-							_supported set [(count _supported),(group _Hunit)];
+							_supported pushBack (group _Hunit);
 							_HQ setVariable ["RydHQ_ASupportedG",_supported];
 							//_HQ setVariable ["RydHQ_ASupportedG",(_HQ getVariable ["RydHQ_ASupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_ASupportedG",[]])),(group _Hunit)]]
 							}
@@ -283,7 +282,7 @@ if ((count (_HQ getVariable ["RydHQ_AmmoBoxes",[]])) > 0) then
 					_Hunits = _Hunits - [_Hunit];
 					
 					_supported = _HQ getVariable ["RydHQ_ASupportedG",[]];
-					_supported set [(count _supported),(group _Hunit)];
+					_supported pushBack (group _Hunit);
 					_HQ setVariable ["RydHQ_ASupportedG",_supported];
 					
 					//_HQ setVariable ["RydHQ_ASupportedG",(_HQ getVariable ["RydHQ_ASupportedG",[]]) set [(count (_HQ getVariable ["RydHQ_ASupportedG",[]])),(group _Hunit)]];

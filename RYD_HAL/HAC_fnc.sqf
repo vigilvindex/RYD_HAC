@@ -1,3 +1,38 @@
+RYD_AngTowards = 
+	{
+	private ["_source0","_target0","_rnd0","_dX0","_dY0","_angleAzimuth0"];
+	
+	_source0 = _this select 0;
+	_target0 = _this select 1;
+	_rnd0 = _this select 2;
+
+	_dX0 = (_target0 select 0) - (_source0 select 0);
+	_dY0 = (_target0 select 1) - (_source0 select 1);
+
+	_angleAzimuth0 = (_dX0 atan2 _dY0) + (random (_rnd0 * 2)) - _rnd0;
+
+	_angleAzimuth0
+	};
+	
+RYD_PosTowards2D = 
+	{
+	private ["_source","_distT","_angle","_dXb","_dYb","_px","_py","_pz"];
+
+	_source = _this select 0;
+	_angle = _this select 1;
+	_distT = _this select 2;
+
+	_dXb = _distT * (sin _angle);
+	_dYb = _distT * (cos _angle);
+
+	_px = (_source select 0) + _dXb;
+	_py = (_source select 1) + _dYb;
+
+	_pz = getTerrainHeightASL [_px,_py];
+
+	[_px,_py,_pz]
+	};
+
 RYD_RandomAround = 
 	{//based on Muzzleflash' function
 	private ["_pos","_xPos","_yPos","_a","_dir","_angle","_mag","_nX","_nY","_temp"];
@@ -33,6 +68,30 @@ RYD_RandomAroundB =
 	_Y = _radius * cos _angle;
 
 	_pos = [(_pos select 0) + _X,(_pos select 1) + _Y,0];
+
+	_pos	
+	};
+	
+RYD_RandomAroundMM = 
+	{//based on Muzzleflash' function
+	private ["_pos","_xPos","_yPos","_a","_b","_dir","_angle","_mag","_nX","_nY","_temp"];
+
+	_pos = _this select 0;
+	_a = _this select 1;
+	_b = _this select 2;
+	
+	_b = _b - _a;
+
+	_xPos = _pos select 0;
+	_yPos = _pos select 1;
+
+	_dir = random 360;
+
+	_mag = _a + (sqrt ((random _b) * _b));
+	_nX = _mag * (sin _dir);
+	_nY = _mag * (cos _dir);
+
+	_pos = [_xPos + _nX, _yPos + _nY,0];  
 
 	_pos	
 	};
@@ -75,40 +134,30 @@ RYD_PointToSecDst =
 
 	_d
 	};
+		
+RYD_WPdel = 
+	{//[_gp] call RYD_WPdel
+	private ["_gp","_count"];
 
-RYD_AngTowards = 
-	{
-	private ["_source0", "_target0", "_rnd0","_dX0","_dY0","_angleAzimuth0"];
+	_gp = _this select 0;
 
-	_source0 = _this select 0;
-	_target0 = _this select 1;
-	_rnd0 = _this select 2;
+	if (isNil "_gp") exitWith {};
+	if (isNull _gp) exitWith {};
 
-	_dX0 = (_target0 select 0) - (_source0 select 0);
-	_dY0 = (_target0 select 1) - (_source0 select 1);
+	_count = (count (waypoints _gp)) - 1;
 
-	_angleAzimuth0 = (_dX0 atan2 _dY0) + (random (2 * _rnd0)) - _rnd0;
+	if (_count < 0) exitWith {};
 
-	_angleAzimuth0
-	};
+	[_gp, (currentWaypoint _gp)] setWaypointPosition [position (vehicle (leader _gp)), 0];
 
-RYD_PosTowards2D = 
-	{
-	private ["_source","_distT","_angle","_dXb","_dYb","_px","_py","_pz"];
-
-	_source = _this select 0;
-	_angle = _this select 1;
-	_distT = _this select 2;
-
-	_dXb = _distT * (sin _angle);
-	_dYb = _distT * (cos _angle);
-
-	_px = (_source select 0) + _dXb;
-	_py = (_source select 1) + _dYb;
-
-	_pz = getTerrainHeightASL [_px,_py];
-
-	[_px,_py,_pz]
+	while {not (_count < 0)} do
+		{
+		if (isNull _gp) exitWith {};
+		_count = (count (waypoints _gp)) - 1;
+		if (_count < 0) exitWith {};
+		deleteWaypoint ((waypoints _gp) select _count);
+		_count = (count (waypoints _gp)) - 1
+		}
 	};
 
 RYD_GarrP = 
@@ -129,7 +178,7 @@ RYD_GarrP =
 		
 		while {((_posAct distance [0,0,0]) > 0)} do
 			{
-			_posAll set [(count _posAll),_posAct];
+			_posAll pushBack _posAct;
 				
 			_i = _i + 1;
 			_posAct = _nHouse buildingpos _i;
@@ -277,7 +326,7 @@ RYD_GarrS =
 			_isLOS = [_uPosASL,ATLtoASL _exitAct,1.5,1.5,_unit,objNull] call RYD_LOSCheck;
 			if (_isLOS) then
 				{
-				_exits set [(count _exits),_exitAct];
+				_exits pushBack _exitAct;
 				};
 				
 			_ct = _ct + 1;
@@ -344,8 +393,8 @@ RYD_GarrS =
 
 	_ix = _taken select 1;
 	_taken = _taken select 0;
-	_taken set [_ix,"Del"];
-	_taken = _taken - ["Del"]
+	_taken set [_ix,0];
+	_taken = _taken - [0]
 	};
 	
 RYD_AmmoCount = 
@@ -361,7 +410,7 @@ RYD_AmmoCount =
 	
 		{
 		_ct = _ct + (count (magazines (vehicle _x)));
-		if ((typeOf (vehicle _x)) in _ncVeh) then {_ct = _ct + (count (magazines _x))}
+		if ((toLower (typeOf (vehicle _x))) in _ncVeh) then {_ct = _ct + (count (magazines _x))}
 		}
 	foreach (units _gp);
 
@@ -390,7 +439,7 @@ RYD_AmmoFullCount =
 		
 		switch (true) do
 			{
-			case (((typeOf _vh) in _ncVeh) or (_vh == _x)) :
+			case (((toLower (typeOf _vh)) in _ncVeh) or (_vh == _x)) :
 				{
 				_magsM = getArray (configFile >> "CfgVehicles" >> _tp >> "magazines");
 				
@@ -441,7 +490,7 @@ RYD_AmmoFullCount =
 				
 			case (not (_vh in _checked)) :
 				{
-				_checked set [(count _checked),_vh];
+				_checked pushBack _vh;
 				
 				_magsM = 0;
 				
@@ -486,31 +535,6 @@ RYD_AmmoFullCount =
 	(_ct/(_ctMax max 1))//(_ct/(_ctMax max 1)) min (_ctM/(_ctMMax max 1))
 	};
 
-RYD_WPdel = 
-	{//[_gp] call RYD_WPdel
-	private ["_gp","_count"];
-
-	_gp = _this select 0;
-
-	if (isNil "_gp") exitWith {};
-	if (isNull _gp) exitWith {};
-
-	_count = (count (waypoints _gp)) - 1;
-
-	if (_count < 0) exitWith {};
-
-	[_gp, (currentWaypoint _gp)] setWaypointPosition [position (vehicle (leader _gp)), 0];
-
-	while {not (_count < 0)} do
-		{
-		if (isNull _gp) exitWith {};
-		_count = (count (waypoints _gp)) - 1;
-		if (_count < 0) exitWith {};
-		deleteWaypoint ((waypoints _gp) select _count);
-		_count = (count (waypoints _gp)) - 1
-		}
-	};
-
 RYD_Mark = 
 	{//[_pos,_ref,_pfx,_cl,_shp,_tp,_dTxt,_ifPTxt,_sz,_dir] call RYD_Mark;
 	private ["_pos","_ref","_pfx","_cl","_shp","_tp","_dTxt","_ifPTxt","_sz","_dir","_txt","_i"];
@@ -535,7 +559,7 @@ RYD_Mark =
 
 	if (typeName _ref == "GROUP") then
 		{
-		if (isPlayer (leader _ref)) then {_txt = (str (leader _ref)) + _ifPTxt}
+		if (isPlayer (leader _ref)) then {_txt = profileName + _ifPTxt}
 		};
 
 	if ((typeName _pos) == "OBJECT") then {_pos = position _pos};
@@ -556,7 +580,7 @@ RYD_Mark =
 	_i setMarkerDir _dir;
 	_i setMarkerText _txt;
 	
-	RydxHQ_Markers set [(count RydxHQ_Markers),_i]; 
+	RydxHQ_Markers pushBack _i; 
 
 	_i
 	};
@@ -570,7 +594,7 @@ RYD_WPadd =
 		"_isAir","_sPoint","_dst","_dstFirst","_mPoints","_num","_actDst","_angle","_mPoint",
 		"_topPoints","_sPosX","_sPosY","_sUrban","_sForest","_sHills","_sFlat","_sSea",
 		"_sGr","_count","_friendly","_opt","_j","_samplePos","_sRoads,","_lastDistance",
-		"_dstCheck","_pfAll","_sRoads","_mpl","_frds"
+		"_dstCheck","_pfAll","_sRoads","_mpl","_frds","_TO2"
 		];
 
 	_pfAll = true;
@@ -645,6 +669,15 @@ RYD_WPadd =
 		{
 		_rds = 0
 		};
+	
+	if ((count _pos) > 2) then
+		{
+		_pos set [2,((_pos select 2) max 0)];
+		}
+	else
+		{
+		_pos set [2,0]
+		};
 
 	if ((RydHQ_PathFinding > 0) and (_pfAll)) then
 		{
@@ -706,7 +739,7 @@ RYD_WPadd =
 						{
 						_actDst = _actDst + _dst;
 						_mPoint = [_sPoint,_angle,_actDst] call RYD_PosTowards2D;
-						_mPoints set [(count _mPoints),_mPoint];
+						_mPoints pushBack _mPoint;
 						};
 
 					_topPoints = [];
@@ -768,7 +801,7 @@ RYD_WPadd =
 
 						if ((not (_isWater)) and (true)) then
 							{
-							_topPoints set [(count _topPoints),[_posX,_posY,0]];
+							_topPoints pushBack [_posX,_posY,0];
 							_lastDistance = _dstCheck;
 							}
 						}
@@ -777,21 +810,37 @@ RYD_WPadd =
 					if ((count _topPoints) > 0) then
 						{
 						_wpn = 0;
+						_TO2 = [0,0,0];
+						if (RydHQ_Rush) then
+							{
+							if (_spd in ["NORMAL"]) then
+								{
+								_TO2 = [15,20,25]
+								}
+							};
+						
 							{
 							//if (RydBB_Debug) then {_j = [_x,_gp,(str (random 1000)),"ColorPink","ICON","mil_dot",(str _wpn),"",[0.25,0.25]] call RYD_Mark};
+														
 							_wpn = _wpn + 1;
 							_wp = _gp addWaypoint [_x, 0];
 							_wp setWaypointType "MOVE";
-							_wp setWaypointBehaviour _beh;
-							_wp setWaypointCombatMode _CM;
-							_wp setWaypointSpeed _spd;
+							
+							if (_foreachIndex == 0) then
+								{
+								_wp setWaypointBehaviour _beh;
+								_wp setWaypointCombatMode _CM;
+								_wp setWaypointSpeed _spd;
+								_wp setWaypointFormation _frm;
+								};
+							
 							_wp setWaypointStatements ["true","deletewaypoint [(group this), 0]"];
-							_wp setWaypointTimeout [0,0,0];
-							_wp setWaypointFormation _frm;
+							_wp setWaypointTimeout _TO2;
 							if ((_crr) and (_wpn == 1)) then {_gp setCurrentWaypoint _wp};
 							}
 						foreach _topPoints
 						};
+						
 					_addedpath = true;
 					}
 				}
@@ -799,15 +848,22 @@ RYD_WPadd =
 		};
 
 	_wp = _gp addWaypoint [_pos, _rds];
-	_wp setWaypointType _tp;
-	_wp setWaypointBehaviour _beh;
-	_wp setWaypointCombatMode _CM;
-	_wp setWaypointSpeed _spd;
+	_wp setWaypointType _tp;	
 	_wp setWaypointStatements _sts;
 	_wp setWaypointTimeout _TO;
-	_wp setWaypointFormation _frm;
-	if not (_addedpath) then {if (_crr) then {_gp setCurrentWaypoint _wp}};
-
+	
+	if not (_addedpath) then
+		{
+		_wp setWaypointBehaviour _beh;
+		_wp setWaypointCombatMode _CM;
+		_wp setWaypointSpeed _spd;
+		_wp setWaypointFormation _frm;
+		
+		if (_crr) then 
+			{
+			_gp setCurrentWaypoint _wp
+			}
+		};
 	_wp
 	};
 
@@ -906,7 +962,7 @@ RYD_FindClosestWithIndex =
 	_ref = _this select 0;
 	_objects = _this select 1;
 	
-	_objects = _objects - ["Del","Delete"];
+	_objects = _objects - [0];
 
 	_closest = objNull;
 	_clIndex = 0;
@@ -994,11 +1050,11 @@ RYD_DistOrd =
 		
 		if ((_clst distance _point) < _limit) then
 			{
-			_final set [(count _final),_closest]
+			_final pushBack _closest
 			};
 
-		_array set [_ix,"Delete"];
-		_array = _array - ["Delete"];
+		_array set [_ix,0];
+		_array = _array - [0];
 		};
 
 	_final
@@ -1086,7 +1142,7 @@ RYD_Recon =
 				}
 			};
 
-		if (_pass) then {_final set [(count _final),_x]}
+		if (_pass) then {_final pushBack _x}
 		}
 	foreach _gps;
 
@@ -1281,7 +1337,7 @@ RYD_Dispatcher =
 							{
 							if (_x in (_HQ getVariable ["RydHQ_FirstToFight",[]])) then
 								{
-								_FTFinPool set [(count _FTFinPool),_x]
+								_FTFinPool pushBack _x
 								}
 							}
 						foreach _force;
@@ -1706,7 +1762,7 @@ RYD_Wait =
 				else
 					{
 					_type = typeOf _AV;
-					_cplR = getNumber (configFile>>"cfgvehicles">>_type>>"precision");
+					_cplR = getNumber (configFile >> "CfgVehicles" >> _type >> "precision");
 					_cWp = waypointPosition [_gp, (currentWaypoint _gp)];
 					if ((abs (speed (vehicle (leader _GDV))) < 0.05) and ((_cWp distance _AV) >= _cplR)) then {_timer = _timer + 1}
 					}
@@ -1825,7 +1881,7 @@ RYD_Smoke =
 			_magsR = magazinesAmmoFull _unit;
 			
 				{
-				_mags set [(count _mags),_x select 0]
+				_mags pushBack (_x select 0)
 				}
 			foreach _magsR;
 			
@@ -1838,7 +1894,7 @@ RYD_Smoke =
 					_sMuzzle = _x select 0;
 					};
 					
-				if not (_sMuzzle in [""]) then
+				if not (_sMuzzle isEqualTo "") then
 					{
 						{
 						if (_x in _mags) exitWith 
@@ -1957,6 +2013,8 @@ RYD_isNight =
 
 RYD_Flares = 
 	{
+	_SCRname = "Flares";
+	
 	private ["_gp","_UL","_nE","_inDef","_Scount","_lat","_day","_hour","_sunangle","_arty","_flare","_shells","_pos","_CFF","_ldr"];
 
 	_gp = _this select 0;
@@ -2018,7 +2076,7 @@ RYD_Flares =
 										_magsR = magazinesAmmoFull _unit;
 										
 											{
-											_mags set [(count _mags),_x select 0];
+											_mags pushBack (_x select 0);
 											}
 										foreach _magsR;
 															
@@ -2031,7 +2089,7 @@ RYD_Flares =
 												_sMuzzle = _x select 0;
 												};
 												
-											if not (_sMuzzle in [""]) then
+											if not (_sMuzzle isEqualTo "") then
 												{
 													{
 													if (_x in _mags) exitWith 
@@ -2144,7 +2202,7 @@ RYD_ArtyPrep =
 RYD_CFF_TGT = 
 	{//_tgt = [RydHQ_KnEnemies] call RYD_CFF_TGT;
 	private ["_enemies","_targets","_target","_nothing","_potential","_potL","_taken","_candidate","_CL","_vehFactor","_artFactor","_crowdFactor","_veh","_nearImp","_ValMax","_trgValS",
-	"_temptation","_vh","_HQfactor"];
+	"_temptation","_vh","_HQfactor","_nearCiv"];
 
 	_enemies = _this select 0;
 
@@ -2183,7 +2241,7 @@ RYD_CFF_TGT =
 													{
 													if ((damage _potL) < 0.9) then 
 														{
-														_targets set [(count _targets),_potential]
+														_targets pushBack _potential
 														}
 													}
 												}
@@ -2214,20 +2272,22 @@ RYD_CFF_TGT =
 		if not ((vehicle _CL) == _CL) then 
 			{
 			_veh = vehicle _CL;
-			if (typeOf _veh in (RydHQ_Howitzer + RydHQ_Mortar + RydHQ_Rocket + RydHQ_Mortar_A3 + RydHQ_SPMortar_A3 + RydHQ_Rocket_A3)) then {_artFactor = 10} else {_vehFactor = 500 + (rating _veh)};
+			if ((toLower (typeOf _veh)) in RydHQ_AllArty) then {_artFactor = 10} else {_vehFactor = 500 + (rating _veh)};
 			};
 
 		_nearImp = (getPosATL _CL) nearEntities [["CAManBase","AllVehicles","Strategic","WarfareBBaseStructure","Fortress"],100];
+		_nearCiv = false;
 
 			{
-			if (((side _x) getFriend (side _CL) >= 0.6) and not (_x isKindOf "civilian")) then 
+			if (_x isKindOf "civilian") exitWith {_nearCiv = true};
+			if (((side _x) getFriend (side _CL)) >= 0.6) then 
 				{
 				_vh = vehicle _x;
 				_crowdFactor = _crowdFactor + 0.2;
 				if not (_x == _vh) then 
 					{
 					_crowdFactor = _crowdFactor + 0.2;
-					if (typeOf _vh in (RydHQ_Howitzer + RydHQ_Mortar + RydHQ_Rocket + RydHQ_Mortar_A3 + RydHQ_SPMortar_A3 + RydHQ_Rocket_A3)) then 
+					if ((toLower (typeOf _vh)) in RydHQ_AllArty) then 
 						{
 						_crowdFactor = _crowdFactor + 0.2
 						}
@@ -2238,15 +2298,25 @@ RYD_CFF_TGT =
 
 		if (_CL in RydxHQ_AllLeaders) then {_HQFactor = 20};
 
+		if (_nearCiv) then 
 			{
-			_temptation = _temptation + (250 + (rating _x));
+			_targets set [_foreachIndex,objNull]
 			}
-		foreach (units _candidate);
+		else
+			{
 
-		_temptation = (((_temptation + _vehFactor)*10)/(5 + (speed _CL))) * _artFactor * _crowdFactor * _HQFactor;
-		_candidate setVariable ["CFF_Temptation",_temptation]
+				{
+				_temptation = _temptation + (250 + (rating _x));
+				}
+			foreach (units _candidate);
+
+			_temptation = (((_temptation + _vehFactor)*10)/(5 + (speed _CL))) * _artFactor * _crowdFactor * _HQFactor;
+			_candidate setVariable ["CFF_Temptation",_temptation]
+			}
 		}
 	foreach _targets;
+	
+	_targets = _targets - [objNull];
 
 	_ValMax = 0;
 
@@ -2270,7 +2340,7 @@ RYD_CFF_TGT =
 
 	_target
 	};
-	
+		
 RYD_CFF_Fire = 
 	{
 	_SCRname = "CFF_Fire";
@@ -2308,7 +2378,7 @@ RYD_CFF_Fire =
 					
 					if (_shots > 0) then
 						{
-						_guns set [(count _guns),_vh]
+						_guns pushBack _vh
 						}
 					}
 				}
@@ -2371,6 +2441,8 @@ RYD_CFF_Fire =
 	
 	_code =
 		{
+		_SCRname = "ArtyFiring";
+		
 		_vh = _this select 0;
 		_pos = _this select 1;
 		_ammo = _this select 2;
@@ -2423,6 +2495,20 @@ RYD_CFF_Fire =
 				}
 			}
 		};
+		
+		{
+		switch (true) do
+			{
+			case (isNil {_x}) : {_guns set [_foreachIndex,objNull]};
+			case (isNull _x) : {_guns set [_foreachIndex,objNull]};
+			case not (alive _x) : {_guns set [_foreachIndex,objNull]};
+			}
+		}
+	foreach _guns;
+	
+	_guns = _guns - [objNull];
+	
+	if ((count _guns) < 1) exitwith {-1};
 		
 		{
 		if not (isNull _x) then
@@ -2512,9 +2598,9 @@ RYD_ArtyMission =
 					_vh = vehicle _x;
 					if not (_vh in _checked) then
 						{
-						_checked set [(count _checked),_vh];
+						_checked pushBack _vh;
 											
-						_tp = typeOf _vh;
+						_tp = toLower (typeOf _vh);
 						
 						switch (true) do
 							{
@@ -2589,7 +2675,7 @@ RYD_ArtyMission =
 									{
 									_hasAmmo = _hasAmmo + (_x select 1);
 									_allAmmo = _allAmmo + (_x select 1);
-									_ammoArr set [(count _ammoArr),_ammo];
+									_ammoArr pushBack _ammo;
 									_vehs = _vehs + 1
 									};
 									
@@ -2606,8 +2692,8 @@ RYD_ArtyMission =
 
 				if (_hasAmmo > 0) then
 					{
-					_artyAv set [(count _artyAv),_gp];
-					_agp set [(count _agp),leader _gp]
+					_artyAv pushBack _gp;
+					_agp pushBack leader _gp
 					}
 				}
 			};
@@ -2745,7 +2831,7 @@ RYD_CFF_FFE =
 	_Debug = _this select 5;
 	_ammoG = _this select 6;
 	_amount = _this select 7;
-	
+
 	_myFO = _target getVariable ["RydHQ_MyFO",objNull];
 	_assumedPos = (getPosATL _target);
 	if not (isNull _myFO) then
@@ -2765,6 +2851,7 @@ RYD_CFF_FFE =
 	//_artyGp = group _batlead;
 
 	_isTaken = (group _target) getVariable ["CFF_Taken",false];
+	
 	if (_isTaken) exitWith 
 		{
 			{
@@ -2778,7 +2865,7 @@ RYD_CFF_FFE =
 		
 	(group _target) setVariable ["CFF_Taken",true];
 
-	_phaseF = [1,2];
+	_phaseF = [1];
 
 	_targlead = vehicle (leader _target);
 
@@ -2845,6 +2932,20 @@ RYD_CFF_FFE =
 		_eta = -1;
 		
 			{
+			switch (true) do
+				{
+				case (isNil {_x}) : {_battery set [_foreachIndex,grpNull]};
+				case (isNull _x) : {_battery set [_foreachIndex,grpNull]};
+				case (({((alive _x) and not (_x == (vehicle _x)))} count (units _x)) < 1) : {_battery set [_foreachIndex,grpNull]};
+				}
+			}
+		foreach _battery;
+		
+		_battery = _battery - [grpNull];
+		
+		if ((count _battery) < 1) exitwith {_waitFor = false};
+		
+			{
 				{
 				_vh = vehicle _x;
 				_ammoC = (magazines _vh) select 0;
@@ -2867,7 +2968,7 @@ RYD_CFF_FFE =
 			foreach (units _x)
 			}
 		foreach _battery;
-		
+				
 		if (_eta == -1) exitWith {_waitFor = false};
 
 		_X0 = (_targetpos select 0);
@@ -2951,6 +3052,20 @@ RYD_CFF_FFE =
 		_exTargetPosATL = ASLtoATL _exPos;
 		
 		_eta = -1;
+		
+			{
+			switch (true) do
+				{
+				case (isNil {_x}) : {_battery set [_foreachIndex,grpNull]};
+				case (isNull _x) : {_battery set [_foreachIndex,grpNull]};
+				case (({((alive _x) and not (_x == (vehicle _x)))} count (units _x)) < 1) : {_battery set [_foreachIndex,grpNull]};
+				}
+			}
+		foreach _battery;
+		
+		_battery = _battery - [grpNull];
+		
+		if ((count _battery) < 1) exitwith {_waitFor = false};
 		
 			{
 				{
@@ -3068,7 +3183,7 @@ RYD_CFF_FFE =
 
 				_actRS = _stRS;
 
-				_checkedRS set [(count _checkedRS),_stRS];
+				_checkedRS pushBack _stRS;
 				};
 
 			if (_dSum < _exDst) then
@@ -3133,7 +3248,7 @@ RYD_CFF_FFE =
 
 		_gauss1b = (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) + (random 0.1) +  (random 0.1) + (random 0.1);
 		_gauss2b = (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) + (random 0.2) +  (random 0.2) + (random 0.2);
-		_AdistF = (_distance2/10) * (0.1 + _gauss09);
+		_AdistF = (_distance2/15) * (0.1 + _gauss09);
 		_AweatherF = _DweatherF;
 		_AdamageF = 1 + 0.1 * (damage (vehicle _batlead1));
 		_AskillF = 5 * (_batlead1 skill "aimingAccuracy");
@@ -3143,7 +3258,7 @@ RYD_CFF_FFE =
 		if not (isNil ("RydART_FOAccGain")) then {_spotterF = RydART_FOAccGain + (random 0.2)};
 		if (((count _phaseF) == 2) and (_x == 1) or ((count _phaseF) == 1)) then {_spotterF = 1};
 
-		_acc = _spotterF * _againF * _accF * ((_AdistF * _AdamageF) + (50 * _AweatherF * _anotherA)) / _Areduct;
+		_acc = 0.4 * _spotterF * _againF * _accF * ((_AdistF * _AdamageF) + (50 * _AweatherF * _anotherA)) / _Areduct;
 
 		_finalimpact = [(_impactpos select 0) + (random (2 * _acc)) - _acc,(_impactpos select 1) + (random (2 * _acc)) - _acc];
 
@@ -3183,6 +3298,11 @@ RYD_CFF_FFE =
 		
 		(_battery select 0) setVariable ["RydHQ_Break",false];
 		
+		if not (_Debug) then
+			{
+			_Debug = RYD_WS_ArtyMarks
+			};
+				
 		if (_Debug) then 
 			{
 			_posM1 = getposATL (vehicle _batlead1);
@@ -3201,7 +3321,7 @@ RYD_CFF_FFE =
 			_i setMarkerSize [0.4,0.4];
 			_i setMarkerText ("Firing battery - " + _text);
 			
-			_markers set [(count _markers),_i];
+			_markers pushBack _i;
 			
 			_distance = _impactPosM distance _finalimpactM;
 			_distance2 = _impactPosM distance _posM1;
@@ -3212,7 +3332,7 @@ RYD_CFF_FFE =
 			_i setMarkerSize [_distance, _distance];
 			_i setMarkerBrush "Border";
 			
-			_markers set [(count _markers),_i];
+			_markers pushBack _i;
 
 			_dX = (_impactPosM select 0) - (_posM1 select 0);
 			_dY = (_impactPosM select 1) - (_posM1 select 1);
@@ -3231,7 +3351,7 @@ RYD_CFF_FFE =
 			_i setMarkerBrush "Solid";
 			_i setMarkerdir _angle;
 			
-			_markers set [(count _markers),_i];
+			_markers pushBack _i;
 
 			_dX = (_finalimpactM select 0) - (_impactPosM select 0);
 			_dY = (_finalimpactM select 1) - (_impactPosM select 1);
@@ -3250,7 +3370,7 @@ RYD_CFF_FFE =
 			_i setMarkerBrush "Solid";
 			_i setMarkerdir _angle;
 			
-			_markers set [(count _markers),_i];
+			_markers pushBack _i;
 
 			_i = "mark3" + str (_battery1);
 			_i = createMarker [_i,_impactPosM];
@@ -3258,7 +3378,7 @@ RYD_CFF_FFE =
 			_i setMarkerShape "ICON";
 			_i setMarkerType "mil_dot";
 			
-			_markers set [(count _markers),_i];
+			_markers pushBack _i;
 
 			_i = "mark4" + str (_battery1);
 			_i = createMarker [_i,_finalimpactM];
@@ -3267,7 +3387,7 @@ RYD_CFF_FFE =
 			_i setMarkerType "mil_dot";
 			_i setMarkerText (str (round _distance) + "m" + " - ETA: " + str (round _eta) + " - " + _ammoG);
 			
-			_markers set [(count _markers),_i];
+			_markers pushBack _i;
 			
 			/*_i = "mark5" + str (_battery);
 			_i = createMarker [_i,_finalimpactM];
@@ -3278,6 +3398,8 @@ RYD_CFF_FFE =
 				
 		_code =
 			{
+			_SCRname = "ArtyETA";
+			
 			private ["_mark","_battery","_distance","_eta","_Ammo","_target","_alive","_stoper","_TOF","_batlead"];
 
 			_battery = _this select 0;
@@ -3375,7 +3497,7 @@ RYD_CFF_FFE =
 			};
 		
 		[[_battery,_distance,_eta,_ammoG,_batlead,_target,_markers],_code] call RYD_Spawn;
-						
+			
 		_eta = [_battery,_finalimpact,_ammo,_amount] call RYD_CFF_Fire;
 					
 		_UL = _batlead1;
@@ -3623,40 +3745,68 @@ RYD_CFF =
 
 RYD_WPSync = 
 	{
-	private ["_wp","_trg","_otherWP","_gp","_isRest","_pos","_alive","_cwp","_timer"];
+	private ["_trg","_otherWP","_gp","_pos","_uPos","_gps","_timer","_endThis"];
 
-	_wp = _this select 0;
+	_gp = _this select 2;
 	_trg = group (_this select 1);
 
 	if (isNull _trg) exitWith {};
 
-	_pos = waypointPosition _wp;
-
 	_otherWP = _trg getVariable ["RYD_Attacks",[]];
+	
+	_gps = [];
+	_positions = [];
+	
+		{
+		_gps pushBack (_x select 0);
+		_positions pushBack (_x select 1);
+		}
+	foreach _otherWP;
+	
+	_markT = markerText _i;
 
-	_wp synchronizeWaypoint _otherWP;
-	_trg setVariable ["RYD_Attacks",_otherWP + [_wp]];
-
-	_otherWP = _trg getVariable ["RYD_Attacks",[]];
-
-	_gp = _wp select 0;
-
-	_timer = 0;
-	_alive = true;
+	_timer = time;
+	_endThis = false;
 
 	waitUntil 
 		{
 		sleep 5;
-		_isRest = _gp getVariable [("Resting" + (str _gp)),false];
-		if (fleeing (leader _gp)) then {_isRest = true};
-		_timer = _timer + 1;
-		_cwp = [_gp,currentWaypoint _gp];
-		if (isNull _trg) then {_alive = false};
-		if ((((waypointPosition _cwp) distance _pos) > 1) and (((waypointPosition _cwp) distance (vehicle (leader _gp))) > 20)) then {_isRest = true};
-		((_isRest) or (_timer > 360) or not (_alive))
-		};
+		
+		switch (true) do
+			{
+			case (isNull _gp): {_endThis = true};
+			case ((({alive _x} count (units _gp)) < 1)): {_endThis = true};
+			case ((_gp getVariable [("Resting" + (str _gp)),false]) or {(_gp getVariable ["RydHQ_MIA",false])}): {_endThis = true};
+			case ((fleeing (leader _gp)) or {(captive (leader _gp))}): {_endThis = true};
+			};
+		
+		if not (_endThis) then
+			{
+			_endThis = true;
+			
+				{
+				_pos = _positions select _foreachIndex;
+				_uPos = position (vehicle (leader _x));
 
-	_wp synchronizeWaypoint [];
+				if (((_pos distance2D _uPos) > 40) and {not (_pos isEqualTo [0,0,0])}) exitWith {_endThis = false};			
+				}
+			foreach _gps
+			};
+			
+		if (_HQ getVariable ["RydHQ_Debug",false]) then
+			{
+			_i setMarkerText (_markT + "sync: " + (str (round (time - _timer))))
+			};
+			
+		((_endThis) or {(time - _timer) > 1800})
+		};
+		
+	if (_HQ getVariable ["RydHQ_Debug",false]) then
+		{
+		_i setMarkerText _markT
+		};
+		
+	_trg setVariable ["RYD_Attacks",[]];
 	};
 
 RYD_DbgMon = 
@@ -3691,8 +3841,8 @@ RYD_DbgMon =
 						_dbgMon = _x getVariable "DbgMon";
 						if not (isNil "_dbgMon") then 
 							{
-							_txtArr set [(count _txtArr),_dbgMon];
-							_txtArr set [(count _txtArr),linebreak];
+							_txtArr pushBack _dbgMon;
+							_txtArr pushBack linebreak;
 							}
 						}
 					}
@@ -3772,6 +3922,15 @@ RYD_AddTask =
 	_descr = _this select 1;
 	_dstn = _this select 2;
 	
+	if ((count _dstn) > 2) then
+		{
+		_dstn set [2,((_dstn select 2) max 0)];
+		}
+	else
+		{
+		_dstn set [2,0]
+		};
+	
 	_tasks = _unit getVariable ["HACAddedTasks",[]];
 	_task = taskNull;
 		
@@ -3790,7 +3949,7 @@ RYD_AddTask =
 			_task = _unit createSimpleTask ["title"];
 			_tasks = [];
 			
-			_tasks set [(count _tasks),_task];
+			_tasks pushBack _task;
 
 			_unit setVariable ["HACAddedTasks",_tasks];
 			_task setSimpleTaskDescription _descr;
@@ -3805,7 +3964,7 @@ RYD_AddTask =
 			_tasks = [];
 
 			_task = [nil,_unit,_descr,_dstn,"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
-			_tasks set [(count _tasks),_task];
+			_tasks pushBack _task;
 			
 			_unit setVariable ["HACAddedTasks",_tasks];
 			}
@@ -3862,10 +4021,10 @@ RYD_ValueOrd =
 		_ix = _highest select 1;
 		_highest = _highest select 0;
 		
-		_final set [(count _final),_highest];
+		_final pushBack _highest;
 
-		_array set [_ix,"Delete"];
-		_array = _array - ["Delete"]
+		_array set [_ix,0];
+		_array = _array - [0]
 		};
 
 	_final
@@ -3900,7 +4059,7 @@ RYD_FindOverwatchPos =
 		_posX2 = _posX + (random (2 * _radius)) - _radius;
 		_posY2 = _posY + (random (2 * _radius)) - _radius;
 
-		if not (surfaceIsWater [_posX2,_posY2]) then {_pool set [(count _pool),[_posX2,_posY2,1]]}
+		if not (surfaceIsWater [_posX2,_posY2]) then {_pool pushBack [_posX2,_posY2,1]}
 		};
 
 	_pool2 = [];
@@ -3909,7 +4068,7 @@ RYD_FindOverwatchPos =
 		_isBlock = terrainIntersect [_x, _tgtPos];
 		if not (_isBlock) then
 			{
-			_pool2 set [(count _pool2),_x]
+			_pool2 pushBack _x
 			}
 		}
 	foreach _pool;
@@ -3922,7 +4081,7 @@ RYD_FindOverwatchPos =
 		_isBlock = lineIntersects [[_x select 0,_x select 1,getTerrainHeightASL [_x select 0,_x select 1] + 1], _tgtPosASL];
 		if not (_isBlock) then
 			{
-			_pool3 set [(count _pool3),_x]
+			_pool3 pushBack _x
 			}
 		}
 	foreach _pool2;
@@ -3945,7 +4104,7 @@ RYD_FindOverwatchPos =
 			_dst = ([_posX,_posY] distance _vh)/1000
 			};
 
-		_x set [(count _x),((_terr * _terrImp) + (_elev * _elevImp))/(1 + _dst)]
+		_x pushBack ((_terr * _terrImp) + (_elev * _elevImp))/(1 + _dst)
 		}
 	foreach _pool3;
 
@@ -3954,7 +4113,7 @@ RYD_FindOverwatchPos =
 	_final = [];
 
 		{
-		_final set [(count _final),[_x select 0,_x select 1]]
+		_final pushBack [_x select 0,_x select 1]
 		}
 	foreach _pool3;
 
@@ -4019,7 +4178,7 @@ RYD_AmmoDrop =
 		sleep 0.005;
 		_height3 = (getPosATL _ammoBox) select 2;
 
-		((_height2 < 0.05) or (_height3 > _height2) or (_speed < 0.001) or (isNull _parachute))
+		((_height2 < 0.05) or {(_height2 < 2) and {(_height3 > _height2) or {(_speed < 0.001) or {(isNull _parachute)}}}})
 		};
 
 	detach _ammoBox;
@@ -4186,7 +4345,85 @@ RYD_FireCount =
 
 	_unit setVariable ["FireCount",_count + 1]
 	};
+	
+RYD_HQChatter = 
+	{//if (RydHQ_HQChat) then {[_unitG,"HQ_ord_attack",_pos,_HQ] call RYD_HQChatter};
+	private ["_gp","_sentence","_pos","_HQ","_unit","_comm","_who","_where","_nL","_channel"];
+	
+	_gp = _this select 0;
+	_sentence = _this select 1;
+	_pos = +(_this select 2);
+	_HQ = _this select 3;
+	
+	_unit = leader _gp;
+	_comm = leader _HQ;
+	
+	_sentence = getText (missionConfigFile >> "CfgRadio" >> _sentence >> "title");
+	_who = toUpper (getText (configFile >> "CfgVehicles" >> (typeOf (vehicle _unit)) >> "displayName"));
+	
+	_who = _gp getVariable ["RydHQ_MyCrypto",_who];
+	
+	_where = "";
+	
+	_nL = nearestLocations [_pos, ["Hill","NameCityCapital","NameCity","NameVillage","NameLocal"], 600];
+	
+	if ((count _nL) > 0) then
+		{
+		_nL = _nL select 0;
+		_where = (text _nL) + ", ";
+		};
 
+	_where = _where + (format ["Grid: %1",mapGridPosition _pos]);
+
+	_sentence = format ["%1. %2 at %3.",_who,_sentence,_where];
+	
+	_channel = _HQ getVariable ["RydHQ_myChannel",-1];
+	
+	if not (_channel < 0) then
+		{
+		_comm customChat [_channel,_sentence]
+		}
+	else
+		{
+		_comm sideChat _sentence
+		};
+	};
+	
+RYD_OrderPause = 	
+	{
+	private ["_unitG","_pos","_sentence","_HQ","_pause","_lastOrd"];
+	
+	_unitG = _this select 0;
+	_pos = _this select 1;
+	
+	if ((typename _pos) in [(typename objNull),(typename locationNull)]) then {_pos = position _pos};
+	
+	_pos set [2,0];
+	
+	_sentence = _this select 2;
+	_HQ = _this select 3;
+	
+	_pause = 3 + (random 1.5);
+
+	waitUntil
+		{
+		sleep 0.1;
+		
+		_lastOrd = _HQ getVariable ["RydHQ_MyLastOrder",0];
+		
+		((time - _lastOrd) > _pause)
+		};
+		
+	_HQ setVariable ["RydHQ_MyLastOrder",time];
+		
+	if (RydHQ_HQChat) then 
+		{
+		[_unitG,_sentence,_pos,_HQ] call RYD_HQChatter
+		};
+		
+	true
+	};
+	
 RYD_AIChatter = 
 	{
 	//if (isMultiPlayer) exitWith {};
@@ -4291,7 +4528,7 @@ RYD_AIChatter =
 "DefStance"*/
 
 	if (RydHQ_ChatDebug) then
-		{
+		{		
 		_color = "ColorGrey";
 		_type = "mil_warning";
 		
@@ -4332,6 +4569,8 @@ RYD_AIChatter =
 			
 		_sentence = getText (missionConfigFile >> "CfgRadio" >> _sentence >> "title");
 		_who = toUpper (getText (configFile >> "CfgVehicles" >> (typeOf (vehicle _unit)) >> "displayName"));
+		
+		_who = _gp getVariable ["RydHQ_MyCrypto",_who];
 			
 		_mark = [(getPosATL _unit),_unit,"markChatter" + (str (random 10)),_color,"ICON",_type," " + _who + ": " + _sentence,"",[0.5,0.5]] call RYD_Mark;
 		
@@ -4424,12 +4663,12 @@ RYD_SizeOrd =
 			{
 			if not (isNull _highest) then
 				{
-				_final set [(count _final),_highest];
+				_final pushBack _highest;
 				}
 			};
 
-		_array set [_ix,"Delete"];
-		_array = _array - ["Delete"]
+		_array set [_ix,0];
+		_array = _array - [0]
 		};
 
 	_final
@@ -4450,19 +4689,41 @@ RYD_RandomOrd =
 		
 		if not (isNil "_random") then 
 			{
-			if not (isNull _random) then
+			if ((typeName _random) in [typeName grpNull]) then
 				{
-				if (({alive _x} count (units _random)) > 0) then
+				if not (isNull _random) then
 					{
-					_final set [(count _final),_random];
+					if (({alive _x} count (units _random)) > 0) then
+						{
+						_final pushBack _random;
+						}
 					}
 				}
 			};
 			
-		_array = _array - [_random];
+		_array = _array - [_random]
+		};
 
-		//_array set [_select,"Delete"];
-		//_array = _array - ["Delete"]
+	_final
+	};
+	
+RYD_RandomOrdB = 
+	{
+	private ["_array","_final","_random","_select"];
+
+	_array = +(_this select 0);
+
+	_final = [];
+
+	while {((count _array) > 0)} do
+		{
+		_select = floor (random (count _array));
+		_random = _array select _select;
+
+		_final pushBack _random;
+			
+		_array set [_select,0];
+		_array = _array - [0]
 		};
 
 	_final
@@ -4561,6 +4822,8 @@ RYD_GoInside =
 	_chosen = -1;
 
 	_nHouses = _pos nearObjects ["House",100];
+	
+	_nHouse = objNull;
 
 	if ((count _nHouses) > 0) then
 		{
@@ -4598,7 +4861,7 @@ RYD_GoInside =
 
 					if (_isRoof) then
 						{
-						_posAll set [(count _posAll),_posAct]
+						_posAll pushBack _posAct
 						}
 					}
 				}
@@ -4645,645 +4908,71 @@ RYD_RoofOver =
 
 	_roofed
 	};
-		
+			
 RYD_RHQCheck = 
 	{
 	private ["_type","_noInTotal","_noInAdditional","_noInBasic","_civF","_total","_basicrhq","_Additionalrhq","_Inf","_Art","_HArmor","_LArmor","_Cars","_Air","_Naval","_Static","_Other","_specFor",
 		"_recon","_FO","_snipers","_ATInf","_AAInf","_LArmorAT","_NCAir","_StaticAA","_StaticAT","_Cargo","_NCCargo","_Crew","_MArmor","_BAir","_RAir","_ammo","_fuel","_med","_rep"];
 
-	_specFor = RHQ_SpecFor + 
-		[
-		] - RHQs_SpecFor;
+	_specFor = RHQ_SpecFor + RYD_WS_specFor_class - RHQs_SpecFor;
 
-	_recon = RHQ_Recon + 
-		[
-		"O_recon_exp_F",
-		"O_recon_F",
-		"O_recon_JTAC_F",
-		"O_recon_LAT_F",
-		"O_recon_M_F",
-		"O_recon_medic_F",
-		"O_recon_TL_F",
-		"B_recon_exp_F",
-		"B_recon_F",
-		"B_recon_JTAC_F",
-		"B_recon_LAT_F",
-		"B_recon_M_F",
-		"B_recon_medic_F",
-		"B_recon_TL_F",
-		"I_UAV_AI",
-		"O_UAV_AI",
-		"B_UAV_AI",
-		"I_UAV_01_F",
-		"I_UAV_02_CAS_F",
-		"I_UAV_02_F",
-		"I_UGV_01_F",
-		"I_UGV_01_rcws_F",
-		"O_UAV_01_F",
-		"O_UAV_02_CAS_F",
-		"O_UAV_02_F",
-		"O_UGV_01_F",
-		"O_UGV_01_rcws_F",
-		"B_UAV_01_F",
-		"B_UAV_02_CAS_F",
-		"B_UAV_02_F",
-		"B_UGV_01_F",
-		"B_UGV_01_rcws_F"
-		] - RHQs_Recon;
+	_recon = RHQ_Recon + RYD_WS_recon_class - RHQs_Recon;
 		
-	_FO = RHQ_FO + 
-		[
-		"I_Spotter_F",
-		"O_spotter_F",
-		"B_spotter_F",
-		"O_recon_JTAC_F",
-		"B_recon_JTAC_F"
-		] - RHQs_FO;
+	_FO = RHQ_FO + RYD_WS_FO_class - RHQs_FO;
 		
-	_snipers = RHQ_Snipers + 
-		[
-		"I_Sniper_F",
-		"O_sniper_F",
-		"B_sniper_F",
-		"I_Soldier_M_F",
-		"O_soldier_M_F",
-		"B_G_Soldier_M_F",
-		"B_soldier_M_F",
-		"O_recon_M_F",
-		"B_recon_M_F",
-		"O_soldierU_M_F"
-		] - RHQs_Snipers;
+	_snipers = RHQ_Snipers + RYD_WS_snipers_class - RHQs_Snipers;
 		
-	_ATinf = RHQ_ATInf + 
-		[
-		"I_Soldier_AT_F",
-		"I_Soldier_LAT_F",
-		"O_Soldier_AT_F",
-		"O_Soldier_LAT_F",
-		"B_soldier_AT_F",
-		"B_soldier_LAT_F",
-		"B_G_Soldier_LAT_F",
-		"O_soldierU_AT_F",
-		"O_soldierU_LAT_F",
-		"O_recon_LAT_F",
-		"B_CTRG_soldier_GL_LAT_F",
-		"B_recon_LAT_F"
-		] - RHQs_ATInf;
+	_ATinf = RHQ_ATInf + RYD_WS_ATinf_class - RHQs_ATInf;
 		
-	_AAinf = RHQ_AAInf + 
-		[
-		"I_Soldier_AA_F",
-		"B_soldier_AA_F",
-		"O_Soldier_AA_F",
-		"O_APC_Tracked_02_AA_F",
-		"B_APC_Tracked_01_AA_F",
-		"O_soldierU_AA_F"
-		] - RHQs_AAInf;
+	_AAinf = RHQ_AAInf + RYD_WS_AAinf_class - RHQs_AAInf;
 
-	_Inf = RHQ_Inf + 
-		[
-		"I_crew_F",
-		"I_engineer_F",
-		"I_helicrew_F",
-		"I_helipilot_F",
-		"I_medic_F",
-		"I_officer_F",
-		"I_pilot_F",
-		"I_Soldier_A_F",
-		"I_Soldier_AA_F",
-		"I_Soldier_AR_F",
-		"I_Soldier_AT_F",
-		"I_Soldier_exp_F",
-		"I_soldier_F",
-		"I_Soldier_GL_F",
-		"I_Soldier_LAT_F",
-		"I_Soldier_lite_F",
-		"I_Soldier_M_F",
-		"I_Soldier_repair_F",
-		"I_Soldier_SL_F",
-		"I_Soldier_TL_F",
-		"I_soldier_UAV_F",
-		"O_crew_F",
-		"O_engineer_F",
-		"O_helicrew_F",
-		"O_helipilot_F",
-		"O_medic_F",
-		"O_officer_F",
-		"O_Pilot_F",
-		"O_Soldier_A_F",
-		"O_Soldier_AA_F",
-		"O_Soldier_AR_F",
-		"O_Soldier_AT_F",
-		"O_soldier_exp_F",
-		"O_Soldier_F",
-		"O_Soldier_GL_F",
-		"O_Soldier_LAT_F",
-		"O_Soldier_lite_F",
-		"O_soldier_M_F",
-		"O_soldier_PG_F",
-		"O_soldier_repair_F",
-		"O_Soldier_SL_F",
-		"O_Soldier_TL_F",
-		"O_soldier_UAV_F",
-		"B_G_engineer_F",
-		"B_G_medic_F",
-		"B_G_officer_F",
-		"B_G_Soldier_A_F",
-		"B_G_Soldier_AR_F",
-		"B_G_Soldier_exp_F",
-		"B_G_Soldier_F",
-		"B_G_Soldier_GL_F",
-		"B_G_Soldier_LAT_F",
-		"B_G_Soldier_lite_F",
-		"B_G_Soldier_M_F",
-		"B_G_Soldier_SL_F",
-		"B_G_Soldier_TL_F",
-		"B_crew_F",
-		"B_engineer_F",
-		"B_helicrew_F",
-		"B_Helipilot_F",
-		"B_medic_F",
-		"B_officer_F",
-		"B_Pilot_F",
-		"B_Soldier_A_F",
-		"B_soldier_AA_F",
-		"B_soldier_AR_F",
-		"B_soldier_AT_F",
-		"B_soldier_exp_F",
-		"B_Soldier_F",
-		"B_Soldier_GL_F",
-		"B_soldier_LAT_F",
-		"B_Soldier_lite_F",
-		"B_soldier_M_F",
-		"B_soldier_PG_F",
-		"B_soldier_repair_F",
-		"B_Soldier_SL_F",
-		"B_Soldier_TL_F",
-		"B_soldier_UAV_F",
-		"O_recon_exp_F",
-		"O_recon_F",
-		"O_recon_JTAC_F",
-		"O_recon_LAT_F",
-		"O_recon_M_F",
-		"O_recon_medic_F",
-		"O_recon_TL_F",
-		"B_recon_exp_F",
-		"B_recon_F",
-		"B_recon_JTAC_F",
-		"B_recon_LAT_F",
-		"B_recon_M_F",
-		"B_recon_medic_F",
-		"B_recon_TL_F",
-		"I_Sniper_F",
-		"I_Spotter_F",
-		"O_sniper_F",
-		"O_spotter_F",
-		"B_sniper_F",
-		"B_spotter_F",
-		"O_engineer_U_F",
-		"O_soldierU_A_F",
-		"O_soldierU_AA_F",
-		"O_soldierU_AAA_F",
-		"O_soldierU_AAR_F",
-		"O_soldierU_AAT_F",
-		"O_soldierU_AR_F",
-		"O_soldierU_AT_F",
-		"O_soldierU_exp_F",
-		"O_soldierU_F",
-		"O_SoldierU_GL_F",
-		"O_soldierU_LAT_F",
-		"O_soldierU_M_F",
-		"O_soldierU_medic_F",
-		"O_soldierU_repair_F",
-		"O_SoldierU_SL_F",
-		"O_soldierU_TL_F",
-		"I_Soldier_AAA_F",
-		"I_Soldier_AAR_F",
-		"I_Soldier_AAT_F",
-		"I_support_AMG_F",
-		"I_support_AMort_F",
-		"I_support_GMG_F",
-		"I_support_MG_F",
-		"I_support_Mort_F",
-		"O_Soldier_AAA_F",
-		"O_Soldier_AAR_F",
-		"O_Soldier_AAT_F",
-		"O_support_AMG_F",
-		"O_support_AMort_F",
-		"O_support_GMG_F",
-		"O_support_MG_F",
-		"O_support_Mort_F",
-		"B_soldier_AAA_F",
-		"B_soldier_AAR_F",
-		"B_soldier_AAT_F",
-		"B_support_AMG_F",
-		"B_support_AMort_F",
-		"B_support_GMG_F",
-		"B_support_MG_F",
-		"B_support_Mort_F",
-		"I_diver_exp_F",
-		"I_diver_F",
-		"I_diver_TL_F",
-		"O_diver_exp_F",
-		"O_diver_F",
-		"O_diver_TL_F",
-		"B_diver_exp_F",
-		"B_diver_F",
-		"B_diver_TL_F",
-		"I_Story_Colonel_F",
-		"O_Story_CEO_F",
-		"O_Story_Colonel_F",
-		"I_G_Story_Protagonist_F",
-		"B_Competitor_F",
-		"B_RangeMaster_F",
-		"B_Story_Colonel_F",
-		"B_Story_Engineer_F",
-		"B_Story_Pilot_F",
-		"B_Story_Protagonist_F",
-		"B_Story_SF_Captain_F",
-		"B_Story_Tank_Commander_F",
-		"B_CTRG_soldier_engineer_exp_F",
-		"B_CTRG_soldier_M_medic_F",
-		"B_CTRG_soldier_AR_A_F",
-		"B_CTRG_soldier_GL_LAT_F",
-		"I_G_Story_SF_Captain_F",
-		"I_G_resistanceCommander_F",
-		"I_G_resistanceLeader_F"
-		] - RHQs_Inf;
+	_Inf = RHQ_Inf + RYD_WS_Inf_class - RHQs_Inf;
 		
-	_Art = RHQ_Art + 
-		[
-		"B_MBT_01_arty_F",
-		"O_MBT_02_arty_F",
-		"B_MBT_01_mlrs_F",
-		"I_Mortar_01_F",
-		"O_Mortar_01_F",
-		"B_G_Mortar_01_F",
-		"B_Mortar_01_F"
-		] - RHQs_Art;
+	_Art = RHQ_Art + RYD_WS_Art_class - RHQs_Art;
 		
-	_HArmor = RHQ_HArmor + 
-		[
-		"B_MBT_01_cannon_F",
-		"O_MBT_02_cannon_F"
-		] - RHQs_HArmor;
+	_HArmor = RHQ_HArmor + RYD_WS_HArmor_class - RHQs_HArmor;
 		
-	_MArmor = RHQ_MArmor + 
-		[
-		] - RHQs_MArmor;
+	_MArmor = RHQ_MArmor + RYD_WS_MArmor_class - RHQs_MArmor;
 
-	_LArmor = RHQ_LArmor + 
-		[
-		"I_APC_Wheeled_03_cannon_F",
-		"O_APC_Tracked_02_AA_F",
-		"O_APC_Tracked_02_cannon_F",
-		"O_APC_Wheeled_02_rcws_F",
-		"B_APC_Tracked_01_AA_F",
-		"B_APC_Tracked_01_rcws_F",
-		"B_APC_Wheeled_01_cannon_F"
-		] - RHQs_LArmor;
+	_LArmor = RHQ_LArmor + RYD_WS_LArmor_class - RHQs_LArmor;
 		
-	_LArmorAT = RHQ_LArmorAT + 
-		[
-		"I_APC_Wheeled_03_cannon_F",
-		"O_APC_Tracked_02_cannon_F"
-		] - RHQs_LArmorAT;
+	_LArmorAT = RHQ_LArmorAT + RYD_WS_LArmorAT_class - RHQs_LArmorAT;
 
-	_Cars = RHQ_Cars + 
-		[
-		"I_MRAP_03_F",
-		"I_MRAP_03_gmg_F",
-		"I_MRAP_03_hmg_F",
-		"I_Quadbike_01_F",
-		"I_Truck_02_covered_F",
-		"I_Truck_02_transport_F",
-		"O_MRAP_02_F",
-		"O_MRAP_02_gmg_F",
-		"O_MRAP_02_hmg_F",
-		"O_Quadbike_01_F",
-		"O_Truck_02_covered_F",
-		"O_Truck_02_transport_F",
-		"B_G_Offroad_01_armed_F",
-		"B_G_Offroad_01_F",
-		"B_G_Quadbike_01_F",
-		"B_G_Van_01_transport_F",
-		"B_MRAP_01_F",
-		"B_MRAP_01_gmg_F",
-		"B_MRAP_01_hmg_F",
-		"B_Quadbike_01_F",
-		"B_Truck_01_box_F",
-		"B_Truck_01_covered_F",
-		"B_Truck_01_mover_F",
-		"B_Truck_01_transport_F",
-		"I_Truck_02_ammo_F",
-		"I_Truck_02_box_F",
-		"I_Truck_02_fuel_F",
-		"I_Truck_02_medical_F",
-		"O_Truck_02_Ammo_F",
-		"O_Truck_02_box_F",
-		"O_Truck_02_fuel_F",
-		"O_Truck_02_medical_F",
-		"B_G_Van_01_fuel_F",
-		"B_Truck_01_ammo_F",
-		"B_Truck_01_Repair_F",
-		"B_Truck_01_fuel_F",
-		"B_Truck_01_medical_F",
-		"I_UGV_01_F",
-		"I_UGV_01_rcws_F",
-		"O_UGV_01_F",
-		"O_UGV_01_rcws_F",
-		"B_UGV_01_F",
-		"B_UGV_01_rcws_F"
-		] - RHQs_Cars;
+	_Cars = RHQ_Cars + RYD_WS_Cars_class - RHQs_Cars;
 		
-	_Air = RHQ_Air + 
-		[
-		"I_Heli_Transport_02_F",
-		"I_Plane_Fighter_03_AA_F",
-		"I_Plane_Fighter_03_CAS_F",
-		"O_Heli_Attack_02_black_F",
-		"O_Heli_Attack_02_F",
-		"O_Heli_Light_02_F",
-		"O_Heli_Light_02_unarmed_F",
-		"B_Heli_Attack_01_F",
-		"B_Heli_Light_01_armed_F",
-		"B_Heli_Light_01_F",
-		"B_Heli_Transport_01_camo_F",
-		"B_Heli_Transport_01_F",
-		"I_UAV_AI",
-		"O_UAV_AI",
-		"B_UAV_AI",
-		"I_UAV_01_F",
-		"I_UAV_02_CAS_F",
-		"I_UAV_02_F",
-		"O_UAV_01_F",
-		"O_UAV_02_CAS_F",
-		"O_UAV_02_F",
-		"B_UAV_01_F",
-		"B_UAV_02_CAS_F",
-		"B_UAV_02_F"
-		] - RHQs_Air;
+	_Air = RHQ_Air + RYD_WS_Air_class - RHQs_Air;
 		
-	_BAir = RHQ_BAir + 
-		[
-		"I_Plane_Fighter_03_CAS_F"
-		] - RHQs_BAir;
+	_BAir = RHQ_BAir + RYD_WS_BAir_class - RHQs_BAir;
 		
-	_RAir = RHQ_RAir + 
-		[
-		"I_UAV_01_F",
-		"I_UAV_02_CAS_F",
-		"I_UAV_02_F",
-		"O_UAV_01_F",
-		"O_UAV_02_CAS_F",
-		"O_UAV_02_F",
-		"B_UAV_01_F",
-		"B_UAV_02_CAS_F",
-		"B_UAV_02_F"
-		] - RHQs_RAir;
+	_RAir = RHQ_RAir + RYD_WS_RAir_class - RHQs_RAir;
 		
-	_NCAir = RHQ_NCAir + 
-		[
-		"I_Heli_Transport_02_F",
-		"O_Heli_Light_02_unarmed_F",
-		"B_Heli_Light_01_F",
-		"B_Heli_Transport_01_camo_F",
-		"B_Heli_Transport_01_F",
-		"I_UAV_01_F",
-		"I_UAV_02_F",
-		"O_UAV_01_F",
-		"O_UAV_02_F",
-		"B_UAV_01_F",
-		"B_UAV_02_F"	
-		] - RHQs_NCAir;
+	_NCAir = RHQ_NCAir + RYD_WS_NCAir_class - RHQs_NCAir;
 
-	_Naval = RHQ_Naval + 
-		[
-		"I_Boat_Armed_01_minigun_F",
-		"I_Boat_Transport_01_F",
-		"O_Boat_Armed_01_hmg_F",
-		"O_Boat_Transport_01_F",
-		"O_Lifeboat",
-		"B_G_Boat_Transport_01_F",
-		"B_Boat_Armed_01_minigun_F",
-		"B_Boat_Transport_01_F",
-		"B_Lifeboat",
-		"I_SDV_01_F",
-		"O_SDV_01_F",
-		"B_SDV_01_F"	
-		] - RHQs_Naval;
+	_Naval = RHQ_Naval + RYD_WS_Naval_class - RHQs_Naval;
 
-	_Static = RHQ_Static + 
-		[
-		"I_GMG_01_A_F",
-		"I_GMG_01_F",
-		"I_GMG_01_high_F",
-		"I_HMG_01_A_F",
-		"I_HMG_01_F",
-		"I_HMG_01_high_F",
-		"I_Mortar_01_F",
-		"I_static_AA_F",
-		"I_static_AT_F",
-		"O_GMG_01_A_F",
-		"O_GMG_01_F",
-		"O_GMG_01_high_F",
-		"O_HMG_01_A_F",
-		"O_HMG_01_F",
-		"O_HMG_01_high_F",
-		"O_Mortar_01_F",
-		"O_static_AA_F",
-		"O_static_AT_F",
-		"B_G_Mortar_01_F",
-		"B_GMG_01_A_F",
-		"B_GMG_01_F",
-		"B_GMG_01_high_F",
-		"B_HMG_01_A_F",
-		"B_HMG_01_F",
-		"B_HMG_01_high_F",
-		"B_Mortar_01_F",
-		"B_static_AA_F",
-		"B_static_AT_F"
-		] - RHQs_Static;
+	_Static = RHQ_Static + RYD_WS_Static_class - RHQs_Static;
 		
-	_StaticAA = RHQ_StaticAA + 
-		[
-		"I_static_AA_F",
-		"O_static_AA_F",
-		"B_static_AA_F"
-		] - RHQs_StaticAA;
+	_StaticAA = RHQ_StaticAA + RYD_WS_StaticAA_class - RHQs_StaticAA;
 		
-	_StaticAT = RHQ_StaticAT + 
-		[
-		"I_static_AT_F",
-		"O_static_AT_F",
-		"B_static_AT_F"
-		] - RHQs_StaticAT;
+	_StaticAT = RHQ_StaticAT + RYD_WS_StaticAT_class - RHQs_StaticAT;
 		
-	_Support = RHQ_Support + 
-		[
-		"I_Truck_02_ammo_F",
-		"I_Truck_02_box_F",
-		"I_Truck_02_fuel_F",
-		"I_Truck_02_medical_F",
-		"O_Truck_02_Ammo_F",
-		"O_Truck_02_box_F",
-		"O_Truck_02_fuel_F",
-		"O_Truck_02_medical_F",
-		"B_G_Van_01_fuel_F",
-		"B_APC_Tracked_01_CRV_F",
-		"B_Truck_01_ammo_F",
-		"B_Truck_01_Repair_F",
-		"B_Truck_01_fuel_F",
-		"B_Truck_01_medical_F"
-		] - RHQs_Support;
+	_Support = RHQ_Support + RYD_WS_Support_class - RHQs_Support;
 		
-	_Cargo = RHQ_Cargo + 
-		[
-		"I_Heli_Transport_02_F",
-		"O_Heli_Attack_02_black_F",
-		"O_Heli_Attack_02_F",
-		"O_Heli_Light_02_F",
-		"O_Heli_Light_02_unarmed_F",
-		"B_Heli_Light_01_F",
-		"B_Heli_Transport_01_camo_F",
-		"B_Heli_Transport_01_F",
-		"I_Truck_02_medical_F",
-		"O_Truck_02_medical_F",
-		"B_Truck_01_medical_F",
-		"I_Boat_Armed_01_minigun_F",
-		"I_Boat_Transport_01_F",
-		"O_Boat_Armed_01_hmg_F",
-		"O_Boat_Transport_01_F",
-		"O_Lifeboat",
-		"B_G_Boat_Transport_01_F",
-		"B_Boat_Armed_01_minigun_F",
-		"B_Boat_Transport_01_F",
-		"B_Lifeboat",
-		"I_SDV_01_F",
-		"O_SDV_01_F",
-		"B_SDV_01_F",
-		"B_MBT_01_cannon_F",
-		"I_APC_Wheeled_03_cannon_F",
-		"O_APC_Tracked_02_cannon_F",
-		"O_APC_Wheeled_02_rcws_F",
-		"B_APC_Tracked_01_rcws_F",
-		"B_APC_Wheeled_01_cannon_F",
-		"I_MRAP_03_F",
-		"I_MRAP_03_gmg_F",
-		"I_MRAP_03_hmg_F",
-		"I_Quadbike_01_F",
-		"I_Truck_02_covered_F",
-		"I_Truck_02_transport_F",
-		"O_MRAP_02_F",
-		"O_MRAP_02_gmg_F",
-		"O_MRAP_02_hmg_F",
-		"O_Quadbike_01_F",
-		"O_Truck_02_covered_F",
-		"O_Truck_02_transport_F",
-		"B_G_Offroad_01_armed_F",
-		"B_G_Offroad_01_F",
-		"B_G_Quadbike_01_F",
-		"B_G_Van_01_transport_F",
-		"B_MRAP_01_F",
-		"B_MRAP_01_gmg_F",
-		"B_MRAP_01_hmg_F",
-		"B_Quadbike_01_F",
-		"B_Truck_01_box_F",
-		"B_Truck_01_covered_F",
-		"B_Truck_01_mover_F",
-		"B_Truck_01_transport_F"	
-		] - RHQs_Cargo;
+	_Cargo = RHQ_Cargo + RYD_WS_Cargo_class - RHQs_Cargo;
 		
-	_NCCargo = RHQ_NCCargo + 
-		[
-		"I_Heli_Transport_02_F",
-		"O_Heli_Light_02_unarmed_F",
-		"B_Heli_Light_01_F",
-		"B_Heli_Transport_01_camo_F",
-		"B_Heli_Transport_01_F",
-		"I_Truck_02_medical_F",
-		"O_Truck_02_medical_F",
-		"B_Truck_01_medical_F",
-		"I_Boat_Transport_01_F",
-		"O_Boat_Transport_01_F",
-		"O_Lifeboat",
-		"B_G_Boat_Transport_01_F",
-		"B_Boat_Transport_01_F",
-		"B_Lifeboat",
-		"I_MRAP_03_F",
-		"I_Quadbike_01_F",
-		"I_Truck_02_covered_F",
-		"I_Truck_02_transport_F",
-		"O_MRAP_02_F",
-		"O_Quadbike_01_F",
-		"O_Truck_02_covered_F",
-		"O_Truck_02_transport_F",
-		"B_G_Offroad_01_F",
-		"B_G_Quadbike_01_F",
-		"B_G_Van_01_transport_F",
-		"B_MRAP_01_F",
-		"B_Quadbike_01_F",
-		"B_Truck_01_box_F",
-		"B_Truck_01_covered_F",
-		"B_Truck_01_mover_F",
-		"B_Truck_01_transport_F"	
-		] - RHQs_NCCargo;
+	_NCCargo = RHQ_NCCargo + RYD_WS_NCCargo_class - RHQs_NCCargo;
 		
-	_Crew = RHQ_Crew + 
-		[
-		"I_crew_F",
-		"I_helicrew_F",
-		"I_helipilot_F",
-		"I_pilot_F",
-		"O_crew_F",
-		"O_helicrew_F",
-		"O_helipilot_F",
-		"O_Pilot_F",
-		"B_crew_F",
-		"B_helicrew_F",
-		"B_Helipilot_F",
-		"B_Pilot_F",
-		"B_Story_Pilot_F"
-		] - RHQs_Crew;
+	_Crew = RHQ_Crew + RYD_WS_Crew_class - RHQs_Crew;
 		
-	_Other = RHQ_Other + 
-		[
-		"I_UAV_AI",
-		"O_UAV_AI",
-		"B_UAV_AI"	
-		];
-		
-	_ammo = RHQ_Ammo + 
-		[
-		"I_Truck_02_ammo_F",
-		"O_Truck_02_Ammo_F",
-		"B_APC_Tracked_01_CRV_F",
-		"B_Truck_01_ammo_F"
-		] - RHQs_Ammo;
-		
-	_fuel = RHQ_Fuel + 
-		[
-		"I_Truck_02_fuel_F",
-		"O_Truck_02_fuel_F",
-		"B_G_Van_01_fuel_F",
-		"B_APC_Tracked_01_CRV_F",
-		"B_Truck_01_fuel_F"
-		] - RHQs_Fuel;
-		
-	_med = RHQ_Med + 
-		[
-		"I_Truck_02_medical_F",
-		"O_Truck_02_medical_F",
-		"B_Truck_01_medical_F"
-		] - RHQs_Med;
-		
-	_rep = RHQ_Rep + 
-		[
-		"I_Truck_02_box_F",
-		"O_Truck_02_box_F",
-		"B_APC_Tracked_01_CRV_F",
-		"B_Truck_01_Repair_F"
-		] - RHQs_Rep;
+	_Other = RHQ_Other + RYD_WS_Other_class;
+
+	_ammo = RHQ_Ammo + RYD_WS_ammo - RHQs_Ammo;
+
+	_fuel = RHQ_Fuel + RYD_WS_fuel - RHQs_Fuel;
+
+	_med = RHQ_Med + RYD_WS_med - RHQs_Med;
+
+	_rep = RHQ_Rep + RYD_WS_rep - RHQs_Rep;
 		
 	_civF = ["CIV_F","CIV","CIV_RU","BIS_TK_CIV","BIS_CIV_special"];
 
@@ -5300,10 +4989,10 @@ RYD_RHQCheck =
 		{
 		if not ((faction _x) in _civF) then
 			{
-			_type = typeOf _x;
-			if not ((_type in _basicrhq) or (_type in _noInBasic)) then {_noInBasic set [(count _noInBasic),_type]};
-			if not ((_type in _Additionalrhq) or (_type in _noInAdditional)) then {_noInAdditional set [(count _noInAdditional),_type]};
-			if not ((_type in _total) or (_type in _noInTotal)) then {_noInTotal set [(count _noInTotal),_type]};
+			_type = toLower (typeOf _x);
+			if not ((_type in _basicrhq) or (_type in _noInBasic)) then {_noInBasic pushBack _type};
+			if not ((_type in _Additionalrhq) or (_type in _noInAdditional)) then {_noInAdditional pushBack _type};
+			if not ((_type in _total) or (_type in _noInTotal)) then {_noInTotal pushBack _type};
 			}
 		}
 	foreach (AllUnits + Vehicles);
@@ -5339,10 +5028,10 @@ RYD_RHQCheck =
 
 	"RHQ CHECK" hintC format ["Forgotten classes: %1\nClasses not present in basic categories: %2\n(see RPT file for detailed forgotten classes list)",count _noInTotal,count _noInBasic];
 	};
-
+	
 RYD_LOSCheck = 
 	{
-	private ["_pos1","_pos2","_tint","_lint","_isLOS","_cam","_target","_pX1","_pY1","_pX2","_pY2","_pos1ATL","_pos2ATL","_level1","_level2"];
+	private ["_pos1","_pos2","_isLOS","_cam","_target","_pX1","_pY1","_pX2","_pY2","_pos1ATL","_pos2ATL","_level1","_level2"];
 
 	_pos1 = _this select 0;
 	_pos2 = _this select 1;
@@ -5363,22 +5052,22 @@ RYD_LOSCheck =
 
 	_cam = objNull;
 
-	if ((count _this) > 3) then {_cam = _this select 4};
+	if ((count _this) > 4) then {_cam = _this select 4};
 
 	_target = objNull;
 
-	if ((count _this) > 4) then {_target = _this select 5};
-
-	_tint = terrainintersect [_pos1ATL, _pos2ATL]; 
-	_lint = lineintersects [_pos1, _pos2,_cam,_target]; 
-
-	_isLOS = true;
-
-	if ((_tint) or (_lint)) then {_isLOS = false};
+	if ((count _this) > 5) then {_target = _this select 5};
+	
+	_isLOS = not (terrainintersect [_pos1ATL, _pos2ATL]); 
+	
+	if (_isLOS) then
+		{
+		_isLOS = not (lineintersects [_pos1, _pos2,_cam,_target])
+		}; 
 
 	_isLOS
 	};
-	
+
 RYD_KillHetman = 
 	{
 	RydBB_Active = false;

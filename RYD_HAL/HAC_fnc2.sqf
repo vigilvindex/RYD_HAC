@@ -77,16 +77,32 @@ RYD_StatusQuo =
 		{
 		_isCaptive = _x getVariable ("isCaptive" + (str _x));
 		if (isNil "_isCaptive") then {_isCaptive = false};
+		
+		if not (_isCaptive) then
+			{
+			_isCaptive = captive (leader _x)
+			};
 
 		_isCiv = false;
-		if ((faction (leader _x)) in _civF) then {_isCiv = true};
-		if not ((isNull ((_HQ getVariable ["leaderHQ",(leader _HQ)]))) and not (isNull _x) and (alive ((_HQ getVariable ["leaderHQ",(leader _HQ)]))) and (alive (leader _x)) and not (_isCaptive)) then
+		if ((faction (leader _x)) in _civF) then 
 			{
-			if (not ((_HQ getVariable ["RydHQ_FrontA",false])) and ((side _x) getFriend (side _HQ) < 0.6) and not (_isCiv)) then 
+			_isCiv = true
+			}
+		else
+			{
+			if ((side _x) in [civilian]) then
+				{
+				_isCiv = true
+				}
+			};
+			
+		if not ((isNull ((_HQ getVariable ["leaderHQ",(leader _HQ)]))) and {not (isNull _x) and {(alive ((_HQ getVariable ["leaderHQ",(leader _HQ)]))) and {(alive (leader _x)) and {not (_isCaptive)}}}}) then
+			{
+			if (not ((_HQ getVariable ["RydHQ_FrontA",false])) and {((side _x) getFriend (side _HQ) < 0.6) and {not (_isCiv)}}) then 
 				{
 				if not (_x in _enemies) then 
 					{
-					_enemies set [(count _enemies), _x]
+					_enemies pushBack _x
 					}
 				};
 			
@@ -97,11 +113,11 @@ RYD_StatusQuo =
 				_front = ((getPosATL (vehicle (leader _x))) in _fr)
 				};
 				
-			if ((_HQ getVariable ["RydHQ_FrontA",false]) and ((side _x) getFriend (side _HQ) < 0.6) and (_front) and not (_isCiv)) then 
+			if ((_HQ getVariable ["RydHQ_FrontA",false]) and {((side _x) getFriend (side _HQ) < 0.6) and {(_front) and {not (_isCiv)}}}) then 
 				{
 				if not (_x in _enemies) then 
 					{
-					_enemies set [(count _enemies), _x];
+					_enemies pushBack _x;
 					}
 				};
 				
@@ -109,9 +125,9 @@ RYD_StatusQuo =
 				{
 				if not ((side _x) getFriend (side _HQ) < 0.6) then 
 					{
-					if (not (_x in _friends) and not (((leader _x) in (_HQ getVariable ["RydHQ_Excluded",[]])) or (_isCiv))) then 
+					if (not (_x in _friends) and {not (((leader _x) in (_HQ getVariable ["RydHQ_Excluded",[]])) or {(_isCiv)})}) then 
 						{
-						_friends set [(count _friends), _x]
+						_friends pushBack _x
 						}
 					};
 				};
@@ -126,7 +142,7 @@ RYD_StatusQuo =
 		{
 		if not ((group _x) in _excl) then 
 			{
-			_excl set [(count _excl),group _x]
+			_excl pushBack (group _x)
 			} 
 		}
 	foreach (_HQ getVariable ["RydHQ_Excluded",[]]);
@@ -138,14 +154,14 @@ RYD_StatusQuo =
 	if (_HQ getVariable ["RydHQ_SubSynchro",false]) then 
 		{
 			{
-			if ((_x in (_HQ getVariable ["RydHQ_LastSub",[]])) and not ((leader _x) in (synchronizedObjects (_HQ getVariable ["leaderHQ",(leader _HQ)]))) and (_HQ getVariable ["RydHQ_SubSynchro",false])) then 
+			if ((_x in (_HQ getVariable ["RydHQ_LastSub",[]])) and {not ((leader _x) in (synchronizedObjects (_HQ getVariable ["leaderHQ",(leader _HQ)]))) and {(_HQ getVariable ["RydHQ_SubSynchro",false])}}) then 
 				{
-				_subOrd set [(count _subOrd),_x]
+				_subOrd pushBack _x
 				};
 				
-			if (not (_x in _subOrd) and (({(_x in (synchronizedObjects (_HQ getVariable ["leaderHQ",(leader _HQ)])))} count (units _x)) > 0)) then 
+			if (not (_x in _subOrd) and {(({(_x in (synchronizedObjects (_HQ getVariable ["leaderHQ",(leader _HQ)])))} count (units _x)) > 0)}) then 
 				{
-				_subOrd set [(count _subOrd),_x]
+				_subOrd pushBack _x
 				};
 			}
 		foreach allGroups;
@@ -159,9 +175,9 @@ RYD_StatusQuo =
 			{
 			for [{_i = 1},{_i <= (_HQ getVariable ["RydHQ_NameLimit",100])},{_i = _i + 1}] do
 				{
-				if (not (_x in _subOrd) and ((str (leader _x)) == ("Ryd" + _signum + str (_i)))) then 
+				if (not (_x in _subOrd) and {((str (leader _x)) == ("Ryd" + _signum + str (_i)))}) then 
 					{
-					_subOrd set [(count _subOrd),_x]
+					_subOrd pushBack _x
 					};
 				};
 			}
@@ -172,6 +188,27 @@ RYD_StatusQuo =
 
 	_friends = _friends + _subOrd + (_HQ getVariable ["RydHQ_Included",[]]) - ((_HQ getVariable ["RydHQ_ExcludedG",[]]) + _excl + [_HQ]);
 	_HQ setVariable ["RydHQ_NoWayD",allGroups - (_HQ getVariable ["RydHQ_LastFriends",[]])];
+	
+	_channel = _HQ getVariable ["RydHQ_myChannel",-1];
+	
+	if not (_channel < 0) then
+		{
+		_channel radioChannelRemove ((allUnits - (units _HQ)) + allDeadMen);
+		_toAdd = [];
+		
+			{
+				{
+				if (isPlayer _x) then
+					{
+					_toAdd pushBack _x
+					}
+				}
+			foreach (units _x)
+			}
+		foreach _friends;
+		
+		_channel radioChannelAdd _toAdd
+		};
 
 	_friends = [_friends] call RYD_RandomOrd;
 	
@@ -231,14 +268,14 @@ RYD_StatusQuo =
 					{
 					if not (_enemyU in _knownE) then 
 						{
-						_knownE set [(count _knownE),_enemyU];
+						_knownE pushBack _enemyU;
 						(vehicle _enemyU) setVariable ["RydHQ_MyFO",(leader _x)];
 						};
 
 					if not ((group _enemyU) in _knownEG) then 
 						{
 						_already = missionnameSpace getVariable ["AlreadySpotted",[]];
-						_knownEG set [(count _knownEG),(group _enemyU)];
+						_knownEG pushBack (group _enemyU);
 						if not ((group _enemyU) in _already) then
 							{
 							_UL = (leader _x);if not (isPlayer _UL) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_EnemySpot,"EnemySpot"] call RYD_AIChatter}};
@@ -257,7 +294,7 @@ RYD_StatusQuo =
 
 		{
 		_gp = group _x;
-		if not (_gp in _knownEG) then {_knownEG set [(count _knownEG),_gp]};
+		if not (_gp in _knownEG) then {_knownEG pushBack _gp};
 		}
 	foreach _alwaysKn;
 	
@@ -270,7 +307,7 @@ RYD_StatusQuo =
 		{
 		if not (_x in _already) then
 			{
-			_already set [(count _already),_x]
+			_already pushBack _x
 			}
 		}
 	foreach _knownEG;
@@ -291,47 +328,58 @@ RYD_StatusQuo =
 	if not (_HQ getVariable ["RydHQ_Init",true]) then 
 		{
 		_lossP = _lossFinal/_cInitial;
-
-		if ((_OLmpl == 0) and ((count _knownE) > 0)) then
+		
+		_HQ setVariable ["RydHQ_LTotal",_lossP];
+		
+		_lostU = _CLast - _CCurrent;
+		
+		if not (_lostU == 0) then
 			{
-			_OLmpl = 0.01;
-			_firstMC = _cycleC - 1
-			};
-
-		if ((_cycleCap < (50 / (1.01 - _lossP))) and ((count _knownE) == 0) and (_OLmpl == 0.01)) then
-			{
-			_cycleCap = _cycleCap + 1;
-			if ((random 1) < _lossP) then {_firstMC = _firstMC + 1}
-			}
-		else
-			{
-			if not ((count _knownE) == 0) then
+			_lossArr = _HQ getVariable ["RydHQ_LossArr",[]];
+			_lossArr pushBack [_lostU,time];
+			
+			if ((count _lossArr) > 200) then
 				{
-				_cycleCap = 0;
+				_lossArr set [0,0];
+				_lossArr = _lossArr - [0];
+				};
+			
+			_HQ setVariable ["RydHQ_LossArr",_lossArr]
+			};
+			
+		_lossWeight = 0;
+			
+			{
+			_loss = _x select 0;
+			_when = _x select 1;
+			_age = ((time - _when)/30) max 6;
+				
+			_lossWeight = _lossWeight + ((_loss/(_age^1.15)) * (0.75 + (random 0.125) + (random 0.125) + (random 0.125) + (random 0.125)))
+			}
+		foreach (_HQ getVariable ["RydHQ_LossArr",[]]);
+		
+		_balanceF = (((random 5) + (random 5))/((1 + _lossP)^2)) - ((random 1) + (random 1)) - (((random 1.5) + (random 1.5)) * ((count _knownE)/_CCurrent));
+		
+		//diag_log format ["balance: %1 lossweight: %2 morale: %3",_balanceF,_lossWeight,_morale];
+		
+		_morale = _morale + ((_balanceF - _lossWeight)/(_HQ getVariable ["RydHQ_MoraleConst",1]));
+		
+		if (_lossP > (0.4 + (random 0.2))) then
+			{
+			_diff = ((-_morale)/50) - _lossP;
+			if (_diff > 0) then
+				{				
+				_morale = _morale - ((random (_diff * 10))/(_HQ getVariable ["RydHQ_MoraleConst",1]))
 				}
 			};
-
-		
-		_lossPerc = _lossP * 100;
-		_cycle = _cycleC - _firstMC;
-
-		_OLF = _OLmpl * (((-(_lossPerc * _lossPerc))/(1.1^_cycle)) + ((15 + (random 5) + (random 5))/(1 + _lossP)) - (_lossP * 10) + (_cycle ^ ((10 * (1 - _lossP))/_cycle)));
-
-		_mplLU = 1;
-		_lostU = _CLast - _CCurrent;
-		if (_lostU < 0) then {_lostU = - _lostU;_mplLU = -1};
-
-		_lossL = _mplLU * ((100 * _lostU/_cInitial)^(1.55 + (random 0.05) + (random 0.05)))/10;
-
-		_balanceF = 0.5 + (random 0.5) + (random 0.5) - _lossP - (count _knownE)/_CCurrent;
-		
-		_morale = _morale + (_OLF - _lossL + _balanceF);
 		};
 
 	if (_morale < -50) then {_morale = -50};
 	if (_morale > 0) then {_morale = 0};
 	
 	_HQ setVariable ["RydHQ_Morale",_morale];
+	
+	_HQ setVariable ["RydHQ_TotalLossP",(round (((_lossFinal/_cInitial) * 100) * 10)/10)];
 	
 	if (_HQ getVariable ["RydHQ_Debug",false]) then 
 		{
@@ -386,71 +434,71 @@ RYD_StatusQuo =
 			_Crewcheck = false;
 			_NCrewInfcheck = false;
 
-			_tp = typeOf _x;
+			_tp = toLower (typeOf _x);
 			_grp = group _x;
 			_vh = vehicle _x;
 			_asV = assignedvehicle _x;
 			_grpD = group (assignedDriver _asV);
 			_grpG = group (assignedGunner _asV);
 			if (isNull _grpD) then {_grpD = _grpG};
-			_Tvh = typeOf _vh;
-			_TasV = typeOf _asV;
+			_Tvh = toLower (typeOf _vh);
+			_TasV = toLower (typeOf _asV);
+	
+				if (((_grp == _grpD) and {(_TasV in _specFor_class)}) or {(_tp in _specFor_class)}) then {_SpecForcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _recon_class)}) or {(_tp in _recon_class)}) then {_reconcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _FO_class)}) or {(_tp in _FO_class)}) then {_FOcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _snipers_class)}) or {(_tp in _snipers_class)}) then {_sniperscheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _ATinf_class)}) or {(_tp in _ATinf_class)}) then {_ATinfcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _AAinf_class)}) or {(_tp in _AAinf_class)}) then {_AAinfcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Inf_class)}) or {(_tp in _Inf_class)}) then {_Infcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Art_class)}) or {(_tp in _Art_class)}) then {_Artcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _HArmor_class)}) or {(_tp in _HArmor_class)}) then {_HArmorcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _MArmor_class)}) or {(_tp in _MArmor_class)}) then {_MArmorcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _LArmor_class)}) or {(_tp in _LArmor_class)}) then {_LArmorcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _LArmorAT_class)}) or {(_tp in _LArmorAT_class)}) then {_LArmorATcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Cars_class)}) or {(_tp in _Cars_class)}) then {_Carscheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Air_class)}) or {(_tp in _Air_class)}) then {_Aircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _BAir_class)}) or {(_tp in _BAir_class)}) then {_BAircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _RAir_class)}) or {(_tp in _RAir_class)}) then {_RAircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _NCAir_class)}) or {(_tp in _NCAir_class)}) then {_NCAircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Naval_class)}) or {(_tp in _Naval_class)}) then {_Navalcheck = true;_Othercheck = false};
+				if (((_grp == _grpG) and {(_TasV in _Static_class)}) or {(_tp in _Static_class)}) then {_Staticcheck = true;_Othercheck = false};
+				if (((_grp == _grpG) and {(_TasV in _StaticAA_class)}) or {(_tp in _StaticAA_class)}) then {_StaticAAcheck = true;_Othercheck = false};
+				if (((_grp == _grpG) and {(_TasV in _StaticAT_class)}) or {(_tp in _StaticAT_class)}) then {_StaticATcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Cargo_class)}) or {(_tp in _Cargo_class)}) then {_Cargocheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _NCCargo_class)}) or {(_tp in _NCCargo_class)}) then {_NCCargocheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Crew_class)}) or {(_tp in _Crew_class)}) then {_Crewcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _NCrewInf_class)}) or {(_tp in _NCrewInf_class)}) then {_NCrewInfcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Support_class)}) or {(_tp in _Support_class)}) then {_Supportcheck = true;_NCrewInfcheck = false;_Othercheck = false};
 
-				if (((_grp == _grpD) and (_TasV in _specFor_class)) or (_tp in _specFor_class)) then {_SpecForcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _recon_class)) or (_tp in _recon_class)) then {_reconcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _FO_class)) or (_tp in _FO_class)) then {_FOcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _snipers_class)) or (_tp in _snipers_class)) then {_sniperscheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _ATinf_class)) or (_tp in _ATinf_class)) then {_ATinfcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _AAinf_class)) or (_tp in _AAinf_class)) then {_AAinfcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Inf_class)) or (_tp in _Inf_class)) then {_Infcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Art_class)) or (_tp in _Art_class)) then {_Artcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _HArmor_class)) or (_tp in _HArmor_class)) then {_HArmorcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _MArmor_class)) or (_tp in _MArmor_class)) then {_MArmorcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _LArmor_class)) or (_tp in _LArmor_class)) then {_LArmorcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _LArmorAT_class)) or (_tp in _LArmorAT_class)) then {_LArmorATcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Cars_class)) or (_tp in _Cars_class)) then {_Carscheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Air_class)) or (_tp in _Air_class)) then {_Aircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _BAir_class)) or (_tp in _BAir_class)) then {_BAircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _RAir_class)) or (_tp in _RAir_class)) then {_RAircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _NCAir_class)) or (_tp in _NCAir_class)) then {_NCAircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Naval_class)) or (_tp in _Naval_class)) then {_Navalcheck = true;_Othercheck = false};
-				if (((_grp == _grpG) and (_TasV in _Static_class)) or (_tp in _Static_class)) then {_Staticcheck = true;_Othercheck = false};
-				if (((_grp == _grpG) and (_TasV in _StaticAA_class)) or (_tp in _StaticAA_class)) then {_StaticAAcheck = true;_Othercheck = false};
-				if (((_grp == _grpG) and (_TasV in _StaticAT_class)) or (_tp in _StaticAT_class)) then {_StaticATcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Cargo_class)) or (_tp in _Cargo_class)) then {_Cargocheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _NCCargo_class)) or (_tp in _NCCargo_class)) then {_NCCargocheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Crew_class)) or (_tp in _Crew_class)) then {_Crewcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _NCrewInf_class)) or (_tp in _NCrewInf_class)) then {_NCrewInfcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Support_class)) or (_tp in _Support_class)) then {_Supportcheck = true;_NCrewInfcheck = false;_Othercheck = false};
+				if ((_TasV in _NCCargo_class) and {(_x == (assignedDriver _asV)) and {((count (units (group _x))) == 1) and {not ((_ATinfcheck) or {(_AAinfcheck) or {(_reconcheck) or {(_FOcheck) or {(_sniperscheck)}}}})}}}) then {_NCrewInfcheck = false;_Othercheck = false};
 
-				if ((_TasV in _NCCargo_class) and (_x == (assignedDriver _asV)) and ((count (units (group _x))) == 1) and not ((_ATinfcheck) or (_AAinfcheck) or (_reconcheck) or (_FOcheck) or (_sniperscheck))) then {_NCrewInfcheck = false;_Othercheck = false};
-
-				if (_SpecForcheck) then {if not (_vh in _SpecFor) then {_SpecFor set [(count _SpecFor),_vh]};if not (_grp in _SpecForG) then {_SpecForG set [(count _SpecForG),_grp]}};
-				if (_reconcheck) then {if not (_vh in _recon) then {_recon set [(count _recon),_vh]};if not (_grp in _reconG) then {_reconG set [(count _reconG),_grp]}};
-				if (_FOcheck) then {if not (_vh in _FO) then {_FO set [(count _FO),_vh]};if not (_grp in _FOG) then {_FOG set [(count _FOG),_grp]}};
-				if (_sniperscheck) then {if not (_vh in _snipers) then {_snipers set [(count _snipers),_vh]};if not (_grp in _snipersG) then {_snipersG set [(count _snipersG),_grp]}};
-				if (_ATinfcheck) then {if not (_vh in _ATinf) then {_ATinf set [(count _ATinf),_vh]};if not (_grp in _ATinfG) then {_ATinfG set [(count _ATinfG),_grp]}};
-				if (_AAinfcheck) then {if not (_vh in _AAinf) then {_AAinf set [(count _AAinf),_vh]};if not (_grp in _AAinfG) then {_AAinfG set [(count _AAinfG),_grp]}};
-				if (_Infcheck) then {if not (_vh in _Inf) then {_FValue = _FValue + 1;_Inf set [(count _Inf),_vh]};if not (_grp in _InfG) then {_InfG set [(count _InfG),_grp]}};
-				if (_Artcheck) then {if not (_vh in _Art) then {_FValue = _FValue + 3;_Art set [(count _Art),_vh]};if not (_grp in _ArtG) then {_ArtG set [(count _ArtG),_grp]}};
-				if (_HArmorcheck) then {if not (_vh in _HArmor) then {_FValue = _FValue + 10;_HArmor set [(count _HArmor),_vh]};if not (_grp in _HArmorG) then {_HArmorG set [(count _HArmorG),_grp]}};
-				if (_MArmorcheck) then {if not (_vh in _MArmor) then {_MArmor set [(count _MArmor),_vh]};if not (_grp in _MArmorG) then {_MArmorG set [(count _MArmorG),_grp]}};
-				if (_LArmorcheck) then {if not (_vh in _LArmor) then {_FValue = _FValue + 5;_LArmor set [(count _LArmor),_vh]};if not (_grp in _LArmorG) then {_LArmorG set [(count _LArmorG),_grp]}};
-				if (_LArmorATcheck) then {if not (_vh in _LArmorAT) then {_LArmorAT set [(count _LArmorAT),_vh]};if not (_grp in _LArmorATG) then {_LArmorATG set [(count _LArmorATG),_grp]}};
-				if (_Carscheck) then {if not (_vh in _Cars) then {_FValue = _FValue + 3;_Cars set [(count _Cars),_vh]};if not (_grp in _CarsG) then {_CarsG set [(count _CarsG),_grp]}};
-				if (_Aircheck) then {if not (_vh in _Air) then {_FValue = _FValue + 15;_Air set [(count _Air),_vh]};if not (_grp in _AirG) then {_AirG set [(count _AirG),_grp]}};
-				if (_BAircheck) then {if not (_vh in _BAir) then {_BAir set [(count _BAir),_vh]};if not (_grp in _BAirG) then {_BAirG set [(count _BAirG),_grp]}};				
-				if (_RAircheck) then {if not (_vh in _RAir) then {_RAir set [(count _RAir),_vh]};if not (_grp in _RAirG) then {_RAirG set [(count _RAirG),_grp]}};				
-				if (_NCAircheck) then {if not (_vh in _NCAir) then {_NCAir set [(count _NCAir),_vh]};if not (_grp in _NCAirG) then {_NCAirG set [(count _NCAirG),_grp]}};
-				if (_Navalcheck) then {if not (_vh in _Naval) then {_Naval set [(count _Naval),_vh]};if not (_grp in _NavalG) then {_NavalG set [(count _NavalG),_grp]}};
-				if (_Staticcheck) then {if not (_vh in _Static) then {_FValue = _FValue + 1;_Static set [(count _Static),_vh]};if not (_grp in _StaticG) then {_StaticG set [(count _StaticG),_grp]}};
-				if (_StaticAAcheck) then {if not (_vh in _StaticAA) then {_StaticAA set [(count _StaticAA),_vh]};if not (_grp in _StaticAAG) then {_StaticAAG set [(count _StaticAAG),_grp]}};
-				if (_StaticATcheck) then {if not (_vh in _StaticAT) then {_StaticAT set [(count _StaticAT),_vh]};if not (_grp in _StaticATG) then {_StaticATG set [(count _StaticATG),_grp]}};
-				if (_Supportcheck) then {if not (_vh in _Support) then {_Support set [(count _Support),_vh]};if not (_grp in _SupportG) then {_SupportG set [(count _SupportG),_grp]}};
-				if (_Cargocheck) then {if not (_vh in _Cargo) then {_Cargo set [(count _Cargo),_vh]};if not (_grp in _CargoG) then {_CargoG set [(count _CargoG),_grp]}};
-				if (_NCCargocheck) then {if not (_vh in _NCCargo) then {_NCCargo set [(count _NCCargo),_vh]};if not (_grp in _NCCargoG) then {_NCCargoG set [(count _NCCargoG),_grp]}};
-				if (_Crewcheck) then {if not (_vh in _Crew) then {_Crew set [(count _Crew),_vh]};if not (_grp in _CrewG) then {_CrewG set [(count _CrewG),_grp]}};
-				if (_NCrewInfcheck) then {if not (_vh in _NCrewInf) then {_NCrewInf set [(count _NCrewInf),_vh]};if not (_grp in _NCrewInfG) then {_NCrewInfG set [(count _NCrewInfG),_grp]}};
+				if (_SpecForcheck) then {if not (_vh in _SpecFor) then {_SpecFor pushBack _vh};if not (_grp in _SpecForG) then {_SpecForG pushBack _grp}};
+				if (_reconcheck) then {if not (_vh in _recon) then {_recon pushBack _vh};if not (_grp in _reconG) then {_reconG pushBack _grp}};
+				if (_FOcheck) then {if not (_vh in _FO) then {_FO pushBack _vh};if not (_grp in _FOG) then {_FOG pushBack _grp}};
+				if (_sniperscheck) then {if not (_vh in _snipers) then {_snipers pushBack _vh};if not (_grp in _snipersG) then {_snipersG pushBack _grp}};
+				if (_ATinfcheck) then {if not (_vh in _ATinf) then {_ATinf pushBack _vh};if not (_grp in _ATinfG) then {_ATinfG pushBack _grp}};
+				if (_AAinfcheck) then {if not (_vh in _AAinf) then {_AAinf pushBack _vh};if not (_grp in _AAinfG) then {_AAinfG pushBack _grp}};
+				if (_Infcheck) then {if not (_vh in _Inf) then {_FValue = _FValue + 1;_Inf pushBack _vh};if not (_grp in _InfG) then {_InfG pushBack _grp}};
+				if (_Artcheck) then {if not (_vh in _Art) then {_FValue = _FValue + 3;_Art pushBack _vh};if not (_grp in _ArtG) then {_ArtG pushBack _grp}};
+				if (_HArmorcheck) then {if not (_vh in _HArmor) then {_FValue = _FValue + 10;_HArmor pushBack _vh};if not (_grp in _HArmorG) then {_HArmorG pushBack _grp}};
+				if (_MArmorcheck) then {if not (_vh in _MArmor) then {_MArmor pushBack _vh};if not (_grp in _MArmorG) then {_MArmorG pushBack _grp}};
+				if (_LArmorcheck) then {if not (_vh in _LArmor) then {_FValue = _FValue + 5;_LArmor pushBack _vh};if not (_grp in _LArmorG) then {_LArmorG pushBack _grp}};
+				if (_LArmorATcheck) then {if not (_vh in _LArmorAT) then {_LArmorAT pushBack _vh};if not (_grp in _LArmorATG) then {_LArmorATG pushBack _grp}};
+				if (_Carscheck) then {if not (_vh in _Cars) then {_FValue = _FValue + 3;_Cars pushBack _vh};if not (_grp in _CarsG) then {_CarsG pushBack _grp}};
+				if (_Aircheck) then {if not (_vh in _Air) then {_FValue = _FValue + 15;_Air pushBack _vh};if not (_grp in _AirG) then {_AirG pushBack _grp}};
+				if (_BAircheck) then {if not (_vh in _BAir) then {_BAir pushBack _vh};if not (_grp in _BAirG) then {_BAirG pushBack _grp}};				
+				if (_RAircheck) then {if not (_vh in _RAir) then {_RAir pushBack _vh};if not (_grp in _RAirG) then {_RAirG pushBack _grp}};				
+				if (_NCAircheck) then {if not (_vh in _NCAir) then {_NCAir pushBack _vh};if not (_grp in _NCAirG) then {_NCAirG pushBack _grp}};
+				if (_Navalcheck) then {if not (_vh in _Naval) then {_Naval pushBack _vh};if not (_grp in _NavalG) then {_NavalG pushBack _grp}};
+				if (_Staticcheck) then {if not (_vh in _Static) then {_FValue = _FValue + 1;_Static pushBack _vh};if not (_grp in _StaticG) then {_StaticG pushBack _grp}};
+				if (_StaticAAcheck) then {if not (_vh in _StaticAA) then {_StaticAA pushBack _vh};if not (_grp in _StaticAAG) then {_StaticAAG pushBack _grp}};
+				if (_StaticATcheck) then {if not (_vh in _StaticAT) then {_StaticAT pushBack _vh};if not (_grp in _StaticATG) then {_StaticATG pushBack _grp}};
+				if (_Supportcheck) then {if not (_vh in _Support) then {_Support pushBack _vh};if not (_grp in _SupportG) then {_SupportG pushBack _grp}};
+				if (_Cargocheck) then {if not (_vh in _Cargo) then {_Cargo pushBack _vh};if not (_grp in _CargoG) then {_CargoG pushBack _grp}};
+				if (_NCCargocheck) then {if not (_vh in _NCCargo) then {_NCCargo pushBack _vh};if not (_grp in _NCCargoG) then {_NCCargoG pushBack _grp}};
+				if (_Crewcheck) then {if not (_vh in _Crew) then {_Crew pushBack _vh};if not (_grp in _CrewG) then {_CrewG pushBack _grp}};
+				if (_NCrewInfcheck) then {if not (_vh in _NCrewInf) then {_NCrewInf pushBack _vh};if not (_grp in _NCrewInfG) then {_NCrewInfG pushBack _grp}};
 				
 			}
 		foreach (units _x)
@@ -522,11 +570,85 @@ RYD_StatusQuo =
 	_HQ setVariable ["RydHQ_CargoAirEx",_CargoAirEx];
 	_HQ setVariable ["RydHQ_CargoLandEx",_CargoLandEx];
 	
-			
+	_callSignsN = _HQ getVariable ["RydHQ_CallSignsN",[[],[],[],[]]];
+	
+	if not (((count RydHQ_CallSignsA) < 1) or {((count _callSignsN) < 4)}) then
+		{
+		if (({isNil {_x getVariable "RydHQ_MyCrypto"}} count _friends) > 0) then
+			{		
+			_arty = _ArtG;
+			_hard = ((_HArmorG - _MArmorG) + _MArmorG) - _arty;
+			_air = _airG;
+			_soft = _friends - (_hard + _air + _arty);
+
+				{
+				_nouns = _callSignsN select _foreachIndex;
+				if ((count _nouns) > 0) then
+					{
+					_gps =_x;
+					_gIx = 0;
+					
+						{
+						_nounA = _x;
+						_noun = _nounA select 0;
+						_usedAdj = _nounA select 1;
+						
+						if ((count _usedAdj) < (count RydHQ_CallSignsA)) then
+							{
+								{								
+								_gp = _x;
+								
+								if (isNil {_gp getVariable "RydHQ_MyCrypto"}) then
+									{
+
+										{
+										_adj = _x select 0;
+										_before = _x select 1;
+										
+										if (({_adj isEqualTo _x} count _usedAdj) < 1) exitWith 
+											{
+											_usedAdj pushBack _adj;
+											_nounA set [1,_usedAdj];
+
+											_callS = switch (_before) do
+												{
+												case (true) : {_adj + " " + _noun};
+												case (false) : {_noun + " " + _adj};
+												};
+									
+											_gp setVariable ["RydHQ_MyCrypto",_callS];
+											_gIx = _gIx + 1;
+											}
+										}
+									foreach RydHQ_CallSignsA
+									}
+								}
+							foreach _gps
+							}
+						else	
+							{
+							_nouns set [_foreachIndex,0]
+							};
+							
+						if not (_gIx < (count _gps)) exitWith {}
+						}
+					foreach _nouns;
+					
+					_nouns = _nouns - [0];
+					
+					_callSignsN set [_foreachIndex,_nouns]
+					}
+				}
+			foreach [_soft,_hard,_air,_arty]
+			}
+		};
+		
+	_HQ setVariable ["RydHQ_CallSignsN",_callSignsN];
+				
 		{
 		if not (_x in _SupportG) then
 			{
-			_SupportG set [(count _SupportG),_x]
+			_SupportG pushBack _x
 			}
 		}
 	foreach (_HQ getVariable ["RydHQ_AmmoDrop",[]]);
@@ -571,71 +693,71 @@ RYD_StatusQuo =
 			_Crewcheck = false;
 			_NCrewInfcheck = false;
 
-			_tp = typeOf _x;
+			_tp = toLower (typeOf _x);
 			_grp = group _x;
 			_vh = vehicle _x;
 			_asV = assignedvehicle _x;
 			_grpD = group (assignedDriver _asV);
 			_grpG = group (assignedGunner _asV);
 			if (isNull _grpD) then {_grpD = _grpG};
-			_Tvh = typeOf _vh;
-			_TasV = typeOf _asV;
+			_Tvh = toLower (typeOf _vh);
+			_TasV = toLower (typeOf _asV);
 
-				if (((_grp == _grpD) and (_TasV in _specFor_class)) or (_tp in _specFor_class)) then {_SpecForcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _recon_class)) or (_tp in _recon_class)) then {_reconcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _FO_class)) or (_tp in _FO_class)) then {_FOcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _snipers_class)) or (_tp in _snipers_class)) then {_sniperscheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _ATinf_class)) or (_tp in _ATinf_class)) then {_ATinfcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _AAinf_class)) or (_tp in _AAinf_class)) then {_AAinfcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Inf_class)) or (_tp in _Inf_class)) then {_Infcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Art_class)) or (_tp in _Art_class)) then {_Artcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _HArmor_class)) or (_tp in _HArmor_class)) then {_HArmorcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _MArmor_class)) or (_tp in _MArmor_class)) then {_MArmorcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _LArmor_class)) or (_tp in _LArmor_class)) then {_LArmorcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _LArmorAT_class)) or (_tp in _LArmorAT_class)) then {_LArmorATcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Cars_class)) or (_tp in _Cars_class)) then {_Carscheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Air_class)) or (_tp in _Air_class)) then {_Aircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _BAir_class)) or (_tp in _BAir_class)) then {_BAircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _RAir_class)) or (_tp in _RAir_class)) then {_RAircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _NCAir_class)) or (_tp in _NCAir_class)) then {_NCAircheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Naval_class)) or (_tp in _Naval_class)) then {_Navalcheck = true;_Othercheck = false};
-				if (((_grp == _grpG) and (_TasV in _Static_class)) or (_tp in _Static_class)) then {_Staticcheck = true;_Othercheck = false};
-				if (((_grp == _grpG) and (_TasV in _StaticAA_class)) or (_tp in _StaticAA_class)) then {_StaticAAcheck = true;_Othercheck = false};
-				if (((_grp == _grpG) and (_TasV in _StaticAT_class)) or (_tp in _StaticAT_class)) then {_StaticATcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Cargo_class)) or (_tp in _Cargo_class)) then {_Cargocheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _NCCargo_class)) or (_tp in _NCCargo_class)) then {_NCCargocheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Crew_class)) or (_tp in _Crew_class)) then {_Crewcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _NCrewInf_class)) or (_tp in _NCrewInf_class)) then {_NCrewInfcheck = true;_Othercheck = false};
-				if (((_grp == _grpD) and (_TasV in _Support_class)) or (_tp in _Support_class)) then {_Supportcheck = true;_NCrewInfcheck = false;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _specFor_class)}) or {(_tp in _specFor_class)}) then {_SpecForcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _recon_class)}) or {(_tp in _recon_class)}) then {_reconcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _FO_class)}) or {(_tp in _FO_class)}) then {_FOcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _snipers_class)}) or {(_tp in _snipers_class)}) then {_sniperscheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _ATinf_class)}) or {(_tp in _ATinf_class)}) then {_ATinfcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _AAinf_class)}) or {(_tp in _AAinf_class)}) then {_AAinfcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Inf_class)}) or {(_tp in _Inf_class)}) then {_Infcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Art_class)}) or {(_tp in _Art_class)}) then {_Artcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _HArmor_class)}) or {(_tp in _HArmor_class)}) then {_HArmorcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _MArmor_class)}) or {(_tp in _MArmor_class)}) then {_MArmorcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _LArmor_class)}) or {(_tp in _LArmor_class)}) then {_LArmorcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _LArmorAT_class)}) or {(_tp in _LArmorAT_class)}) then {_LArmorATcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Cars_class)}) or {(_tp in _Cars_class)}) then {_Carscheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Air_class)}) or {(_tp in _Air_class)}) then {_Aircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _BAir_class)}) or {(_tp in _BAir_class)}) then {_BAircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _RAir_class)}) or {(_tp in _RAir_class)}) then {_RAircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _NCAir_class)}) or {(_tp in _NCAir_class)}) then {_NCAircheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Naval_class)}) or {(_tp in _Naval_class)}) then {_Navalcheck = true;_Othercheck = false};
+				if (((_grp == _grpG) and {(_TasV in _Static_class)}) or {(_tp in _Static_class)}) then {_Staticcheck = true;_Othercheck = false};
+				if (((_grp == _grpG) and {(_TasV in _StaticAA_class)}) or {(_tp in _StaticAA_class)}) then {_StaticAAcheck = true;_Othercheck = false};
+				if (((_grp == _grpG) and {(_TasV in _StaticAT_class)}) or {(_tp in _StaticAT_class)}) then {_StaticATcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Cargo_class)}) or {(_tp in _Cargo_class)}) then {_Cargocheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _NCCargo_class)}) or {(_tp in _NCCargo_class)}) then {_NCCargocheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Crew_class)}) or {(_tp in _Crew_class)}) then {_Crewcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _NCrewInf_class)}) or {(_tp in _NCrewInf_class)}) then {_NCrewInfcheck = true;_Othercheck = false};
+				if (((_grp == _grpD) and {(_TasV in _Support_class)}) or {(_tp in _Support_class)}) then {_Supportcheck = true;_NCrewInfcheck = false;_Othercheck = false};
 
-				if ((_TasV in _NCCargo_class) and (_x == (assignedDriver _asV)) and ((count (units (group _x))) == 1) and not ((_ATinfcheck) or (_AAinfcheck) or (_reconcheck) or (_FOcheck) or (_sniperscheck))) then {_NCrewInfcheck = false;_Othercheck = false};
-				
-				if (_SpecForcheck) then {if not (_vh in _EnSpecFor) then {_EnSpecFor set [(count _EnSpecFor),_vh]};if not (_grp in _EnSpecForG) then {_EnSpecForG set [(count _EnSpecForG),_grp]}};
-				if (_reconcheck) then {if not (_vh in _Enrecon) then {_Enrecon set [(count _Enrecon),_vh]};if not (_grp in _EnreconG) then {_EnreconG set [(count _EnreconG),_grp]}};
-				if (_FOcheck) then {if not (_vh in _EnFO) then {_EnFO set [(count _EnFO),_vh]};if not (_grp in _EnFOG) then {_EnFOG set [(count _EnFOG),_grp]}};
-				if (_sniperscheck) then {if not (_vh in _Ensnipers) then {_Ensnipers set [(count _Ensnipers),_vh]};if not (_grp in _EnsnipersG) then {_EnsnipersG set [(count _EnsnipersG),_grp]}};
-				if (_ATinfcheck) then {if not (_vh in _EnATinf) then {_EnATinf set [(count _EnATinf),_vh]};if not (_grp in _EnATinfG) then {_EnATinfG set [(count _EnATinfG),_grp]}};
-				if (_AAinfcheck) then {if not (_vh in _EnAAinf) then {_EnAAinf set [(count _EnAAinf),_vh]};if not (_grp in _EnAAinfG) then {_EnAAinfG set [(count _EnAAinfG),_grp]}};
-				if (_Infcheck) then {if not (_vh in _EnInf) then {_EValue = _EValue + 1;_EnInf set [(count _EnInf),_vh]};if not (_grp in _EnInfG) then {_EnInfG set [(count _EnInfG),_grp]}};
-				if (_Artcheck) then {if not (_vh in _EnArt) then {_EValue = _EValue + 3;_EnArt set [(count _EnArt),_vh]};if not (_grp in _EnArtG) then {_EnArtG set [(count _EnArtG),_grp]}};
-				if (_HArmorcheck) then {if not (_vh in _EnHArmor) then {_EValue = _EValue + 10;_EnHArmor set [(count _EnHArmor),_vh]};if not (_grp in _EnHArmorG) then {_EnHArmorG set [(count _EnHArmorG),_grp]}};
-				if (_MArmorcheck) then {if not (_vh in _EnMArmor) then {_EnMArmor set [(count _EnMArmor),_vh]};if not (_grp in _EnMArmorG) then {_EnMArmorG set [(count _EnMArmorG),_grp]}};
-				if (_LArmorcheck) then {if not (_vh in _EnLArmor) then {_EValue = _EValue + 5;_EnLArmor set [(count _EnLArmor),_vh]};if not (_grp in _EnLArmorG) then {_EnLArmorG set [(count _EnLArmorG),_grp]}};
-				if (_LArmorATcheck) then {if not (_vh in _EnLArmorAT) then {_EnLArmorAT set [(count _EnLArmorAT),_vh]};if not (_grp in _EnLArmorATG) then {_EnLArmorATG set [(count _EnLArmorATG),_grp]}};
-				if (_Carscheck) then {if not (_vh in _EnCars) then {_EValue = _EValue + 3;_EnCars set [(count _EnCars),_vh]};if not (_grp in _EnCarsG) then {_EnCarsG set [(count _EnCarsG),_grp]}};
-				if (_Aircheck) then {if not (_vh in _EnAir) then {_EValue = _EValue + 15;_EnAir set [(count _EnAir),_vh]};if not (_grp in _EnAirG) then {_EnAirG set [(count _EnAirG),_grp]}};
-				if (_BAircheck) then {if not (_vh in _EnBAir) then {_EnBAir set [(count _EnBAir),_vh]};if not (_grp in _EnBAirG) then {_EnBAirG set [(count _EnBAirG),_grp]}};				
-				if (_RAircheck) then {if not (_vh in _EnRAir) then {_EnRAir set [(count _EnRAir),_vh]};if not (_grp in _EnRAirG) then {_EnRAirG set [(count _EnRAirG),_grp]}};
-				if (_NCAircheck) then {if not (_vh in _EnNCAir) then {_EnNCAir set [(count _EnNCAir),_vh]};if not (_grp in _EnNCAirG) then {_EnNCAirG set [(count _EnNCAirG),_grp]}};
-				if (_Navalcheck) then {if not (_vh in _EnNaval) then {_EnNaval set [(count _EnNaval),_vh]};if not (_grp in _EnNavalG) then {_EnNavalG set [(count _EnNavalG),_grp]}};
-				if (_Staticcheck) then {if not (_vh in _EnStatic) then {_EValue = _EValue + 1;_EnStatic set [(count _EnStatic),_vh]};if not (_grp in _EnStaticG) then {_EnStaticG set [(count _EnStaticG),_grp]}};
-				if (_StaticAAcheck) then {if not (_vh in _EnStaticAA) then {_EnStaticAA set [(count _EnStaticAA),_vh]};if not (_grp in _EnStaticAAG) then {_EnStaticAAG set [(count _EnStaticAAG),_grp]}};
-				if (_StaticATcheck) then {if not (_vh in _EnStaticAT) then {_EnStaticAT set [(count _EnStaticAT),_vh]};if not (_grp in _EnStaticATG) then {_EnStaticATG set [(count _EnStaticATG),_grp]}};
-				if (_Supportcheck) then {if not (_vh in _EnSupport) then {_EnSupport set [(count _EnSupport),_vh]};if not (_grp in _EnSupportG) then {_EnSupportG set [(count _EnSupportG),_grp]}};
-				if (_Cargocheck) then {if not (_vh in _EnCargo) then {_EnCargo set [(count _EnCargo),_vh]};if not (_grp in _EnCargoG) then {_EnCargoG set [(count _EnCargoG),_grp]}};
-				if (_NCCargocheck) then {if not (_vh in _EnNCCargo) then {_EnNCCargo set [(count _EnNCCargo),_vh]};if not (_grp in _EnNCCargoG) then {_EnNCCargoG set [(count _EnNCCargoG),_grp]}};
-				if (_Crewcheck) then {if not (_vh in _EnCrew) then {_EnCrew set [(count _EnCrew),_vh]};if not (_grp in _EnCrewG) then {_EnCrewG set [(count _EnCrewG),_grp]}};
-				if (_NCrewInfcheck) then {if not (_vh in _EnNCrewInf) then {_EnNCrewInf set [(count _EnNCrewInf),_vh]};if not (_grp in _EnNCrewInfG) then {_EnNCrewInfG set [(count _EnNCrewInfG),_grp]}};
+				if ((_TasV in _NCCargo_class) and {(_x == (assignedDriver _asV)) and {((count (units (group _x))) == 1) and {not ((_ATinfcheck) or {(_AAinfcheck) or {(_reconcheck) or {(_FOcheck) or {(_sniperscheck)}}}})}}}) then {_NCrewInfcheck = false;_Othercheck = false};
+								
+				if (_SpecForcheck) then {if not (_vh in _EnSpecFor) then {_EnSpecFor pushBack _vh};if not (_grp in _EnSpecForG) then {_EnSpecForG pushBack _grp}};
+				if (_reconcheck) then {if not (_vh in _Enrecon) then {_Enrecon pushBack _vh};if not (_grp in _EnreconG) then {_EnreconG pushBack _grp}};
+				if (_FOcheck) then {if not (_vh in _EnFO) then {_EnFO pushBack _vh};if not (_grp in _EnFOG) then {_EnFOG pushBack _grp}};
+				if (_sniperscheck) then {if not (_vh in _Ensnipers) then {_Ensnipers pushBack _vh};if not (_grp in _EnsnipersG) then {_EnsnipersG pushBack _grp}};
+				if (_ATinfcheck) then {if not (_vh in _EnATinf) then {_EnATinf pushBack _vh};if not (_grp in _EnATinfG) then {_EnATinfG pushBack _grp}};
+				if (_AAinfcheck) then {if not (_vh in _EnAAinf) then {_EnAAinf pushBack _vh};if not (_grp in _EnAAinfG) then {_EnAAinfG pushBack _grp}};
+				if (_Infcheck) then {if not (_vh in _EnInf) then {_EValue = _EValue + 1;_EnInf pushBack _vh};if not (_grp in _EnInfG) then {_EnInfG pushBack _grp}};
+				if (_Artcheck) then {if not (_vh in _EnArt) then {_EValue = _EValue + 3;_EnArt pushBack _vh};if not (_grp in _EnArtG) then {_EnArtG pushBack _grp}};
+				if (_HArmorcheck) then {if not (_vh in _EnHArmor) then {_EValue = _EValue + 10;_EnHArmor pushBack _vh};if not (_grp in _EnHArmorG) then {_EnHArmorG pushBack _grp}};
+				if (_MArmorcheck) then {if not (_vh in _EnMArmor) then {_EnMArmor pushBack _vh};if not (_grp in _EnMArmorG) then {_EnMArmorG pushBack _grp}};
+				if (_LArmorcheck) then {if not (_vh in _EnLArmor) then {_EValue = _EValue + 5;_EnLArmor pushBack _vh};if not (_grp in _EnLArmorG) then {_EnLArmorG pushBack _grp}};
+				if (_LArmorATcheck) then {if not (_vh in _EnLArmorAT) then {_EnLArmorAT pushBack _vh};if not (_grp in _EnLArmorATG) then {_EnLArmorATG pushBack _grp}};
+				if (_Carscheck) then {if not (_vh in _EnCars) then {_EValue = _EValue + 3;_EnCars pushBack _vh};if not (_grp in _EnCarsG) then {_EnCarsG pushBack _grp}};
+				if (_Aircheck) then {if not (_vh in _EnAir) then {_EValue = _EValue + 15;_EnAir pushBack _vh};if not (_grp in _EnAirG) then {_EnAirG pushBack _grp}};
+				if (_BAircheck) then {if not (_vh in _EnBAir) then {_EnBAir pushBack _vh};if not (_grp in _EnBAirG) then {_EnBAirG pushBack _grp}};				
+				if (_RAircheck) then {if not (_vh in _EnRAir) then {_EnRAir pushBack _vh};if not (_grp in _EnRAirG) then {_EnRAirG pushBack _grp}};
+				if (_NCAircheck) then {if not (_vh in _EnNCAir) then {_EnNCAir pushBack _vh};if not (_grp in _EnNCAirG) then {_EnNCAirG pushBack _grp}};
+				if (_Navalcheck) then {if not (_vh in _EnNaval) then {_EnNaval pushBack _vh};if not (_grp in _EnNavalG) then {_EnNavalG pushBack _grp}};
+				if (_Staticcheck) then {if not (_vh in _EnStatic) then {_EValue = _EValue + 1;_EnStatic pushBack _vh};if not (_grp in _EnStaticG) then {_EnStaticG pushBack _grp}};
+				if (_StaticAAcheck) then {if not (_vh in _EnStaticAA) then {_EnStaticAA pushBack _vh};if not (_grp in _EnStaticAAG) then {_EnStaticAAG pushBack _grp}};
+				if (_StaticATcheck) then {if not (_vh in _EnStaticAT) then {_EnStaticAT pushBack _vh};if not (_grp in _EnStaticATG) then {_EnStaticATG pushBack _grp}};
+				if (_Supportcheck) then {if not (_vh in _EnSupport) then {_EnSupport pushBack _vh};if not (_grp in _EnSupportG) then {_EnSupportG pushBack _grp}};
+				if (_Cargocheck) then {if not (_vh in _EnCargo) then {_EnCargo pushBack _vh};if not (_grp in _EnCargoG) then {_EnCargoG pushBack _grp}};
+				if (_NCCargocheck) then {if not (_vh in _EnNCCargo) then {_EnNCCargo pushBack _vh};if not (_grp in _EnNCCargoG) then {_EnNCCargoG pushBack _grp}};
+				if (_Crewcheck) then {if not (_vh in _EnCrew) then {_EnCrew pushBack _vh};if not (_grp in _EnCrewG) then {_EnCrewG pushBack _grp}};
+				if (_NCrewInfcheck) then {if not (_vh in _EnNCrewInf) then {_EnNCrewInf pushBack _vh};if not (_grp in _EnNCrewInfG) then {_EnNCrewInfG pushBack _grp}};
 				
 			}
 		foreach (units _x)
@@ -710,7 +832,7 @@ RYD_StatusQuo =
 		{
 		_AllCow = 0;
 		_AllPanic = 0;
-
+		
 			{
 			_cow = _x getVariable ("Cow" + (str _x));
 			if (isNil ("_cow")) then {_cow = 0};
@@ -741,6 +863,7 @@ RYD_StatusQuo =
 				if not (isPlayer _UL) then 
 					{
 					_inDanger = _x getVariable ["NearE",0];
+					if (isNil "_inDanger") then {_inDanger = 0};
 					if (_inDanger > 0.05) then
 						{
 						if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_InFear,"InFear"] call RYD_AIChatter}
@@ -748,10 +871,15 @@ RYD_StatusQuo =
 					}
 				};
 
-			if (((random ((20 + (_morale/5))/_AllPanic)) < _cowF) and ((random 100) > (100/(_AllPanic + 1)))) then 
+			if (((random ((20 + (_morale/5))/_AllPanic)) < _cowF) and {((random 100) > (100/(_AllPanic + 1)))}) then 
 				{
+				_dngr = _x getVariable ["NearE",0];
+				if (isNil "_dngr") then {_dngr = 0};
+				if (_dngr < (0.3 - (random 0.15) - (random 0.15))) exitWith {};
+				
 				[_x] call RYD_WPdel;
 				_x setVariable [("inPanic" + (str _x)), true];
+
 				if (_HQ getVariable ["RydHQ_DebugII",false]) then 
 					{
 					_signum = _HQ getVariable ["RydHQ_CodeSign","X"];
@@ -768,6 +896,8 @@ RYD_StatusQuo =
 
 				if (_HQ getVariable ["RydHQ_Surr",false]) then
 					{
+					if (_dngr < (0.5 + (random 0.5))) exitWith {};
+					
 					if ((random 100) > 50) then
 						{
 						if (_HQ getVariable ["RydHQ_DebugII",false]) then 
@@ -784,12 +914,11 @@ RYD_StatusQuo =
 							[_x] spawn
 								{
 								_gp = _this select 0;
-
 								_gp setVariable [("isCaptive" + (str _gp)), true];
 								_gp setVariable ["RydHQ_MIA", true];
 
 								(units _gp) orderGetIn false;
-								(units _gp) allowGetin false;
+								(units _gp) allowGetIn false;//if (player in (units _gp)) then {diag_log "NOT ALLOW surr"};
 
 									{
 									[_x] spawn
@@ -797,7 +926,7 @@ RYD_StatusQuo =
 										_unit = _this select 0;
 
 										sleep (random 1);
-										if (isPlayer _unit) exitWith {};
+										if (isPlayer _unit) exitWith {[_unit] join grpNull};
 
 										_unit setCaptive true;
 										unassignVehicle _unit;
@@ -843,7 +972,7 @@ RYD_StatusQuo =
 		};
 
 		{
-		_KnEnPos set [(count _KnEnPos),getPosATL (vehicle (leader _x))];
+		_KnEnPos pushBack (getPosATL (vehicle (leader _x)));
 		if ((count _KnEnPos) >= 100) then {_KnEnPos = _KnEnPos - [_KnEnPos select 0]};
 		}
 	foreach _knownEG;
@@ -935,11 +1064,19 @@ RYD_StatusQuo =
 	
 	if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {RydxHQ_AllHQ = RydxHQ_AllHQ - [_HQ]};
 
-	if (((count _knownE) > 0) and ((count _ArtG) > 0) and ((_HQ getVariable ["RydHQ_ArtyShells",1]) > 0)) then {[_ArtG,_knownE,(_EnHArmor + _EnMArmor + _EnLArmor),_friends,(_HQ getVariable ["RydHQ_Debug",false]),(_HQ getVariable ["leaderHQ",(leader _HQ)])] call RYD_CFF};
+	if (((count _knownE) > 0) and {((count _ArtG) > 0) and {((_HQ getVariable ["RydHQ_ArtyShells",1]) > 0)}}) then {[_ArtG,_knownE,(_EnHArmor + _EnMArmor + _EnLArmor),_friends,(_HQ getVariable ["RydHQ_Debug",false]),(_HQ getVariable ["leaderHQ",(leader _HQ)])] call RYD_CFF};
 
 	_gauss100 = (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10) + (random 10);
 	_obj = _HQ getVariable "RydHQ_Obj";
-	if ((((_gauss100 + (_HQ getVariable ["RydHQ_Inertia",0]) + _morale) > ((_EValue/(_FValue + 0.1)) * 60)) and not (isNil ("_obj")) and not ((_HQ getVariable ["RydHQ_Order","ATTACK"]) == "DEFEND")) or ((_HQ getVariable ["RydHQ_Berserk",false]))) then 
+	
+	_moraleInfl = (_gauss100  * (_HQ getVariable ["RydHQ_OffTend",1])) + (_HQ getVariable ["RydHQ_Inertia",0]) + _morale;
+	_enemyInfl = (_EValue/(_FValue max 1)) * 40;
+	
+	_delay = ((count _friends) * 5) + (round (((10 + (count _friends))/(0.5 + (_HQ getVariable ["RydHQ_Reflex",0.5]))) * (_HQ getVariable ["RydHQ_CommDelay",1])));
+	
+	_HQ setVariable ["RydHQ_myDelay",_delay];
+	
+	if (((_moraleInfl > _enemyInfl) and not (isNil "_obj") and {not ((_HQ getVariable ["RydHQ_Order","ATTACK"]) in ["DEFEND"])}) or {(_HQ getVariable ["RydHQ_Berserk",false])}) then 
 		{
 		_lastS = _HQ getVariable ["LastStance","At"];
 		if ((_lastS == "De") or (_cycleC == 1)) then
@@ -978,7 +1115,7 @@ RYD_StatusQuo =
 				_HQ = group _x;
 				if (_HQ in _knownEG) then
 					{
-					_SFTgts set [(count _SFTgts),_HQ]
+					_SFTgts pushBack _HQ
 					}
 				}
 			foreach (RydxHQ_AllLeaders - [(_HQ getVariable ["leaderHQ",(leader _HQ)])]);
@@ -1033,7 +1170,7 @@ RYD_StatusQuo =
 								{
 								if not (_x in (_HQ getVariable ["RydHQ_SFBodyGuard",[]])) then
 									{	
-									_SFAv set [(count _SFAv),_x]
+									_SFAv pushBack _x
 									}
 								}
 							}
@@ -1042,7 +1179,7 @@ RYD_StatusQuo =
 
 					_team = _SFAv select (floor (random (count _SFAv)));
 					_trg = vehicle (leader _trgG);
-					if (not ((typeOf _trg) in (_HArmor + _LArmor)) or ((random 100) > (90 - ((_HQ getVariable ["RydHQ_Recklessness",0.5]) * 10)))) then 
+					if (not ((toLower (typeOf _trg)) in (_HArmor + _LArmor)) or ((random 100) > (90 - ((_HQ getVariable ["RydHQ_Recklessness",0.5]) * 10)))) then 
 						{
 						//[_team,_trg,_trgG,_HQ] spawn HAL_GoSFAttack;
 						[[_team,_trg,_trgG,_HQ],HAL_GoSFAttack] call RYD_Spawn;
@@ -1052,14 +1189,14 @@ RYD_StatusQuo =
 			}
 		};
 
-	if ((_HQ getVariable ["RydHQ_LRelocating",false]) and not (_AAO)) then
+	if ((_HQ getVariable ["RydHQ_LRelocating",false]) and {not (_AAO)}) then
 		{
 		if ((abs (speed (vehicle (_HQ getVariable ["leaderHQ",(leader _HQ)])))) < 0.1) then {_HQ setVariable ["onMove",false]};
 		_onMove = _HQ getVariable ["onMove",false];
 
 		if not (_onMove) then 
 			{
-			if (not (isPlayer (_HQ getVariable ["leaderHQ",(leader _HQ)])) and ((_cycleC == 1) or not ((_HQ getVariable ["RydHQ_Progress",0]) == 0))) then
+			if (not (isPlayer (_HQ getVariable ["leaderHQ",(leader _HQ)])) and {((_cycleC == 1) or {not ((_HQ getVariable ["RydHQ_Progress",0]) == 0)})}) then
 				{
 				[_HQ] call RYD_WPdel;if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {};
 
@@ -1111,7 +1248,7 @@ RYD_StatusQuo =
 						if ((_HQ getVariable ["RydHQ_GetHQInside",false])) then {[_wp] call RYD_GoInside}
 						};
 
-					if (((_HQ getVariable ["RydHQ_LRelocating",false])) and ((_HQ getVariable ["RydHQ_NObj",1]) > 1) and (_cycleC > 1)) then 
+					if (((_HQ getVariable ["RydHQ_LRelocating",false])) and {((_HQ getVariable ["RydHQ_NObj",1]) > 1) and {(_cycleC > 1)}}) then 
 						{
 						_code =
 							{
@@ -1143,12 +1280,12 @@ RYD_StatusQuo =
 									{
 									if not (_getBack) then
 										{
-										if ((((vehicle (_HQ getVariable ["leaderHQ",(leader _HQ)])) distance _LPos) < 30) or (_HQ getVariable ["RydHQ_KIA",false])) then {_onPlace = true}
+										if ((((vehicle (_HQ getVariable ["leaderHQ",(leader _HQ)])) distance _LPos) < 30) or {(_HQ getVariable ["RydHQ_KIA",false])}) then {_onPlace = true}
 										}
 									};
 								
 
-								((_getback) or (_onPlace))
+								((_getback) or {(_onPlace)})
 								};
 
 							if not (_onPlace) then
@@ -1156,9 +1293,9 @@ RYD_StatusQuo =
 								_rds = 30;
 								switch (true) do
 									{
-									case ((_HQ getVariable ["RydHQ_NObj",1]) <= 2) then {_Lpos = getPosATL (vehicle (_HQ getVariable ["leaderHQ",(leader _HQ)]));_rds = 0};
-									case ((_HQ getVariable ["RydHQ_NObj",1]) == 3) then {_Lpos = position (_HQ getVariable ["RydHQ_Obj1",(leader _HQ)])};
-									case ((_HQ getVariable ["RydHQ_NObj",1]) >= 4) then {_Lpos = position (_HQ getVariable ["RydHQ_Obj2",(leader _HQ)])};
+									case ((_HQ getVariable ["RydHQ_NObj",1]) <= 2) : {_Lpos = getPosATL (vehicle (_HQ getVariable ["leaderHQ",(leader _HQ)]));_rds = 0};
+									case ((_HQ getVariable ["RydHQ_NObj",1]) == 3) : {_Lpos = position (_HQ getVariable ["RydHQ_Obj1",(leader _HQ)])};
+									case ((_HQ getVariable ["RydHQ_NObj",1]) >= 4) : {_Lpos = position (_HQ getVariable ["RydHQ_Obj2",(leader _HQ)])};
 									};
 
 								_getBack = false;
@@ -1193,8 +1330,7 @@ RYD_StatusQuo =
 				}
 			}
 		};
-		
-	_delay = round (((22.5 + (count _friends))/(0.5 + (_HQ getVariable ["RydHQ_Reflex",0.5]))) * (_HQ getVariable ["RydHQ_CommDelay",1]));
+			
 	_alive = true;
 	_ct = time;
 	_ctRev = time;
@@ -1423,6 +1559,7 @@ RYD_LF =
 			};
 		
 		_vh = vehicle _src;
+		_tp = toLower (typeOf _vh);
 		
 		(group _leader) setVariable ["RydHQ_LFSourceFin",_vh];
 		
@@ -1438,7 +1575,7 @@ RYD_LF =
 			
 			_sign = 1;
 			
-			if ((typeOf _vh) in ["B_Truck_01_ammo_F"]) then
+			if (_tp in ["b_truck_01_ammo_f"]) then
 				{
 				_pZ = 0
 				};
@@ -1458,7 +1595,7 @@ RYD_LF =
 				_pZ = _pZ + (0.01 * _sign);
 				};
 
-			if ((typeOf _vh) in ["B_MBT_01_cannon_F","I_MBT_03_cannon_F"]) then
+			if (_tp in ["b_mbt_01_cannon_f","i_mbt_03_cannon_f"]) then
 				{
 				_pZ = _pZ + 0.1;
 				}
@@ -1778,20 +1915,20 @@ RYD_ClusterC =
 		{
 		if not (_x in _checked) then
 			{
-			_checked set [(count _checked),_x];
+			_checked pushBack _x;
 			_point = _x;
 			_newCluster = [_point];
 
 				{
 				if ((_point distance _x) < _range) then 
 					{
-					_checked set [(count _checked),_x];
-					_newCluster set [(count _newCluster),_x];
+					_checked pushBack _x;
+					_newCluster pushBack _x;
 					}
 				}
 			foreach _points;
 
-			_clusters set [(count _clusters),_newCluster]
+			_clusters pushBack _newCluster
 			}
 		}
 	foreach _points;
@@ -1808,14 +1945,21 @@ RYD_Spawn =
 	
 	_handle = _arguments spawn _script;
 	
-	RydxHQ_Handles set [(count RydxHQ_Handles),_handle];
+	RydxHQ_Handles pushBack _handle;
 	
 		{
-		if not (_x isEqualTo 0) then
+		if (isNil {_x}) then
 			{
-			if (scriptDone _x) then
+			RydxHQ_Handles set [_foreachIndex,0]
+			}
+		else
+			{
+			if not (_x isEqualTo 0) then
 				{
-				RydxHQ_Handles set [_foreachIndex,0]
+				if (scriptDone _x) then
+					{
+					RydxHQ_Handles set [_foreachIndex,0]
+					}
 				}
 			}
 		}
@@ -1866,7 +2010,7 @@ RYD_Spawn =
 		
 		if not (_inside) then
 			{
-			RYD_Array set [(count RYD_Array),[_string,1]]
+			RYD_Array pushBack [_string,1]
 			}
 		};
 	
@@ -1903,7 +2047,7 @@ RYD_GroupMarkerLoop =
 		sleep 5;
 		
 			{
-			_myMark = _x getVariable "RYD_ItsMyMark";
+			_myMark = _x getVariable ["RYD_ItsMyMark",""];
 			if (({alive _x} count (units _x)) > 0) then
 				{
 				_side = side _x;
@@ -1920,20 +2064,15 @@ RYD_GroupMarkerLoop =
 						default {"ColorCIV"};
 						};
 						
-					if (isNil "_myMark") then
+					if (_myMark isEqualTo "") then
 						{
 						_myMark = "ItsMyMark_" + (str _x) + (str (random 100));
 						_myMark = createMarker [_myMark,_pos];
 						_myMark setMarkerColor _color;
 						_myMark setMarkerShape "ICON";
 						_myMark setMarkerType "mil_dot";
-						_myMark setMarkerSize [0.75,0.75];
-						
-						if (0 in _this) then
-							{
-							_myMark setMarkerText (str _ldr);
-							};
-						
+						_myMark setMarkerSize [0.75,0.75];	
+																		
 						_x setVariable ["RYD_ItsMyMark",_myMark]				
 						}
 					else
@@ -1942,7 +2081,7 @@ RYD_GroupMarkerLoop =
 						
 						if (0 in _this) then
 							{
-							_myMark setMarkerText (str _ldr)
+							_myMark setMarkerText (_x getVariable ["RydHQ_MyCrypto",toUpper (getText (configFile >> "CfgVehicles" >> (typeOf (vehicle _ldr)) >> "displayName"))])
 							};
 						
 						_nE = _ldr findNearestEnemy _ldr;
@@ -1968,4 +2107,693 @@ RYD_GroupMarkerLoop =
 			}
 		foreach AllGroups
 		}
+	};
+
+RYD_PresentRHQ = 
+	{
+	private ["_allVehs","_allUnits","_vehClass","_wpClass","_magClass","_ammoClass","_addedU","_addedV","_veh","_vehClass2","_weapons","_hasLaserD","_wpClass2","_type","_mags",
+	"_isDriver","_turrets","_mainT","_isArmed","_isAA","_isAT","_weaps","_trt","_wps","_wp","_muzzles","_ammo","_ammoC","_dam","_isCargo"];
+	
+	RYD_WS_AllClasses = RYD_WS_Inf_class + RYD_WS_Art_class + RYD_WS_HArmor_class + RYD_WS_MArmor_class + RYD_WS_LArmor_class + RYD_WS_Cars_class + RYD_WS_Air_class + RYD_WS_Naval_class + RYD_WS_Static_class + RYD_WS_Support_class + RYD_WS_Other_class;
+	//RYD_WS_AllClasses = [];
+		
+	_allVehs = [];
+	
+		{
+		if ((side _x) in [west,east,resistance]) then
+			{
+			_vh = toLower (typeOf _x);
+			if not (_vh in RYD_WS_AllClasses) then
+				{
+				RYD_WS_AllClasses pushBack _vh;
+				_allVehs pushBack _x
+				}
+			}
+		}
+	foreach vehicles;	
+	
+	_allUnits = [];
+	
+		{
+		if ((side _x) in [west,east,resistance]) then
+			{
+			_vh = toLower (typeOf _x);
+			if not (_vh in RYD_WS_AllClasses) then
+				{
+				RYD_WS_AllClasses pushBack _vh;
+				_allUnits pushBack _x
+				}
+			}
+		}
+	foreach allUnits;
+	
+	_vehClass = configFile >> "CfgVehicles";
+	_wpClass = configFile >> "CfgWeapons";
+	_magClass = configFile >> "CfgMagazines";
+	_ammoClass = configFile >> "CfgAmmo";
+	
+	_addedU = [];
+	_addedV = [];
+	
+		{
+		_veh = toLower (typeOf _x);
+		if not (_veh in _addedU) then
+			{
+			_addedU pushBack _veh;
+			RHQ_Inf pushBack _veh;
+			
+			_vehClass2 = _vehClass >> _veh;
+
+			if ((getNumber (_vehClass2 >> "camouflage")) < 1) then
+				{				
+				if ((toLower (getText (_vehClass2 >> "textSingular"))) isEqualTo "sniper") then
+					{
+					RHQ_Snipers pushBack _veh
+					}
+				else
+					{
+					_weapons = getArray (_vehClass2 >> "weapons");
+					
+					RHQ_Recon pushBack _veh;
+					
+					_hasLaserD = false;
+					
+						{
+						_wpClass = configFile >> "CfgWeapons" >> _x;
+						_type = getNumber (_wpClass >> "type");
+						
+						if (_type == 4096) then
+							{
+							_cursor = toLower (getText (_wpClass >> "cursor"));
+							if (_cursor in ["","emptycursor"]) then 
+								{
+								_cursor = toLower (getText (_wpClass >> "cursorAim"))
+								};
+
+							if (_cursor isEqualTo "laserdesignator") exitWith {_hasLaserD = true}
+							};
+							
+						if (_hasLaserD) exitWith {}
+						}
+					foreach _weapons;
+					
+					if (_hasLaserD) then
+						{
+						RHQ_FO pushBack _veh
+						}					
+					}
+				};
+			
+			_wps = getArray (_vehClass2 >> "Weapons");
+
+			if ((count _wps) > 1) then
+				{
+				_isAT = false;
+				_isAA = false;
+				
+					{
+					_sWeapon = _x;
+					_mgs = configfile >> "CfgWeapons" >> _sWeapon >> "magazines";
+					if (isArray _mgs) then
+						{
+						_mgs = getArray _mgs;
+
+						if ((count _mgs) > 0) then
+							{
+							_mag = _mgs select 0;
+							_ammo = getText (configfile >> "CfgMagazines" >> _mag >> "ammo");
+							_ammoC = configfile >> "CfgAmmo" >> _ammo;
+							
+							_isAA = ((getNumber (_ammoC >> "airLock")) > 1) or {((getNumber (_ammoC >> "airLock")) > 0) and {((getNumber (_ammoC >> "irLock")) > 0)}};
+							
+							if not (_isAA) then
+								{
+								_isAT = ((((getNumber (_ammoC >> "irLock")) + (getNumber (_ammoC >> "laserLock"))) > 0) and {((getNumber (_ammoC >> "airLock")) < 2)})
+								};
+							
+							if (not (_isAT) and {not (_isAA)}) then
+								{
+								
+									{
+									_ammo = getText (configfile >> "CfgMagazines" >> _x >> "ammo");
+									_ammoC = configfile >> "CfgAmmo" >> _ammo;
+									_actHit = getNumber (_ammoC >> "hit");
+
+									if (_actHit > 150) exitWith {_isAT = true}
+									}
+								foreach _mgs
+								};
+							
+							if (_isAT) then 
+								{
+								RHQ_ATInf pushBack _veh
+								};
+								
+							if (_isAA) then  
+								{
+								RHQ_AAInf pushBack _veh
+								};
+							}
+						};
+						
+					if ((_isAT) or {(_isAA)}) exitWith {}
+					}
+				foreach _wps
+				}
+			}	
+		}
+	foreach _allUnits;
+
+	_flareMags = ["Laserbatteries","60Rnd_CMFlareMagazine","120Rnd_CMFlareMagazine","240Rnd_CMFlareMagazine","60Rnd_CMFlare_Chaff_Magazine","120Rnd_CMFlare_Chaff_Magazine","240Rnd_CMFlare_Chaff_Magazine","192Rnd_CMFlare_Chaff_Magazine","168Rnd_CMFlare_Chaff_Magazine","300Rnd_CMFlare_Chaff_Magazine"];
+	
+		{
+		_veh = toLower (typeOf _x);
+		_vehO = _x;
+		if not (_veh in _addedV) then
+			{
+			_addedV pushBack _veh;
+			
+			_vehClass2 = _vehClass >> _veh;
+
+			_isDriver = (getNumber (_vehClass2 >> "hasDriver")) > 0;
+
+			_turrets = _vehClass2 >> "Turrets";
+			_cT = count _turrets;
+			_tMags = [];
+			
+			if (_cT > 0) then
+				{
+				for "_i" from 0 to (_cT - 1) do 
+					{
+					_trt = _turrets select _i;
+					if (isClass _trt) then
+						{
+						_trt = configName _trt;
+						_mgT = _vehClass2 >> "Turrets" >> _trt >> "magazines";
+						if (isArray _mgT) then
+							{
+							_tMags = _tMags + (getArray _mgT)
+							}
+						}
+					}
+				};
+
+			_mainT = _turrets >> "MainTurret";
+			_isMainT = isClass _mainT;
+			
+			_isAmmoS = (getNumber (_vehClass2 >> "transportAmmo")) > 0;
+			_isFuelS = (getNumber (_vehClass2 >> "transportFuel")) > 0;
+			_isRepS = (getNumber (_vehClass2 >> "transportRepair")) > 0;
+			_isMedS = (getNumber (_vehClass2 >> "attendant")) > 0;
+			_mags = getArray (_vehClass2 >> "magazines") + _tMags;			
+			_isArmed = (count (_mags - _flareMags)) > 0;
+			_isCargo = ((getNumber (_vehClass2 >> "transportSoldier")) > 0) and {((getNumber (_vehClass2 >> "transportAmmo")) + (getNumber (_vehClass2 >> "transportFuel")) + (getNumber (_vehClass2 >> "transportRepair")) + (getNumber (_vehClass2 >> "attendant"))) < 1};
+			_isArty = (getNumber (_vehClass2 >> "artilleryScanner")) > 0;
+						
+			_type = "inf";
+
+			_base = _veh;
+			
+			while {not (_base in ["air","ship","tank","car","wheeled_apc_f","ugv_01_base_f"])} do
+				{
+				_base = inheritsFrom (_vehClass >> _base);
+				if not (isClass _base) exitWith {};
+				_base = toLower (configName _base);
+				if (_base in ["allvehicles","all"]) exitWith {};
+				};			
+			
+			if not (_base isEqualTo "ugv_01_base_f") then
+				{
+				if (_base in ["air","ship","tank","car","wheeled_apc_f"]) then
+					{
+					_type = _base
+					};
+				};
+				
+			if (_isArty) then
+				{
+				RHQ_Art pushBack _veh;
+				
+				_prim = "";
+				_rare = "";
+				_sec = "";
+				_smoke = "";
+				_illum = "";
+
+				if (_isArmed) then
+					{
+					_mags = magazines _vehO;
+					
+					if (_isMainT) then
+						{
+						_mags = _mags + ((getArray (_mainT >> "magazines")) - _mags)
+						};
+						
+					_maxHit = 10;
+					
+						{
+						_ammo = getText (configfile >> "CfgMagazines" >> _x >> "ammo");
+						_ammoC = configfile >> "CfgAmmo" >> _ammo;
+						
+						_actHit = getNumber (_ammoC >> "indirectHitRange");
+						_subM = toLower (getText (_ammoC >> "submunitionAmmo"));
+												
+						if (_actHit <= 10) then
+							{
+							if not (_subM isEqualTo "") then
+								{
+								_ammoC = configfile >> "CfgAmmo" >> _subM;
+								_actHit = getNumber (_ammoC >> "indirectHitRange")
+								}
+							};
+						
+						if ((_actHit > _maxHit) and {_actHit < 100}) then
+							{
+							_maxHit = _actHit;
+							_prim = _x
+							}
+						}
+					foreach _mags;
+					
+					_mags = _mags - [_prim];
+					_mags0 = +_mags;
+					_illumChosen = false;
+					_smokeChosen = false;
+					_rareChosen = false;
+					_secChosen = false;
+					
+						{
+						_ammo = getText (configfile >> "CfgMagazines" >> _x >> "ammo");
+						_ammoC = configfile >> "CfgAmmo" >> _ammo;
+						
+						_hit = getNumber (_ammoC >> "indirectHit");
+						_lc = _ammoC >> "lightColor";
+						_sim = toLower (getText (_ammoC >> "simulation"));
+						_subM = toLower (getText (_ammoC >> "submunitionAmmo"));
+						
+						if (_hit <= 10) then
+							{
+							if not (_subM isEqualTo "") then
+								{
+								_ammoC = configfile >> "CfgAmmo" >> _subM;
+								_hit = getNumber (_ammoC >> "indirectHit")
+								}
+							};
+
+						switch (true) do
+							{
+							case ((isArray _lc) and {not (_illumChosen)}) : 
+								{
+								_illum = _x;
+								_mags = _mags - [_x];
+								_illumChosen = true
+								};
+								
+							case ((_hit <= 10) and {(_subM isEqualTo "smokeshellarty") and {not (_smokeChosen)}}) : 
+								{
+								_smoke = _x;
+								_mags = _mags - [_x];
+								_smokeChosen = true
+								};
+								
+							case ((_sim isEqualTo "shotsubmunitions") and {not (_rareChosen)}) : 
+								{
+								_rare = _x;
+								_mags = _mags - [_x];
+								_rareChosen = true
+								};
+								
+							case ((_hit > 10) and {not ((_secChosen) or {(_rare == _x)})})  : 
+								{
+								_sec = _x;
+								_mags = _mags - [_x];
+								_secChosen = true
+								}
+							}
+						}
+					foreach _mags0;
+					
+					if (_sec isEqualTo "") then
+						{
+						_maxHit = 10;
+						
+							{
+							_ammo = getText (configfile >> "CfgMagazines" >> _x >> "ammo");
+							_ammoC = configfile >> "CfgAmmo" >> _ammo;
+							_subAmmo = _ammoC >> "subMunitionAmmo";
+							
+							if not (_subAmmo isEqualTo "") then
+								{
+								_ammoC = configfile >> "CfgAmmo" >> _subAmmo
+								};
+								
+							_actHit = getNumber (_ammoC >> "indirectHit");
+							
+							if (_actHit > _maxHit) then
+								{
+								_maxHit = _actHit;
+								_sec = _x
+								}
+							}
+						foreach _mags;
+						}
+					};
+					
+				_arr = [_prim,_rare,_sec,_smoke,_illum];
+				if (({_x isEqualTo ""} count _arr) < 5) then
+					{
+					RydHQ_Add_OtherArty pushBack [[_veh],_arr]
+					}
+				};
+			
+			if (_isDriver) then
+				{
+				switch (_type) do
+					{
+					case ("car") : {RHQ_Cars pushBack _veh};	
+					case ("tank") : {RHQ_HArmor pushBack _veh};	
+					case ("wheeled_apc_f") : {RHQ_LArmor pushBack _veh};
+					case ("air") : 
+						{
+						RHQ_Air pushBack _veh;
+
+						if not (_isArmed) then
+							{
+							RHQ_NCAir pushBack _veh;
+							};
+							
+						_isUAV = (getNumber (_vehClass2 >> "Uav")) > 0;
+						
+						if not (_isUAV) then
+							{
+							_isUAV = (toLower (getText (_vehClass2 >> "crew"))) in ["b_uav_ai","i_uav_ai","o_uav_ai"];
+							};
+							
+						if (_isUAV) then
+							{
+							RHQ_RAir pushBack _veh
+							}
+						};
+						
+					case ("ship") : {RHQ_Naval pushBack _veh};			
+					};
+					
+				if (_isCargo) then 
+					{
+					RHQ_Cargo pushBack _veh;
+					if not (_isArmed) then
+						{
+						RHQ_NCCargo pushBack _veh;
+						}
+					};
+										
+				RHQ_HArmor = RHQ_HArmor - RHQ_Art;
+				
+				if (_isArmed) then
+					{
+					_mags = magazines _vehO;
+					
+					if (_isMainT) then
+						{
+						_mags = _mags + ((getArray (_mainT >> "magazines")) - _mags)
+						};
+					
+						{
+						_ammo = getText (configfile >> "CfgMagazines" >> _x >> "ammo");
+						_ammoC = configfile >> "CfgAmmo" >> _ammo;
+						
+						_isAA = (getNumber (_ammoC >> "airLock")) > 1;
+						_isAT = ((((getNumber (_ammoC >> "irLock")) + (getNumber (_ammoC >> "laserLock"))) > 0) and {((getNumber (_ammoC >> "airLock")) < 2)});
+						
+						if ((_isAA) and {not (_type isEqualTo "air")}) then {RHQ_AAInf pushBack _veh};
+						if (_isAT) then 
+							{
+							if (_type isEqualTo "wheeled_apc_f") then
+								{
+								RHQ_LArmorAT pushBack _veh
+								}
+							else
+								{
+								if (_type isEqualTo "car") then
+									{
+									RHQ_ATInf pushBack _veh
+									}
+								}
+							};
+							
+						if ((_isAA) or {(_isAT)}) exitWith {}
+						}
+					foreach _mags
+					}
+				}
+			else
+				{
+				if (_isArmed) then
+					{
+					RHQ_Static pushBack _veh;
+					
+					_mags = magazines _vehO;
+					
+					if (_isMainT) then
+						{
+						_mags = _mags + ((getArray (_mainT >> "magazines")) - _mags)
+						};
+					
+						{
+						_ammo = getText (configfile >> "CfgMagazines" >> _x >> "ammo");
+						_ammoC = configfile >> "CfgAmmo" >> _ammo;
+						
+						_isAA = (getNumber (_ammoC >> "airLock")) > 1;
+						_isAT = ((((getNumber (_ammoC >> "irLock")) + (getNumber (_ammoC >> "laserLock"))) > 0) and {((getNumber (_ammoC >> "airLock")) < 2)});
+						
+						if (_isAA) then {RHQ_StaticAA pushBack _veh};
+						if (_isAT) then {RHQ_StaticAT pushBack _veh};
+							
+						if ((_isAA) or {(_isAT)}) exitWith {}
+						}
+					foreach _mags
+					}
+				};
+				
+			if (_isAmmoS) then 
+				{
+				if not (_veh in RHQ_Ammo) then
+					{
+					RHQ_Ammo pushBack _veh
+					};				
+
+				if not (_veh in RHQ_Support) then
+					{
+					RHQ_Support pushBack _veh
+					}
+				};
+				
+			if (_isFuelS) then 
+				{				
+				if not (_veh in RHQ_Fuel) then
+					{
+					RHQ_Fuel pushBack _veh
+					};					
+				
+				if not (_veh in RHQ_Support) then
+					{
+					RHQ_Support pushBack _veh
+					}
+				};
+				
+			if (_isRepS) then 
+				{				
+				if not (_veh in RHQ_Rep) then
+					{
+					RHQ_Rep pushBack _veh
+					};					
+				
+				if not (_veh in RHQ_Support) then
+					{
+					RHQ_Support pushBack _veh
+					}
+				};
+				
+			if (_isMedS) then 
+				{				
+				if not (_veh in RHQ_Med) then
+					{
+					RHQ_Med pushBack _veh
+					};	
+				
+				if not (_veh in RHQ_Support) then
+					{
+					RHQ_Support pushBack _veh
+					}
+				};
+				
+			if (_type in ["air","tank","wheeled_apc_f"]) then
+				{
+				_crew = _vehClass >> _veh >> "crew";
+				
+				if (isText _crew) then
+					{
+					_crew = toLower (getText _crew);
+
+					if not (_crew in (RYD_WS_Crew_class + RHQ_Crew)) then
+						{
+						RHQ_Crew pushBack _crew;
+						}
+					}
+				}
+			};			
+		}
+	foreach _allVehs;
+	
+	RHQ_Inf = RHQ_Inf - ["b_uav_ai","i_uav_ai","o_uav_ai"];
+	RHQ_Crew = RHQ_Crew - ["b_uav_ai","i_uav_ai","o_uav_ai"];
+	
+	true
+	};
+	
+RYD_deployUAV = 
+	{
+	private ["_gp","_pos","_HQ","_uav","_hasUAV","_myPos","_ang","_unit","_backpack","_backPackClass","_assClass","_uavClass","_sPos","_uav","_gpUAV","_mPos","_wp","_timer","_alive","_nE","_excl","_alt"];
+	
+	_gp = _this select 0;//uav team
+	_pos = _this select 1;//position to be observed
+	_HQ = _this select 2;
+	
+	_uav = objNull;
+	_hasUAV = false;
+	
+		{
+		_unit = _x;
+
+		_backpack = unitBackPack _unit;
+
+		if (not (isNull _backPack) and {(_unit == (vehicle _unit))}) then
+			{
+			_backPackClass = typeOf _backPack;
+			_assClass = configFile >> "CfgVehicles" >> _backPackClass >> "assembleInfo";
+			if (isClass _assClass) then
+				{
+				_uavClass = _assClass >> "assembleTo";
+				if (isText _uavClass) then
+					{
+					_uavClass = getText _uavClass;
+					_hasUAV = true;
+					
+						{
+						doStop _x;
+						if not (isPlayer _x) then
+							{
+							_x setUnitPos "MIDDLE"
+							}
+						}
+					foreach (units _gp);
+					
+					sleep (5 + (random 5));
+					
+					if ((isNull _unit) or {not (alive _unit)}) exitWith {};
+					
+					removeBackpack _unit;
+					
+					_myPos = getPosATL _unit;
+					
+					_ang = [_myPos,_pos,20] call RYD_AngTowards;
+					_sPos = [_myPos,_ang,2] call RYD_PosTowards2D;
+					_sPos set [2,0];
+					
+					_uav = createVehicle [_uavClass, _sPos, [], 0, "NONE"];
+					
+					createVehicleCrew _uav;
+					
+					_gpUAV = group _uav;
+					
+						{
+						_x setSkill ["spotDistance",1];
+						_x setSkill ["spotTime",1]
+						}
+					foreach (units _gUAV);
+					
+					_excl = _HQ getVariable ["RydHQ_ExcludedG",[]];
+					_excl pushBack _gpUAV;
+					
+					_alt = _HQ getVariable ["RydHQ_UAVAlt",150];
+					
+					_mPos = [_pos,50] call RYD_RandomAround;
+					_mPos set [2,_alt];//does nothing, 50 meters alt by default
+					_uav flyInHeight _alt;//works fine
+					
+					deletewaypoint [_gpUAV,0];
+					
+					_wp = _gpUAV addWaypoint [_mPos, 0];
+					_wp setWaypointType "SAD";
+					_wp setWaypointBehaviour "CARELESS";
+					_wp setWaypointCombatMode "RED";
+					_wp setWaypointSpeed "FULL";
+					_wp setWaypointStatements ["true","deletewaypoint [(group this), 0]"];
+					_wp setWaypointTimeout [20,30,40];
+					
+					_wp = _gpUAV addWaypoint [_sPos, 0];
+					_wp setWaypointType "MOVE";
+					_wp setWaypointBehaviour "CARELESS";
+					_wp setWaypointCombatMode "BLUE";
+					_wp setWaypointSpeed "FULL";
+					_wp setWaypointStatements ["true","{(vehicle _x) land 'LAND'} foreach (units (group this));deletewaypoint [(group this), 0]"];
+
+					_unit connectTerminalToUAV _uav;
+								
+					_uav doWatch _mPos;
+						
+					_timer = time;
+					_alive = true;
+						
+					waitUntil
+						{
+						sleep 1;
+						
+						_nE = _unit findNearestEnemy _unit;
+						
+						switch (true) do
+							{
+							case (isNull _uav): {_alive = false};
+							case (not (alive _uav)): {_alive = false};
+							case (not (alive (assignedDriver _uav))): {_alive = false};
+							case ((fuel _uav) == 0): {_alive = false};
+							case not (canMove _uav): {_alive = false};
+							case (isNull _unit): {_alive = false};
+							case (not (alive _unit)): {_alive = false};
+							case (not (isNull _nE) and {((_nE distance _unit) < 100) or {(_nE knowsAbout _unit) > 1}}): {_alive = false};
+							};
+						
+						(not (_alive) or {(isTouchingGround _uav) and {((toLower (landResult _uav)) isEqualTo "found") or {((toLower (landResult _uav)) isEqualTo "notfound") or {(time - _timer) > 900}}}})
+						};
+						
+						{
+						deleteVehicle _x
+						}
+					foreach (crew _uav);
+					
+					deleteVehicle _uav;
+					deleteGroup _gpUAV;
+					
+						{
+						_x doMove (position _x);
+						if not (isPlayer _x) then
+							{
+							_x setUnitPos "AUTO"
+							}
+						}
+					foreach (units _gp);
+															
+					if (not (_alive) or {((time - _timer) > 900)}) exitWith {};
+					if ((_unit distance _sPos) > 100) exitWith {};
+					
+					_unit addBackPack _backPackClass			
+					}
+				}
+			};
+			
+		if (_hasUAV) exitWith {};
+		}
+	foreach (units _gp);
+	
+	_hasUAV
 	};

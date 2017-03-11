@@ -9,7 +9,7 @@ _HQ = _this select 3;
 
 _RepPoints = _HQ getVariable ["RydHQ_RepPoints",[]];
 
-_RepPoints set [(count _RepPoints),_Trg];
+_RepPoints pushBack _Trg;
 
 _startpos = position _unit;
 
@@ -39,6 +39,8 @@ while {((_isWater) and (_cnt <= 20))} do
 	_isWater = surfaceIsWater [_posX,_posY];
 	_cnt = _cnt + 1;
 	};
+	
+[_unitG,[_posX,_posY,0],"HQ_ord_repS",_HQ] call RYD_OrderPause;
 
 _alive = false;
 

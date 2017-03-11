@@ -57,7 +57,7 @@ if (isNull _ChosenOne) then
 		{
 		if (_x in (_HQ getVariable ["RydHQ_AirG",[]])) then
 			{
-			_airCargo set [(count _airCargo),_x]
+			_airCargo pushBack _x
 			}
 		}
 	foreach _cargos;
@@ -169,7 +169,7 @@ if not (_emptyV) then
 							if (_ct > 50) exitWith {}
 							};
 						
-						_EDpositions set [(count _EDpositions),_pos];
+						_EDpositions pushBack _pos;
 						}
 					}
 					
@@ -186,13 +186,10 @@ if not (_emptyV) then
 	_GD setVariable [("CargoM" + (str _GD)), true];
 
 	[_GD] call RYD_WPdel;
-
+	
 	_UL = leader _GD;
-
-	if not (isPlayer _UL) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
-
-	_ChosenOne disableAI "TARGET";_ChosenOne disableAI "AUTOTARGET";
-	_Lpos = [((position _GL) select 0) + (random 100) - 50,((position _GL) select 1) + (random 100) - 50];
+	
+	_Lpos = [((position _GL) select 0) + (random 100) - 50,((position _GL) select 1) + (random 100) - 50,0];
 	
 	if ((count _EDpositions) > 1) then 
 		{
@@ -200,6 +197,29 @@ if not (_emptyV) then
 
 		_wp = [_unitG,([_Lpos,30] call RYD_RandomAround)] call RYD_WPadd;
 		};
+		
+	if ((_GD in _airCargo) and {not (isOnRoad _Lpos)})  then
+		{
+		_fe = (count (_Lpos isflatempty [20,0,1,10,0,false,objNull])) > 0;
+		_ct = 0;
+		_dst = 30;
+		
+		while {not (_fe)} do
+			{
+			if (_dst > 100) exitWith {};
+			_dst =_dst + 10;
+			_Lpos = [_Lpos,_dst/2,_dst] call RYD_RandomAroundMM;
+			_fe = (count (_Lpos isflatempty [20 - (_dst/20),0,1 + (_dst/80),10,0,false,objNull])) > 0;
+			}
+		};
+	
+	[_GD,_Lpos,"HQ_ord_cargo",_HQ] call RYD_OrderPause;
+
+	if ((isPlayer _UL) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
+
+	if not (isPlayer _UL) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdConf,"OrdConf"] call RYD_AIChatter}};
+
+	_ChosenOne disableAI "TARGET";_ChosenOne disableAI "AUTOTARGET";
 		
 	_task = [(leader _GD),["Take a group waiting for transport at designated position.", "Load", ""],_Lpos] call RYD_AddTask;
 
@@ -242,7 +262,7 @@ if not (_emptyV) then
 
 		_wp = [_unitG,([_Lpos,30] call RYD_RandomAround)] call RYD_WPadd;
 		};
-
+		
 	_task2 = [(leader _unitG),[_taskTxt, "GET IN", ""],_Lpos] call RYD_AddTask;
 
 	_wp = [_GD,_Lpos,"MOVE","CARELESS","YELLOW","FULL",["true","{(vehicle _x) land 'GET IN'} foreach (units (group this));deletewaypoint [(group this), 0]"]] call RYD_WPadd;

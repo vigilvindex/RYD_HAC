@@ -27,7 +27,7 @@ if ((_HQ getVariable ["RydHQ_DebugII",false])) then
 			while {not (isNull _HQ)} do
 				{
 				if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {};
-				
+								
 					{
 					_alive = true;
 					if (isNull _x) then {_alive = false};

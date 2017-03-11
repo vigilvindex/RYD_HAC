@@ -5,6 +5,7 @@ _cycle = 0;
 _HQ = _this select 0;
 _signum = _HQ getVariable ["RydHQ_CodeSign","X"];
 _debug = _HQ getVariable ["RydHQ_Debug",false];
+_stoper = time;
 
 while {not (isNull _HQ)} do
 	{
@@ -12,7 +13,24 @@ while {not (isNull _HQ)} do
 	if (isNil ("_last")) then {_last = ObjNull};
 	sleep 0.2;
 	if (isNull _HQ) exitWith {};
-	if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {}; 
+	if (_HQ getVariable ["RydHQ_KIA",false]) exitWith {};
+	
+	if ((time - _stoper) > 5) then
+		{
+		_stoper = time;
+		_friends = _HQ getVariable ["RydHQ_Friends",[]];
+		
+			{
+			_ldr = leader _x;
+			_assV = assignedVehicle _ldr;
+			if (not (isNull _assV) and {(canUnloadInCombat _assV)}) then
+				{
+				_assV setUnloadInCombat [false,false];
+				}
+			}
+		foreach _friends
+		};	
+	
 	_HQ setVariable ["leaderHQ",(leader _HQ)];
 
 	if not (_last == (leader _HQ)) then
@@ -28,7 +46,7 @@ while {not (isNull _HQ)} do
 						if not ((_HQ getVariable ["RydHQ_Cyclecount",0]) < 2) then 
 							{
 							RydxHQ_AllLeaders = RydxHQ_AllLeaders - [_last];
-							RydxHQ_AllLeaders set [(count RydxHQ_AllLeaders),(leader _HQ)];
+							RydxHQ_AllLeaders pushBack (leader _HQ);
 							_cycle = (_HQ getVariable ["RydHQ_Cyclecount",0]);
 							
 							_Personality = _Personality + "-";

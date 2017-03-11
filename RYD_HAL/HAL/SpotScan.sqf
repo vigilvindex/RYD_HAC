@@ -149,7 +149,7 @@ for [{_steepnessInitial = 1},{(_steepnessInitial >= 1) and not (_isdone)},{_stee
 	
 			if (_isGood) then 
 				{
-				_goodSpots set [(count _goodSpots),_scannedSpot];
+				_goodSpots pushBack _scannedSpot;
 				if (_HQ getVariable ["RydHQ_Debug",false]) then 
 					{
 					_goodmark = createMarker[(str _X)+(str _Y),_scannedSpot];

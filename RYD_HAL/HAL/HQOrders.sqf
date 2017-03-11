@@ -109,7 +109,7 @@ _onlyL = (_HQ getVariable ["RydHQ_LArmorG",[]]) - (_HQ getVariable ["RydHQ_MArmo
 			}
 		foreach (units _x);
 
-		if (not (_x in (_ReconAv + (_HQ getVariable ["RydHQ_SpecForG",[]]))) and not (_busy) and (_vehready) and ((_solready) or (_x in (_HQ getVariable ["RydHQ_RAirG",[]])))) then {_ReconAv set [(count _ReconAv),_x]};
+		if (not (_x in (_ReconAv + (_HQ getVariable ["RydHQ_SpecForG",[]]))) and not (_busy) and (_vehready) and ((_solready) or (_x in (_HQ getVariable ["RydHQ_RAirG",[]])))) then {_ReconAv pushBack _x};
 		}
 	}
 foreach (((_HQ getVariable ["RydHQ_RAirG",[]]) + (_HQ getVariable ["RydHQ_ReconG",[]]) + (_HQ getVariable ["RydHQ_FOG",[]]) + (_HQ getVariable ["RydHQ_SnipersG",[]]) + (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_NCCargoG",[]])) + _onlyL) - ((_HQ getVariable ["RydHQ_NoRecon",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]])));
@@ -138,57 +138,70 @@ _FlankAv = [];
 _exhausted = _HQ getVariable ["RydHQ_Exhausted",[]];
 
 	{
-	if not (isNull _x) then
+	if ((typeName _x) in [(typeName grpNull)]) then
 		{
-		_unitvar = str _x;
-		if (_HQ getVariable ["RydHQ_Orderfirst",true]) then {_x setVariable [("Nominal" + _unitvar),(count (units _x))]};
-		_busy = false;
-		_busy = _x getvariable ("Busy" + _unitvar);
-		if (isNil ("_busy")) then {_busy = false};
-		_vehready = true;
-		_solready = true;
-		_effective = true;
-		_ammo = true;
-		_Gdamage = 0;
-		
-		if (([_x,(_HQ getVariable ["RydHQ_NCVeh",[]])] call RYD_AmmoFullCount) < 0.15) then 
+		if not (isNull _x) then
 			{
-			_ammo = false
-			}
-		else
-			{
-				{
-				_Gdamage = _Gdamage + (damage _x);
-				if (((count (magazines _x)) == 0) and (((vehicle _x) == _x) or ((vehicle _x) in (_HQ getVariable ["RydHQ_NCVeh",[]])))) exitWith {_ammo = false};
-				if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
-				}
-			foreach (units _x)
-			};
+			_unitvar = str _x;
+			if (_HQ getVariable ["RydHQ_Orderfirst",true]) then {_x setVariable [("Nominal" + _unitvar),(count (units _x))]};
+			_busy = false;
+			_busy = _x getvariable ("Busy" + _unitvar);
+			if (isNil ("_busy")) then {_busy = false};
+			_vehready = true;
+			_solready = true;
+			_effective = true;
+			_ammo = true;
+			_Gdamage = 0;
 			
-		_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
-		_current = count (units _x);
-		_Gdamage = _Gdamage + (_nominal - _current);
-		if (((_Gdamage/(_current + 0.1)) > (0.4*(((_HQ getVariable ["RydHQ_Recklessness",0.5])/1.2) + 1))) or not (_effective) or not (_ammo)) then {_solready = false};
-		_ammo = 0;
+			if (([_x,(_HQ getVariable ["RydHQ_NCVeh",[]])] call RYD_AmmoFullCount) < 0.15) then 
+				{
+				_ammo = false
+				}
+			else
+				{
+					{
+					_Gdamage = _Gdamage + (damage _x);
+					if (((count (magazines _x)) == 0) and (((vehicle _x) == _x) or ((vehicle _x) in (_HQ getVariable ["RydHQ_NCVeh",[]])))) exitWith {_ammo = false};
+					if (((damage _x) > 0.5) or not (canStand _x)) exitWith {_effective = false};
+					}
+				foreach (units _x)
+				};
+				
+			_nominal = _x getVariable ("Nominal" + (str _x));if (isNil "_nominal") then {_x setVariable ["Nominal" + _unitvar,(count (units _x))];_nominal = _x getVariable ("Nominal" + (str _x))};
+			_current = count (units _x);
+			_Gdamage = _Gdamage + (_nominal - _current);
+			if (((_Gdamage/(_current + 0.1)) > (0.4*(((_HQ getVariable ["RydHQ_Recklessness",0.5])/1.2) + 1))) or not (_effective) or not (_ammo)) then {_solready = false};
+			_ammo = 0;
 
-			{
-			_veh = assignedvehicle _x;
-			if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in (((_HQ getVariable ["RydHQ_AirG",[]]) - (_HQ getVariable ["RydHQ_NCAirG",[]])) + ((_HQ getVariable ["RydHQ_HArmorG",[]]) + (_HQ getVariable ["RydHQ_LArmorG",[]]) + ((_HQ getVariable ["RydHQ_CarsG",[]]) - ((_HQ getVariable ["RydHQ_NCCargoG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]])))))) and ((count (magazines _veh)) == 0)))) exitwith {_vehready = false};
+				{
+				_veh = assignedvehicle _x;
+				if (not (isNull _veh) and (not (canMove _veh) or ((fuel _veh) <= 0.1) or ((damage _veh) > 0.5) or (((group _x) in (((_HQ getVariable ["RydHQ_AirG",[]]) - (_HQ getVariable ["RydHQ_NCAirG",[]])) + ((_HQ getVariable ["RydHQ_HArmorG",[]]) + (_HQ getVariable ["RydHQ_LArmorG",[]]) + ((_HQ getVariable ["RydHQ_CarsG",[]]) - ((_HQ getVariable ["RydHQ_NCCargoG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]])))))) and ((count (magazines _veh)) == 0)))) exitwith {_vehready = false};
+				}
+			foreach (units _x);
+			
+			if (not (_x in _AttackAv) and not (_busy) and not (_x in _FlankAv) and (_vehready) and (_solready) and not (_x in ((_HQ getVariable ["RydHQ_StaticG",[]]) + (_HQ getVariable ["RydHQ_ArtG",[]]) + (_HQ getVariable ["RydHQ_NavalG",[]]) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]])))) then {_AttackAv pushBack _x};
+			if (not (_x in _exhausted) and (not (_vehready) or not (_solready))) then 
+				{
+				_exhausted pushBack _x;
+				};
+	 
+			if (((_HQ getVariable ["RydHQ_Withdraw",1]) > 0) and not (_x in ((_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_SnipersG",[]])))) then
+				{
+				_inD = _x getVariable "NearE";
+				if (isNil "_inD") then {_inD = 0};
+				if (not (_x in _exhausted) and (((random (2 + (_HQ getVariable ["RydHQ_Recklessness",0.5]))) max 0.5) < (_inD * (_HQ getVariable ["RydHQ_Withdraw",1])))) then 
+					{
+					_recvar = str _x;
+					_resting = _x getvariable ("Resting" + _recvar);
+					if (isNil ("_resting")) then {_resting = false};
+					if not (_resting) then
+						{
+						[[_x,_HQ,true],HAL_GoRest] call RYD_Spawn;
+						//_exhausted pushBack _x
+						}
+					}; 
+				};
 			}
-		foreach (units _x);
-		
-		if (not (_x in _AttackAv) and not (_busy) and not (_x in _FlankAv) and (_vehready) and (_solready) and not (_x in ((_HQ getVariable ["RydHQ_StaticG",[]]) + (_HQ getVariable ["RydHQ_ArtG",[]]) + (_HQ getVariable ["RydHQ_NavalG",[]]) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]])))) then {_AttackAv set [(count _AttackAv),_x]};
-		if (not (_x in _exhausted) and (not (_vehready) or not (_solready))) then 
-			{
-			_exhausted set [count _exhausted,_x];
-			};
- 
-		if (((_HQ getVariable ["RydHQ_Withdraw",1]) > 0) and not (_x in ((_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_SnipersG",[]])))) then
-			{
-			_inD = _x getVariable "NearE";
-			if (isNil "_inD") then {_inD = 0};
-			if (not (_x in _exhausted) and ((random (2 + (_HQ getVariable ["RydHQ_Recklessness",0.5]))) < (_inD * (_HQ getVariable ["RydHQ_Withdraw",1])))) then {_exhausted set [(count _exhausted),_x]}; 
-			};
 		}
 	}
 foreach (((_HQ getVariable ["RydHQ_Friends",[]]) - ((_HQ getVariable ["RydHQ_reconG",[]]) + (_HQ getVariable ["RydHQ_FOG",[]]) + ((_HQ getVariable ["RydHQ_NCCargoG",[]]) - (_HQ getVariable ["RydHQ_NCrewInfG",[]])) + (_HQ getVariable ["RydHQ_SupportG",[]]))) - (_HQ getVariable ["RydHQ_NoAttack",[]]));
@@ -206,7 +219,7 @@ if ((_HQ getVariable ["RydHQ_AttackReserve",0]) > 0) then
 		if not (_ResC in (_HQ getVariable ["RydHQ_FirstToFight",[]])) then 
 			{
 			_AttackAv = _AttackAv - [_ResC];
-			if not (_HQ getVariable ["RydHQ_FlankingDone",false]) then {if ((random 100 > (30/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) and not (_ResC in _FlankAv)) then {_FlankAv set [(count _FlankAv),_ResC]}}
+			if not (_HQ getVariable ["RydHQ_FlankingDone",false]) then {if ((random 100 > (30/(0.5 + (_HQ getVariable ["RydHQ_Fineness",0.5])))) and not (_ResC in _FlankAv)) then {_FlankAv pushBack _ResC}}
 			};
 		}
 	};
@@ -214,6 +227,7 @@ if ((_HQ getVariable ["RydHQ_AttackReserve",0]) > 0) then
 _FlankAv = _FlankAv - ((_HQ getVariable ["RydHQ_NoFlank",[]]) + (_HQ getVariable ["RydHQ_AOnly",[]]) + (_HQ getVariable ["RydHQ_ROnly",[]]));
 _HQ setVariable ["RydHQ_AttackAv",_AttackAv];
 _HQ setVariable ["RydHQ_FlankAv",_FlankAv];
+_HQ setVariable ["RydHQ_CombatAv",_FlankAv + _AttackAv];
 _HQ setVariable ["RydHQ_Exhausted",_exhausted];
 _timeStamp = _HQ getVariable ["RydHQ_FlankingTimeStamp",0];
 
@@ -441,6 +455,7 @@ if (not ((_HQ getVariable ["RydHQ_ReconDone",false])) and ((count (_HQ getVariab
 
 	if (_HQ getVariable ["RydHQ_IdleOrd",true]) then
 		{
+
 			{
 			_recvar = str _x;
 			_busy = false;
@@ -492,26 +507,26 @@ _Otherthreat = [];
 	if (isNil ("_checked")) then {_GE setvariable [("Checked" + _GEvar),false]};
 	_checked = false;
 
-	if ((_x in (_HQ getVariable ["RydHQ_Enrecon",[]])) and not (_GE in _reconthreat) and not (_checked)) then {_reconthreat set [(count _reconthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnFO",[]])) and not (_GE in _FOthreat) and not (_checked)) then {_FOthreat set [(count _FOthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_Ensnipers",[]])) and not (_GE in _snipersthreat) and not (_checked)) then {_snipersthreat set [(count _snipersthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnATinf",[]])) and not (_GE in _ATinfthreat) and not (_checked)) then {_ATinfthreat set [(count _ATinfthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnAAinf",[]])) and not (_GE in _AAinfthreat) and not (_checked)) then {_AAinfthreat set [(count _AAinfthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnInf",[]])) and not (_GE in _Infthreat) and not (_checked)) then {_Infthreat set [(count _Infthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnArt",[]])) and not (_GE in _Artthreat) and not (_checked)) then {_Artthreat set [(count _Artthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnHArmor",[]])) and not (_GE in _LArmorthreat) and not (_checked)) then {_LArmorthreat set [(count _LArmorthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnLArmor",[]])) and not (_GE in _reconthreat) and not (_checked)) then {_reconthreat set [(count _reconthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnLArmorAT",[]])) and not (_GE in _LArmorATthreat) and not (_checked)) then {_LArmorATthreat set [(count _LArmorATthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnCars",[]])) and not (_GE in _Carsthreat) and not (_checked)) then {_Carsthreat set [(count _Carsthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnAir",[]])) and not (_GE in _Airthreat) and not (_checked)) then {_Airthreat set [(count _Airthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnNaval",[]])) and not (_GE in _Navalthreat) and not (_checked)) then {_Navalthreat set [(count _Navalthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnStatic",[]])) and not (_GE in _Staticthreat) and not (_checked)) then {_Staticthreat set [(count _Staticthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnStaticAA",[]])) and not (_GE in _StaticAAthreat) and not (_checked)) then {_StaticAAthreat set [(count _StaticAAthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnStaticAT",[]])) and not (_GE in _StaticATthreat) and not (_checked)) then {_StaticATthreat set [(count _StaticATthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnSupport",[]])) and not (_GE in _Supportthreat) and not (_checked)) then {_Supportthreat set [(count _Supportthreat),_GE]};
-	if ((_x in (_HQ getVariable ["RydHQ_EnCargo",[]])) and not (_GE in _Cargothreat) and not (_checked)) then {_Cargothreat set [(count _Cargothreat),_GE]};
+	if ((_x in (_HQ getVariable ["RydHQ_Enrecon",[]])) and not (_GE in _reconthreat) and not (_checked)) then {_reconthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnFO",[]])) and not (_GE in _FOthreat) and not (_checked)) then {_FOthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_Ensnipers",[]])) and not (_GE in _snipersthreat) and not (_checked)) then {_snipersthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnATinf",[]])) and not (_GE in _ATinfthreat) and not (_checked)) then {_ATinfthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnAAinf",[]])) and not (_GE in _AAinfthreat) and not (_checked)) then {_AAinfthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnInf",[]])) and not (_GE in _Infthreat) and not (_checked)) then {_Infthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnArt",[]])) and not (_GE in _Artthreat) and not (_checked)) then {_Artthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnHArmor",[]])) and not (_GE in _LArmorthreat) and not (_checked)) then {_LArmorthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnLArmor",[]])) and not (_GE in _reconthreat) and not (_checked)) then {_reconthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnLArmorAT",[]])) and not (_GE in _LArmorATthreat) and not (_checked)) then {_LArmorATthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnCars",[]])) and not (_GE in _Carsthreat) and not (_checked)) then {_Carsthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnAir",[]])) and not (_GE in _Airthreat) and not (_checked)) then {_Airthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnNaval",[]])) and not (_GE in _Navalthreat) and not (_checked)) then {_Navalthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnStatic",[]])) and not (_GE in _Staticthreat) and not (_checked)) then {_Staticthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnStaticAA",[]])) and not (_GE in _StaticAAthreat) and not (_checked)) then {_StaticAAthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnStaticAT",[]])) and not (_GE in _StaticATthreat) and not (_checked)) then {_StaticATthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnSupport",[]])) and not (_GE in _Supportthreat) and not (_checked)) then {_Supportthreat pushBack _GE};
+	if ((_x in (_HQ getVariable ["RydHQ_EnCargo",[]])) and not (_GE in _Cargothreat) and not (_checked)) then {_Cargothreat pushBack _GE};
 
-	if ((_x in (_HQ getVariable ["RydHQ_EnInf",[]])) and ((vehicle _x) in (_HQ getVariable ["RydHQ_EnCargo",[]])) and not (_x in (_HQ getVariable ["RydHQ_EnCrew",[]])) and not (_GE in _Infthreat) and not (_checked)) then {_Infthreat set [(count _Infthreat),_GE]};
+	if ((_x in (_HQ getVariable ["RydHQ_EnInf",[]])) and ((vehicle _x) in (_HQ getVariable ["RydHQ_EnCargo",[]])) and not (_x in (_HQ getVariable ["RydHQ_EnCrew",[]])) and not (_GE in _Infthreat) and not (_checked)) then {_Infthreat pushBack _GE};
 
 	if ((isNil ("_checked")) or not (_checked)) then {_GE setVariable [("Checked" + _GEvar), true]};
 	}
@@ -588,6 +603,7 @@ if (count (_Staticthreat - _Artthreat) > 0) then
 // Capture Objective
 
 _toTake = [_HQ getVariable ["RydHQ_Obj",(leader _HQ)]];
+_noCapt = _HQ getVariable ["RydHQ_NoCapt",[]];
 
 if (_AAO) then
 	{
@@ -597,11 +613,12 @@ if (_AAO) then
 		{
 		if not (_x in _toRecon) then
 			{
-			_toTake set [_foreachIndex,"Del"];
-			_toTake = _toTake - ["Del"];
+			_toTake set [_foreachIndex,objNull];
 			}
 		}
 	foreach _toTake;
+	
+	_toTake = _toTake - [objNull];
 		
 	_allAttackers = 0;
 		
@@ -616,7 +633,14 @@ if (_AAO) then
 		_toTake resize ((count _toTake) - 1)
 		}
 	};
+	
+	{
+	if (isNil {_x}) then {_toTake set [_foreachIndex,objNull]};
+	}
+foreach _toTake;
 
+_toTake = _toTake - [objNull];
+	
 	{
 	_Trg = _x;
 
@@ -649,8 +673,8 @@ if (_AAO) then
 					((((_HQ getVariable ["RydHQ_RapidCapt",10]) * ((_HQ getVariable ["RydHQ_Recklessness",0.5]) + 0.01)) > (random 100)) and ((_HQ getVariable ["RydHQ_NObj",1]) <= 4))) then   
 			{
 			_checked = [];
-			_forCapt = (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]) + (_HQ getVariable ["RydHQ_Garrison",[]]));
-			_forCapt = _forCapt - ((_HQ getVariable ["RydHQ_AOnly",[]]) + (_HQ getVariable ["RydHQ_ROnly",[]]));
+			_forCapt = (_HQ getVariable ["RydHQ_NCrewInfG",[]]) - ((_HQ getVariable ["RydHQ_Exhausted",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]) + (_HQ getVariable ["RydHQ_Garrison",[]]));
+			_forCapt = _forCapt - ((_HQ getVariable ["RydHQ_AOnly",[]]) + (_HQ getVariable ["RydHQ_ROnly",[]]) + _noCapt);
 			_forCapt = [_forCapt] call RYD_SizeOrd;
 
 			if (not ((count _forCapt) == 0) and ((count (_HQ getVariable ["RydHQ_AttackAv",[]])) > 0)) then
@@ -689,7 +713,7 @@ if (_AAO) then
 											{
 											_x setVariable [("Busy" + (str _x)),true];
 											_HQ setVariable ["RydHQ_AttackAv",(_HQ getVariable ["RydHQ_AttackAv",[]]) - [_x]];
-											_checked set [(count _checked),_x];
+											_checked pushBack _x;
 											_groupCount = count (units _x);
 
 											switch (_isAttacked) do
@@ -716,8 +740,8 @@ if (_AAO) then
 
 			if ((_isAttacked > 3) and (_captCount >= _captLimit)) exitwith {};
 
-			_LMCU = (_HQ getVariable ["RydHQ_Friends",[]]) - (((_HQ getVariable ["RydHQ_AirG",[]]) - (_HQ getVariable ["RydHQ_NCrewInfG",[]])) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]) + (_HQ getVariable ["RydHQ_NavalG",[]]) + (_HQ getVariable ["RydHQ_StaticG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_ArtG",[]]) + (_HQ getVariable ["RydHQ_Garrison",[]]) + ((_HQ getVariable ["RydHQ_NCCargoG",[]]) - ((_HQ getVariable ["RydHQ_NCrewInfG",[]]) - (_HQ getVariable ["RydHQ_SupportG",[]]))));
-			_LMCU = _LMCU - ((_HQ getVariable ["RydHQ_AOnly",[]]) + (_HQ getVariable ["RydHQ_ROnly",[]]));
+			_LMCU = (_HQ getVariable ["RydHQ_Friends",[]]) - ((_HQ getVariable ["RydHQ_Exhausted",[]]) + ((_HQ getVariable ["RydHQ_AirG",[]]) - (_HQ getVariable ["RydHQ_NCrewInfG",[]])) + (_HQ getVariable ["RydHQ_SpecForG",[]]) + (_HQ getVariable ["RydHQ_CargoOnly",[]]) + (_HQ getVariable ["RydHQ_NavalG",[]]) + (_HQ getVariable ["RydHQ_StaticG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]]) + (_HQ getVariable ["RydHQ_ArtG",[]]) + (_HQ getVariable ["RydHQ_Garrison",[]]) + ((_HQ getVariable ["RydHQ_NCCargoG",[]]) - ((_HQ getVariable ["RydHQ_NCrewInfG",[]]) - (_HQ getVariable ["RydHQ_SupportG",[]]))));
+			_LMCU = _LMCU - ((_HQ getVariable ["RydHQ_AOnly",[]]) + (_HQ getVariable ["RydHQ_ROnly",[]]) + _noCapt);
 			_LMCU = [_LMCU] call RYD_SizeOrd;
 			if (not ((count _LMCU) == 0) and ((count (_HQ getVariable ["RydHQ_AttackAv",[]])) > 0)) then
 				{
@@ -749,7 +773,7 @@ if (_AAO) then
 										{
 										_x setVariable [("Busy" + (str _x)),true];
 										_HQ setVariable ["RydHQ_AttackAv",(_HQ getVariable ["RydHQ_AttackAv",[]]) - [_x]];
-										_checked set [(count _checked),_x];
+										_checked pushBack _x;
 										_groupCount = count (units _x);
 
 										switch (_isAttacked) do
@@ -792,7 +816,7 @@ foreach _toTake;
 			{
 			if not (_x getVariable ["Busy" + (str _x),false]) then
 				{
-				_WAAv set [(count _WAAv),_x]
+				_WAAv pushBack _x
 				}
 			}
 		foreach _LMCU;
@@ -809,7 +833,7 @@ foreach _toTake;
 				{
 				if (((1 + (_HQ getVariable ["RydHQ_Consistency",0.5]) + (_HQ getVariable ["RydHQ_Fineness",0.5]))/4) > (random 1)) then
 					{
-					_where set [(count _where),_x]
+					_where pushBack _x
 					}
 				}
 			}

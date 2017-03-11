@@ -37,7 +37,7 @@ _targets = [];
 			}
 		foreach _x;
 		
-		_targets set [(count _targets),(_x select 0)]
+		_targets pushBack (_x select 0)
 		}
 	}
 foreach _clusters;
@@ -55,25 +55,25 @@ for "_i" from 1 to _amnt do
 	_rDiv = [];
 	for "_j" from 0 to _recAm do
 		{
-		_rDiv set [(count _rDiv),_ReconAv select _j];
-		_reconAv set [_j,"Del"]
+		_rDiv pushBack (_ReconAv select _j);
+		_reconAv set [_j,0]
 		};
 		
-	_reconAv = _reconAv - ["Del"];
+	_reconAv = _reconAv - [0];
 		
-	_reconDvs set [(count _reconDvs),_rDiv];
+	_reconDvs pushBack _rDiv;
 	
 	_aDiv = [];
 		
 	for "_j" from 0 to _attAm do
 		{
-		_aDiv set [(count _aDiv),_attackAv select _j];
-		_attackAv set [_j,"Del"]
+		_aDiv pushBack (_attackAv select _j);
+		_attackAv set [_j,0]
 		};
 		
-	_attackAv = _attackAv - ["Del];
+	_attackAv = _attackAv - [0];
 	
-	_attackDvs set [(count _attackDvs),_aDiv];
+	_attackDvs pushBack _aDiv;
 	};
 	
 _center = getPosATL (vehicle (leader _HQ));
@@ -98,7 +98,7 @@ _initialPositions = [];
 		{
 		_echelonP = [_center,_angle,_echDst] call RYD_PosTowards2D;
 		_echDst = _echDst + 100;
-		_echelons set [(count _echelons),_echelonP]
+		_echelons pushBack _echelonP
 		};
 		
 	_settingPoints = [];
@@ -107,11 +107,11 @@ _initialPositions = [];
 		_lWing = [_x,_angle - 90,150] call RYD_PosTowards2D;
 		_rWing = [_x,_angle + 90,150] call RYD_PosTowards2D;
 		
-		_settingPoints = _settingPoints + [_lWing,_x,_rWing];
+		_settingPoints pushBack [_lWing,_x,_rWing];
 		}
 	foreach _echelons;
 	
-	_initialPositions set [(count _initialPositions),_settingPoints];
+	_initialPositions pushBack _settingPoints;
 	}
 foreach _targets;
 
@@ -132,12 +132,12 @@ _all = _ReconAv + _attackAv;
 		{
 		if not (_x in _all) then
 			{
-			_kind set [_foreachIndex,"Del"]
+			_kind set [_foreachIndex,0]
 			}
 		}
 	foreach _kind;
 	
-	_kind = _kind - ["Del"]
+	_kind = _kind - [0]
 	}
 foreach [_airRecon,_armored,_mechanized,_static,_air,_onFoot];
 

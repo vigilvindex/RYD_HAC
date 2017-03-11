@@ -35,8 +35,8 @@ if (_AAO) then
 if not ((count _KnEnemies) == 0) then 
 	{
 		{
-		_Epos0 = _Epos0 + [((getPosATL _x) select 0)];
-		_Epos1 = _Epos1 + [((getPosATL _x) select 1)]
+		_Epos0 pushBack ((getPosATL _x) select 0);
+		_Epos1 pushBack ((getPosATL _x) select 1)
 		}
 	foreach _KnEnemies
 	};
@@ -133,12 +133,12 @@ switch true do
 		
 	if (_del) then 
 		{
-		_FlankAv set [_foreachIndex,"Del"]
+		_FlankAv set [_foreachIndex,grpNull]
 		}
 	}
 foreach _FlankAv;
 
-_FlankAv = _FlankAv - ["Del"];
+_FlankAv = _FlankAv - [grpNull];
 
 switch true do
 	{

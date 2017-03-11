@@ -48,6 +48,8 @@ _unitG setVariable [("Capt" + (str _unitG)),false];
 _unitG setVariable [("Busy" + _unitvar), true];
 _unitG setVariable ["Defending", true];
 
+[_unitG,_Spot,"HQ_ord_defend",_HQ] call RYD_OrderPause;
+
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
 _UL = leader _unitG;
@@ -67,7 +69,7 @@ while {not (_endThis)} do
 		_i = [_DefPos,_unitG,"markDef","ColorBrown","ICON","mil_dot","Air " + _signum," - DEFEND AREA"] call RYD_Mark
 		};
 
-	_task = [(leader _unitG),["Provide air cover.", "S&D", ""],_DefPos] call RYD_AddTask;
+	_task = [(leader _unitG),["Provide air cover.", "SAD", ""],_DefPos] call RYD_AddTask;
 
 	_wp = [_unitG,_DefPos,"SAD","AWARE","YELLOW","NORMAL"] call RYD_WPadd;
 
@@ -165,7 +167,7 @@ if not (_alive) exitwith
 		deleteMarker ("markDef" + (str _unitG))
 		};
 		
-	_AirInDef = _HQ getVariable ["RydHQ_AirInDef,[]];
+	_AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
 	_AirInDef = _AirInDef - [_unitG];
 	_HQ setVariable ["RydHQ_AirInDef",_AirInDef]
 	};
@@ -178,7 +180,7 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then 
 
 _AirInDef = _HQ getVariable ["RydHQ_AirInDef",[]];
 _AirInDef = _AirInDef - [_unitG];
-_HQ setVariable ["RydHQ_AirInDef",_AirInDef]
+_HQ setVariable ["RydHQ_AirInDef",_AirInDef];
 
 _unitG setVariable [("Busy" + _unitvar), false];
 

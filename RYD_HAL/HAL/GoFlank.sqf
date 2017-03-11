@@ -40,6 +40,9 @@ _BorHQD = (leader _HQ) distance _BEnemyPos;
 
 _distanceSafe = 700;
 
+_dstMpl = (_HQ getVariable ["RydHQ_FlankDistance",1]) * (_unitG getVariable ["RydHQ_myAttDst",1]);
+_distanceSafe = _distanceSafe * _dstMpl;
+
 _safeX1 = _h * _distanceSafe * (cos _angle);
 _safeY1 = _h * _distanceSafe * (sin _angle);
 
@@ -147,9 +150,10 @@ if ((_ammo > 0) and not (_busy)) then
 	{
 	_unitG setVariable [("Deployed" + (str _unitG)),false];_unitG setVariable [("Capt" + (str _unitG)),false];
 	_unitG setVariable [("Busy" + (str _unitG)),true];
-	_veh = str (typeOf (Vehicle (leader (_unitG))));
 
 	[_unitG] call RYD_WPdel;
+	
+	[_unitG,[_posXWP4,_posYWP4,0],"HQ_ord_flank",_HQ] call RYD_OrderPause;
 
 	if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
@@ -250,12 +254,14 @@ if ((_ammo > 0) and not (_busy)) then
 	[_unitG] call RYD_WPdel;
 
 	_grp = _unitG;
-	if not (isNull _AV) then {_grp = _GDV};
-	_beh = "SAFE";
+	_beh = "AWARE";
+	if not (isNull _AV) then {_grp = _GDV;_beh = "SAFE"};
 	if (not (isNull _AV) and (_GDV in (_HQ getVariable ["RydHQ_AirG",[]]))) then {_beh = "CARELESS"};
 	_TO = [0,0,0];
 	if ((isNull _AV) and (([_posXWP1,_posYWP1] distance _UL) > 1000)) then {_TO = [40, 45, 50]};
-	_wp1 = [_grp,[_posXWP1,_posYWP1],"MOVE",_beh,"GREEN","NORMAL",["true","deletewaypoint [(group this), 0];"],true,0,_TO] call RYD_WPadd;
+	_frm = formation _grp;
+	if not (isPlayer (leader _grp)) then {_frm = "STAG COLUMN"};
+	_wp1 = [_grp,[_posXWP1,_posYWP1],"MOVE",_beh,"GREEN","NORMAL",["true","deletewaypoint [(group this), 0];"],true,0,_TO,_frm] call RYD_WPadd;
 
 	_DAV = assigneddriver _AV;
 	_OtherGroup = false;
@@ -466,11 +472,11 @@ if ((_ammo > 0) and not (_busy)) then
 		//{unassignVehicle _x} foreach (units _unitG);
 		_pass orderGetIn false;
 		_allowed = false;
-		(units _unitG) allowGetIn false
+		(units _unitG) allowGetIn false;//if (player in (units _unitG)) then {diag_log "NOT ALLOW flank"};
 		}
 	else
 		{
-		if (_unitG in (_HQ getVariable ["RydHQ_NCrewInfG",[]])) then {_pass orderGetIn false};
+		//if (_unitG in (_HQ getVariable ["RydHQ_NCrewInfG",[]])) then {_pass orderGetIn false};
 		};
 
 	_DAV = assigneddriver _AV;
@@ -492,7 +498,7 @@ if ((_ammo > 0) and not (_busy)) then
 		};
 
 	if ((isPlayer (leader _GDV)) and not (isMultiplayer)) then {(leader _GDV) removeSimpleTask _Ctask};
-	if ((isNull (leader (_this select 0))) or (_timer > 240)) exitwith {if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {{deleteMarker _x} foreach [_i1,_i2,_i3,_i4]};if not (isNull _GDV) then {[_GDV, (currentWaypoint _GDV)] setWaypointPosition [getPosATL (vehicle (leader _GDV)), 1];_GDV setVariable [("Busy" + _unitvar), false];_pass orderGetIn true}};
+	if ((isNull (leader (_this select 0))) or (_timer > 240)) exitwith {if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {{deleteMarker _x} foreach [_i1,_i2,_i3,_i4]};if not (isNull _GDV) then {[_GDV, (currentWaypoint _GDV)] setWaypointPosition [getPosATL (vehicle (leader _GDV)), 1];_GDV setVariable [("Busy" + _unitvar), false]}};//;_pass orderGetIn true}};
 
 	_unitvar = str _GDV;
 	_timer = 0;
@@ -528,7 +534,7 @@ if ((_ammo > 0) and not (_busy)) then
 
 	_beh = "AWARE";
 	_spd = "NORMAL";
-	if ((_enemy) and (((vehicle (leader _unitG)) distance [_posXWP4,_posYWP4]) > 1000)) then {_spd = "LIMITED";_beh = "SAFE"};
+	if (not (_enemy) and (((vehicle (leader _unitG)) distance [_posXWP4,_posYWP4]) > 1000)) then {_spd = "LIMITED";_beh = "SAFE"};
 	_frm = formation _unitG;
 	if not (isPlayer (leader _unitG)) then {_frm = "WEDGE"};
 

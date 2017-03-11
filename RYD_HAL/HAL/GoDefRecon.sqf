@@ -67,6 +67,8 @@ _isWater = surfaceIsWater _DefPos;
 
 if (_isWater) then {_DefPos = getPosATL (vehicle (leader _unitG))};
 
+[_unitG,[_posX,_posY,0],"HQ_ord_defend",_HQ] call RYD_OrderPause;
+
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
 _UL = leader _unitG;
@@ -118,6 +120,8 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then
 	_signum = _HQ getVariable ["RydHQ_CodeSign","X"];
 	_i = [_DefPos,_unitG,"markDef","ColorBrown","ICON","mil_dot","Rec " + _signum," - WATCH FOREGROUND"] call RYD_Mark
 	};
+	
+_AV = assignedVehicle _UL;
 
 _task = [(leader _unitG),["Take a defensive, elevated position as fast, as possible. Then observe foreground and search for enemy targets.", "Sentry", ""],_DefPos] call RYD_AddTask;
 
@@ -141,7 +145,11 @@ if not (_alive) exitwith
 	_HQ setVariable ["RydHQ_RecDefSpot",_RecDefSpot]
 	};
 	
-if ((_unitG in ((_HQ getVariable ["RydHQ_CargoG",[]]) - ((_HQ getVariable ["RydHQ_HArmorG",[]]) + (_HQ getVariable ["RydHQ_LArmorG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]]) + ((_HQ getVariable ["RydHQ_CarsG",[]]) - (_HQ getVariable ["RydHQ_NCCargoG",[]]))))) or (not (isNull _AV) and not (_unitG == (group (assigneddriver _AV))))) then {(units _unitG) orderGetIn false};
+if ((_unitG in ((_HQ getVariable ["RydHQ_CargoG",[]]) - ((_HQ getVariable ["RydHQ_HArmorG",[]]) + (_HQ getVariable ["RydHQ_LArmorG",[]]) + (_HQ getVariable ["RydHQ_SupportG",[]]) + ((_HQ getVariable ["RydHQ_CarsG",[]]) - (_HQ getVariable ["RydHQ_NCCargoG",[]]))))) or (not (isNull _AV) and not (_unitG == (group (assigneddriver _AV))))) then 
+	{
+	(units _unitG) allowGetIn false;
+	(units _unitG) orderGetIn false
+	};
 
 _frm = formation _unitG;
 if not (isPlayer (leader _unitG)) then {_frm = "WEDGE"};
@@ -153,8 +161,8 @@ _TED = getPosATL (leader _HQ);
 _dX = 2000 * (sin _angleV);
 _dY = 2000 * (cos _angleV);
 
-_posX = ((getPosATL (leader _HQ)) select 0) + _dX + (random 2000) - 1000;
-_posY = ((getPosATL (leader _HQ)) select 1) + _dY + (random 2000) - 1000;
+_posX = ((getPosATL (leader _unitG)) select 0) + _dX + (random 2000) - 1000;
+_posY = ((getPosATL (leader _unitG)) select 1) + _dY + (random 2000) - 1000;
 
 _TED = [_posX,_posY];
 
@@ -166,6 +174,8 @@ if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then
 
 _dir = [(getPosATL (vehicle (leader _unitG))),_TED,10] call RYD_AngTowards;
 if (_dir < 0) then {_dir = _dir + 360};
+
+//_i2 = [(getPosATL (vehicle (leader _unitG))),_unitG,"markDir","ColorOrange","ICON","hd_arrow",(str _angleV),(str _angleV),[1,1],_dir] call RYD_Mark;
 
 _unitG setFormDir _dir;
 (units _unitG) doWatch _TED;
@@ -205,6 +215,7 @@ if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) re
 if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker ("markDef" + (str _unitG));deleteMarker ("markWatch" + (str _unitG))};
 
 (units _unitG) doWatch ObjNull;
+(units _unitG) allowGetIn true;
 (units _unitG) orderGetIn true;
 if (_attackAllowed) then {_unitG enableAttack true};
 

@@ -39,6 +39,9 @@ _Armor = (_HQ getVariable ["RydHQ_LArmorG",[]]) + (_HQ getVariable ["RydHQ_HArmo
 if (_unitG in _Armor) then {_distance2 = 500};
 if (_unitG in (_HQ getVariable ["RydHQ_AirG",[]])) then {_distance2 = 750};
 
+_dstMpl = (_HQ getVariable ["RydHQ_AttInfDistance",1]) * (_unitG getVariable ["RydHQ_myAttDst",1]);
+_distance2 = _distance2 * _dstMpl;
+
 _dXc = _distance2 * (cos _angle);
 _dYc = _distance2 * (sin _angle);
 
@@ -67,11 +70,20 @@ _isWater = surfaceIsWater [_posX,_posY];
 if (_isWater) exitwith 
 	{
 	_attAv = _HQ getVariable ["RydHQ_AttackAv",[]];
-	_attAv set [(count _attAv),_unitG];
+	_attAv pushBack _unitG;
 	_HQ setVariable ["RydHQ_AttackAv",_attAv];
 	_unitG setVariable [("Busy" + (str _unitG)),false];
 	[_Trg,"InfAttacked"] call RYD_VarReductor
 	};
+
+if (RydxHQ_SynchroAttack) then
+	{
+	_attackedBy = (group _trg) getVariable ["RYD_Attacks",[]];
+	_attackedBy pushBack [_unitG,[_posX,_posY,0]];
+	(group _trg) setVariable ["RYD_Attacks",_attackedBy];
+	};
+	
+[_unitG,[_posX,_posY,0],"HQ_ord_attack",_HQ] call RYD_OrderPause;
 
 if ((isPlayer (leader _unitG)) and (RydxHQ_GPauseActive)) then {hintC "New orders from HQ!";setAccTime 1};
 
@@ -191,15 +203,16 @@ if ((isNull _AV) and (([_posX,_posY] distance _UL) > 1500) and not (isPlayer (le
 	_LX = (getPosATL _UL) select 0;
 	_LY = (getPosATL _UL) select 1;
 
+	_beh = "SAFE";
 	_spd = "LIMITED";
 	_TO = [0,0,0];
-	if (_NeNMode) then {_spd = "NORMAL";_TO = [40, 45, 50]};
+	if (_NeNMode) then {_spd = "NORMAL";_TO = [40, 45, 50];_beh = "AWARE"};
 
-	_wp0 = [_unitG,[(_posX + _LX)/2,(_posY + _LY)/2],"MOVE","SAFE","YELLOW",_spd,["true","deletewaypoint [(group this), 0];"],true,0,_TO] call RYD_WPadd;
+	_wp0 = [_unitG,[(_posX + _LX)/2,(_posY + _LY)/2],"MOVE",_beh,"YELLOW",_spd,["true","deletewaypoint [(group this), 0];"],true,0,_TO] call RYD_WPadd;
 	_nW = 2;
 	};
 
-_task = [(leader _unitG),["Search and destroy enemy.", "S&D", ""],[_posX,_posY]] call RYD_AddTask;
+_task = [(leader _unitG),["Search and destroy enemy.", "SAD", ""],[_posX,_posY]] call RYD_AddTask;
 
 _Ctask = taskNull;
 
@@ -213,7 +226,7 @@ if not (isNull _AV) then {_gp = _GDV;_posX = (_posX + _LX1)/2;_posY = (_posY + _
 _pos = [_posX,_posY];
 _tp = "MOVE";
 //if (not (isNull _AV) and (_unitG in (_HQ getVariable ["RydHQ_NCrewInfG",[]])) and not ((_GDV == _unitG) or (_GDV in (_HQ getVariable ["RydHQ_AirG",[]])))) then {_tp = "UNLOAD"};
-_beh = "SAFE";
+_beh = "AWARE";
 _lz = objNull;
 if (not (isNull _AV) and (_GDV in (_HQ getVariable ["RydHQ_AirG",[]]))) then 
 	{
@@ -231,7 +244,7 @@ if (not (isNull _AV) and (_GDV in (_HQ getVariable ["RydHQ_AirG",[]]))) then
 	};
 
 _spd = "NORMAL";
-if ((isNull _AV) and (([_posX,_posY] distance _UL) > 1000) and not (_NeNMode)) then {_spd = "LIMITED"};
+if ((isNull _AV) and (([_posX,_posY] distance _UL) > 1000) and not (_NeNMode)) then {_spd = "LIMITED";_beh = "SAFE"};
 _TO = [0,0,0];
 if ((isNull _AV) and (([_posX,_posY] distance _UL) <= 1000) or ((_NeNMode) and (isNull _AV))) then {_TO = [40, 45, 50]};
 _crr = false;
@@ -278,13 +291,6 @@ if not (isNil "_EDPos") then
 	};
 
 _wp = [_gp,_pos,_tp,_beh,"YELLOW",_spd,_sts,_crr,0,_TO] call RYD_WPadd;
-
-if ((RydxHQ_SynchroAttack) and not (_halfway)) then
-	{
-	[_wp,_Trg] call RYD_WPSync;
-	 
-	 
-	};
 
 _DAV = assigneddriver _AV;
 _OtherGroup = false;
@@ -336,11 +342,11 @@ if not ((_GDV == _unitG) or (isNull _GDV)) then
 	//{unassignVehicle _x} foreach (units _unitG);
 	_pass orderGetIn false;
 	_allowed = false;
-	(units _unitG) allowGetIn false
+	(units _unitG) allowGetIn false;//if (player in (units _unitG)) then {diag_log "NOT ALLOW attinf"};
 	}
 else
 	{
-	if (_unitG in (_HQ getVariable ["RydHQ_NCrewInfG",[]])) then {_pass orderGetIn false};
+	//if (_unitG in (_HQ getVariable ["RydHQ_NCrewInfG",[]])) then {_pass orderGetIn false};
 	};
 
 _DAV = assigneddriver _AV;
@@ -368,7 +374,7 @@ _unitvar = str _GDV;
 if ((isNull (leader (_this select 0))) or (_timer > 240)) exitwith 
 	{
 	if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker ("markAttack" + str (_unitG))};
-	if not (isNull _GDV) then {[_GDV, (currentWaypoint _GDV)] setWaypointPosition [getPosATL (vehicle (leader _GDV)), 0];_GDV setVariable [("Busy" + _unitvar), false];_pass orderGetIn true};
+	if not (isNull _GDV) then {[_GDV, (currentWaypoint _GDV)] setWaypointPosition [getPosATL (vehicle (leader _GDV)), 0];_GDV setVariable [("Busy" + _unitvar), false]};//;_pass orderGetIn true};
 	[_Trg,"InfAttacked"] call RYD_VarReductor
 	};
 
@@ -390,13 +396,6 @@ if ((_halfway) or (_earlyD)) then
 
 	_wp = [_unitG,[_posX,_posY],"MOVE","AWARE","YELLOW","NORMAL",["true","deletewaypoint [(group this), 0];"],true,0,[0,0,0],_frm] call RYD_WPadd;
 
-	if (RydxHQ_SynchroAttack) then
-		{
-		[_wp,_Trg] call RYD_WPSync;
-		 
-		 
-		};
-
 	_cause = [_unitG,6,true,0,30,[],false] call RYD_Wait;
 	_timer = _cause select 0;
 	_alive = _cause select 1;
@@ -411,27 +410,35 @@ if ((_halfway) or (_earlyD)) then
 
 if not (_alive) exitwith {[_Trg,"InfAttacked"] call RYD_VarReductor};
 
+
+if (RydxHQ_SynchroAttack) then
+	{
+	[_wp,_Trg,_unitG,_HQ] call RYD_WPSync;
+	 
+	 
+	};
+
 if (isPlayer (leader _unitG)) then
 	{
 	if not (isMultiplayer) then
 		{
-		_task setSimpleTaskDescription ["Search and destroy enemy.", "S&D", ""];
+		_task setSimpleTaskDescription ["Search and destroy enemy.", "SAD", ""];
 		_task setSimpleTaskDestination (getPosATL _Trg)
 		}
 	else
 		{
 		 
-		[_task,(leader _unitG),["Search and destroy enemy.", "S&D", ""],(getPosATL _Trg),"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
+		[_task,(leader _unitG),["Search and destroy enemy.", "SAD", ""],(getPosATL _Trg),"ASSIGNED",0,false,true] call BIS_fnc_SetTask;
 		}
 	};
 
 _beh = "AWARE";
 _spd = "NORMAL";
-if ((_enemy) and not (_halfway) and (((vehicle (leader _unitG)) distance _Trg) > 1000) and not (_NeNMode)) then {_spd = "LIMITED";_beh = "SAFE"};
+if (not (_enemy) and not (_halfway) and (((vehicle (leader _unitG)) distance _Trg) > 1000) and not (_NeNMode)) then {_spd = "LIMITED";_beh = "SAFE"};
 _frm = formation _unitG;
 if not (isPlayer (leader _unitG)) then {_frm = "WEDGE"};
 _cur = true;
-if (RydxHQ_SynchroAttack) then {_cur = false};
+//if (RydxHQ_SynchroAttack) then {_cur = false};
 
 _UL = leader _unitG;if not (isPlayer _UL) then {if ((_halfway) and (_timer <= 30)) then {if ((random 100) < RydxHQ_AIChatDensity) then {[_UL,RydxHQ_AIC_OrdFinal,"OrdFinal"] call RYD_AIChatter}}};
 
@@ -467,7 +474,7 @@ if (_unitG in (_HQ getVariable ["RydHQ_Garrison",[]])) then
 			}
 		};
 	
-	_wp = [_unitG,_Spos,"MOVE","SAFE","YELLOW","NORMAL",["true","deletewaypoint [(group this), 0];"],true,5] call RYD_WPadd;
+	_wp = [_unitG,_Spos,"MOVE","AWARE","YELLOW","NORMAL",["true","deletewaypoint [(group this), 0];"],true,5] call RYD_WPadd;
 
 	_cause = [_unitG,6,true,0,30,[],false] call RYD_Wait;
 	_timer = _cause select 0;
@@ -484,10 +491,10 @@ if ((isPlayer (leader _unitG)) and not (isMultiplayer)) then {(leader _unitG) re
 
 if ((_HQ getVariable ["RydHQ_Debug",false]) or (isPlayer (leader _unitG))) then {deleteMarker ("markAttack" + str (_unitG))};
 
-_pass orderGetIn true;
+//_pass orderGetIn true;
 
 _attAv = _HQ getVariable ["RydHQ_AttackAv",[]];
-_attAv set [(count _attAv),_unitG];
+_attAv pushBack _unitG;
 _HQ setVariable ["RydHQ_AttackAv",_attAv];
 
 _unitG setVariable [("Busy" + (str _unitG)),false];
